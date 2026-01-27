@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import StreakPage from "./pages/StreakPage";
 import Statistics from "./pages/Statistics";
 import Calendar from "./pages/Calender";
+import Onboarding from "./pages/Onboarding";
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -20,6 +21,7 @@ export default function App() {
         <AppLayout>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/streak/:habit" element={<StreakPage />} />
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/calendar" element={<Calendar />} />

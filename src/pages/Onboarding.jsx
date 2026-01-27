@@ -5,46 +5,93 @@ export default function Onboarding() {
   const [habit, setHabit] = useState("");
   const navigate = useNavigate();
 
+  const theme =
+    document.documentElement.getAttribute("data-theme") || "dark";
+
+  const isDark = theme === "dark";
+
+  const accent = isDark ? "#d4af37" : "#2563eb";
+  const bg = isDark ? "#1f1f1f" : "#f2f4f8";
+  const cardBg = isDark ? "#2a2a2a" : "#ffffff";
+  const text = isDark ? "#ffffff" : "#1a1a1a";
+  const subText = isDark ? "#aaa" : "#6b7280";
+
   const startTracking = () => {
-    if (!habit) return;
+    if (!habit.trim()) return;
 
-    localStorage.setItem("habit", habit);
-    localStorage.setItem("streak", "1");
-    localStorage.setItem("lastCheck", new Date().toDateString());
-    localStorage.setItem("longestStreak", "1");
-    localStorage.setItem("totalDays", "1");
-    
-    navigate("/streak");
-  };  
+    const habits =
+      JSON.parse(localStorage.getItem("habits")) || [];
 
+    habits.push({
+      id: Date.now(),
+      name: habit.trim(),
+      streak: 0,
+      lastCheck: null
+    });
 
-    return (
-    <div className="h-screen flex flex-col items-center justify-center bg-[#1f1f1f] gap-6">
-        <h1 className="text-3xl text-[#d4af37] font-bold">
-        What do you want to track?
+    localStorage.setItem("habits", JSON.stringify(habits));
+
+    navigate("/");
+  };
+
+  return (
+    <div
+      className="h-screen flex items-center justify-center"
+      style={{ backgroundColor: bg }}
+    >
+      <div
+        className="flex flex-col items-center gap-6 px-10 py-12 rounded-3xl"
+        style={{
+          backgroundColor: cardBg,
+          color: text,
+          boxShadow: isDark
+            ? "none"
+            : "0 20px 40px rgba(0,0,0,0.08)"
+        }}
+      >
+        <h1
+          className="text-3xl font-bold"
+          style={{ color: accent }}
+        >
+          What do you want to track?
         </h1>
 
+        <p className="text-sm" style={{ color: subText }}>
+          One habit. One streak. Every day.
+        </p>
+
         <form
-        onSubmit={(e) => {
+          onSubmit={(e) => {
             e.preventDefault();
             startTracking();
-        }}
-        className="flex flex-col gap-4"
+          }}
+          className="flex flex-col gap-4 w-64"
         >
-        <input
-            className="px-4 py-2 rounded bg-[#2a2a2a] text-white outline-none text-center placeholder:text-center"
+          <input
+            className="px-4 py-2 rounded outline-none text-center"
+            style={{
+              backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb",
+              color: text
+            }}
             value={habit}
             onChange={(e) => setHabit(e.target.value)}
             placeholder="Gym, Study, Reading..."
-        />
+          />
 
-        <button
+          <button
             type="submit"
-            className="px-6 py-2 bg-[#2a2a2a] text-[#d4af37] rounded-xl border border-[#444]"
-        >
+            className="py-2 rounded-xl font-medium transition"
+            style={{
+              color: accent,
+              border: `1px solid ${
+                isDark ? "#444" : "#cbd5e1"
+              }`
+            }}
+          >
             Start
-        </button>
+          </button>
         </form>
+      </div>
     </div>
-    );
+  );
 }

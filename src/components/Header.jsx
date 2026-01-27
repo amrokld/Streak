@@ -1,48 +1,64 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-export default function Header() {
+export default function Header({ theme, toggleTheme, onNewHabit }) {
   const navigate = useNavigate();
+  const accent = theme === "dark" ? "#d4af37" : "#2563eb";
+  const muted = theme === "dark" ? "#bbb" : "#6b7280";
 
   return (
-    <header className="w-full grid grid-cols-3 items-center px-10 py-6 bg-[#1f1f1f]">
-
+    <header className="w-full grid grid-cols-3 items-center px-10 py-6">
+      
       {/* Logo */}
       <motion.div
         whileTap={{ scale: 0.95 }}
-        whileHover={{ scale: 1.02 }}
         onClick={() => navigate("/")}
         className="cursor-pointer select-none"
       >
         <span
-          className="text-4xl md:text-5xl font-bold text-[#d4af37]"
-          style={{ fontFamily: "Space Grotesk", letterSpacing: "0.06em" }}
+          className="text-4xl md:text-5xl font-bold cursor-pointer select-none"
+          style={{ 
+            fontFamily: "Space Grotesk", 
+            letterSpacing: "0.06em",
+            color: accent
+          }}
         >
           STREAK
         </span>
       </motion.div>
 
-      {/* Navigation (slightly left) */}
-      <nav className="flex justify-center gap-10 text-lg text-[#bbb] relative -left-12">
-        <NavLink className="hover:text-white transition" to="/statistics">
-          Statistics
-        </NavLink>
-        <NavLink className="hover:text-white transition" to="/calendar">
-          Calendar
-        </NavLink>
-        <NavLink className="hover:text-white transition" to="/info">
-          Info
-        </NavLink>
-      </nav>
+      {/* Navigation */}
+      <nav className="flex justify-center gap-10 text-lg relative -left-10">
+          {["Statistics", "Calendar", "Info"].map((item) => (
+            <span
+              key={item}
+              className="cursor-pointer transition"
+              style={{ color: muted }}
+              onMouseEnter={(e) => (e.target.style.color = accent)}
+              onMouseLeave={(e) => (e.target.style.color = muted)}
+            >
+              {item}
+            </span>
+          ))}
+        </nav>
+
 
       {/* Right actions */}
-      <div className="flex justify-end items-center gap-6 text-lg">
-        <button className="text-[#d4af37] hover:opacity-80 transition">
-          Dark
+      <div className="flex justify-end items-center gap-8 text-lg">
+        <button
+          onClick={() => navigate("/onboarding")}
+          className="transition"
+          style={{ color: accent }}
+        >
+          New Habit
         </button>
 
-        <button className="text-[#d4af37] hover:opacity-80 transition">
-          New Habit
+        <button
+          onClick={toggleTheme}
+          className="transition"
+          style={{ color: accent }}
+        >
+          {theme === "dark" ? "Light" : "Dark"}
         </button>
       </div>
     </header>
