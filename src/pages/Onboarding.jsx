@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../Context/ThemeContext";
 
 export default function Onboarding() {
   const [habit, setHabit] = useState("");
   const navigate = useNavigate();
-
-  const theme =
-    document.documentElement.getAttribute("data-theme") || "dark";
-
-  const isDark = theme === "dark";
+  const { isDark } = useTheme();
 
   const accent = isDark ? "#d4af37" : "#2563eb";
   const bg = isDark ? "#1f1f1f" : "#f2f4f8";

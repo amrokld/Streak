@@ -15,19 +15,19 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      {showSplash && <Splash onFinish={() => setShowSplash(false)} />}
+        {showSplash && <Splash onFinish={() => setShowSplash(false)} />}
 
-      {!showSplash && (
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/streak/:habit" element={<StreakPage />} />
-            <Route path="/statistics" element={<Statistics />} />
-            <Route path="/calendar" element={<Calendar />} />
-          </Routes>
-        </AppLayout>
-      )}
+        {!showSplash && (
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/streak/:habit" element={<StreakPage />} />
+              <Route path="/statistics" element={<Statistics />} />
+              <Route path="/calendar" element={<Calendar />} />
+            </Routes>
+          </AppLayout>
+        )}
     </BrowserRouter>
   );
 }

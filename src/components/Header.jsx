@@ -1,8 +1,11 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTheme } from "../Context/ThemeContext";
 
-export default function Header({ theme, toggleTheme, onNewHabit }) {
+export default function Header() {
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+
   const accent = theme === "dark" ? "#d4af37" : "#2563eb";
   const muted = theme === "dark" ? "#bbb" : "#6b7280";
 

@@ -1,21 +1,8 @@
-import { useEffect, useState } from "react";
 import Header from "../components/Header";
+import { useTheme } from "../Context/ThemeContext";
 
-export default function AppLayout({ children, onNewHabit }) {
-  const [theme, setTheme] = useState(
-    localStorage.getItem("theme") || "dark"
-  );
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
-
-  const isDark = theme === "dark";
+export default function AppLayout({ children }) {
+  const { isDark } = useTheme();
 
   return (
     <div
@@ -25,15 +12,8 @@ export default function AppLayout({ children, onNewHabit }) {
         color: isDark ? "#ffffff" : "#1a1a1a"
       }}
     >
-      <Header
-        theme={theme}
-        toggleTheme={toggleTheme}
-        onNewHabit={onNewHabit}
-      />
-
-      <main className="px-6">
-        {children}
-      </main>
+      <Header />
+      <main className="px-6">{children}</main>
     </div>
   );
 }

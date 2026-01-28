@@ -1,10 +1,8 @@
 import { motion } from "framer-motion";
+import { useTheme } from "../Context/ThemeContext";
 
 export default function Splash({ onFinish }) {
-  const theme =
-    document.documentElement.getAttribute("data-theme") || "dark";
-
-  const isDark = theme === "dark";
+  const { isDark } = useTheme();
 
   return (
     <motion.div

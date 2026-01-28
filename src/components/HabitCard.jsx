@@ -1,13 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../Context/ThemeContext";
 
 export default function HabitCard({ habit }) {
   const navigate = useNavigate();
-
-  // read theme from root (set in AppLayout)
-  const theme =
-    document.documentElement.getAttribute("data-theme") || "dark";
-
-  const isDark = theme === "dark";
+  const { isDark } = useTheme();
 
   // colors
   const accent = isDark ? "#d4af37" : "#2563eb";

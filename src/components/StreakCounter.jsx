@@ -1,15 +1,21 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useTheme } from "../Context/ThemeContext";
 
 export default function StreakCounter() {
   const [streak, setStreak] = useState(0);
+  const { isDark } = useTheme();
 
   const handleDone = () => {
     setStreak(prev => prev + 1);
   };
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center gap-10 bg-[#1e1e1e]">
+    <div 
+      className="h-screen flex flex-col items-center justify-center gap-10"
+      style={{ background: isDark ? "#1e1e1e" : "#f2f4f8" }}
+  
+      >
 
       <motion.div
         key={streak}
