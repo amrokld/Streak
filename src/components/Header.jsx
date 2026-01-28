@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useTheme } from "../Context/ThemeContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
@@ -32,18 +32,34 @@ export default function Header() {
 
       {/* Navigation */}
       <nav className="flex justify-center gap-10 text-lg relative -left-10">
-          {["Statistics", "Calendar", "Info"].map((item) => (
-            <span
-              key={item}
-              className="cursor-pointer transition"
-              style={{ color: muted }}
-              onMouseEnter={(e) => (e.target.style.color = accent)}
-              onMouseLeave={(e) => (e.target.style.color = muted)}
-            >
-              {item}
-            </span>
-          ))}
-        </nav>
+        <span
+          onClick={() => navigate("/statistics")}
+          className="cursor-pointer transition"
+          style={{ color: muted }}
+          onMouseEnter={(e) => (e.target.style.color = accent)}
+          onMouseLeave={(e) => (e.target.style.color = muted)}
+        >
+          Statistics
+        </span>
+
+        <span
+          onClick={() => navigate("/calendar")}
+          className="cursor-pointer transition"
+          style={{ color: muted }}
+          onMouseEnter={(e) => (e.target.style.color = accent)}
+          onMouseLeave={(e) => (e.target.style.color = muted)}
+        >
+          Calendar
+        </span>
+
+        <span
+          className="cursor-not-allowed opacity-50"
+          title="Coming soon"
+        >
+          Info
+        </span>
+      </nav>
+
 
 
       {/* Right actions */}

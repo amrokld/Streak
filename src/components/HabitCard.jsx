@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "../Context/ThemeContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function HabitCard({ habit }) {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ export default function HabitCard({ habit }) {
           style={{ color: isDark ?"#ffffff" : "#1a1a1a" }}
         >
           {habit.name}
-        </h3>
+        </h3>  
         <p
           className="text-sm mt-1"
           style={{ color: subText }}
