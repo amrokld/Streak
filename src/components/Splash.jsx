@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useTheme } from "../Context/ThemeContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Splash({ onFinish }) {
   const { isDark } = useTheme();

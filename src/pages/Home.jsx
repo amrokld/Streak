@@ -9,12 +9,34 @@ export default function Home({ onNewHabitTrigger }) {
     
     if (!saved || saved.length === 0) {
       saved = [
-        { id: 1, name: "Learning", streak: 1},
-        { id: 2, name: "Gym", streak: 20}
+        {
+          id: 1,
+          name: "Learning",
+          streak: 1,
+          longestStreak: 1,
+          lastCheck: new Date().toDateString(),
+          completedDays: [new Date().toDateString()]
+        },
+        {
+          id: 2,
+          name: "Gym",
+          streak: 20,
+          longestStreak: 20,
+          lastCheck: new Date().toDateString(),
+          completedDays: []
+        }
       ];
+
       localStorage.setItem("habits", JSON.stringify(saved));
     }
-    setHabits(saved);
+    setHabits(
+      saved.map(h => ({
+        ...h,
+        completedDays: h.completedDays || [],
+        longestStreak: h.longestStreak || h.streak,
+        lastCheck: h.lastCheck || null
+      }))
+    );
   }, []);
 
   useEffect(() => {
@@ -29,9 +51,9 @@ export default function Home({ onNewHabitTrigger }) {
   
   return (
     <div className="flex justify-center mt-28">
-        <div className="flex gap-12">
-            {habits.map((h) => (
-        <HabitCard key={h.name} habit={h} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {habits.map(habit => (
+        <HabitCard key={habit.id} habit={habit} />
         ))}
         </div>
     </div>
