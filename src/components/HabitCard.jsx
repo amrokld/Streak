@@ -1,5 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../Context/ThemeContext";
+
+function handleDelete() {
+  setHabits(prev => prev.filter(h => h.id !== habit.id));
+}
 
 export default function HabitCard({ habit }) {
   const navigate = useNavigate();

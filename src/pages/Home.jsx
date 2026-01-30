@@ -1,61 +1,55 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import { useHabits } from "../Context/HabitContext";
 import HabitCard from "../components/HabitCard";
+import { useTheme } from "../Context/ThemeContext";
+import Onboarding from "./Onboarding";
 
-export default function Home({ onNewHabitTrigger }) {
-  const [habits, setHabits] = useState([]);
+export default function Home() {
+  const { habits, addHabit } = useHabits();
+  const { showNewHabit, setShowNewHabit } = useOutletContext();
+  const { theme } = useTheme();
+  
+  const isDark = theme === "dark";
 
-  useEffect(() => {
-    let saved = JSON.parse(localStorage.getItem("habits"));
-    
-    if (!saved || saved.length === 0) {
-      saved = [
-        {
-          id: 1,
-          name: "Learning",
-          streak: 1,
-          longestStreak: 1,
-          lastCheck: new Date().toDateString(),
-          completedDays: [new Date().toDateString()]
-        },
-        {
-          id: 2,
-          name: "Gym",
-          streak: 20,
-          longestStreak: 20,
-          lastCheck: new Date().toDateString(),
-          completedDays: []
-        }
-      ];
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("important");
 
-      localStorage.setItem("habits", JSON.stringify(saved));
-    }
-    setHabits(
-      saved.map(h => ({
-        ...h,
-        completedDays: h.completedDays || [],
-        longestStreak: h.longestStreak || h.streak,
-        lastCheck: h.lastCheck || null
-      }))
-    );
-  }, []);
+  const handleCreate = () => {
+    if (!name.trim()) return;
+    if (habits.length >= 10) return;
 
-  useEffect(() => {
-    const handler = () => {
-      const saved = JSON.parse(localStorage.getItem("habits")) || [];
-      setHabits(saved);
+    const newHabit = {
+      id: Date.now(),
+      name: name.trim(),
+      category,
+      streak: 0,
+      longestStreak: 0,
+      completedDays: [],
+      lastCheck: null
     };
 
-    window.addEventListener("habitsUpdated", handler);
-    return () => window.removeEventListener("habitsUpdated", handler);
-  }, []);
-  
+    addHabit(newHabit);
+    setName("");
+    setCategory("important");
+    setShowNewHabit(false);
+  };
+
   return (
     <div className="flex justify-center mt-28">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {habits.map(habit => (
-        <HabitCard key={habit.id} habit={habit} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl">
+
+        {showNewHabit && (
+          <Onboarding
+            mode="new-habit"
+            onClose={() => setShowNewHabit(false)}
+          />
+        )}
+
+        {habits.map(habit => (
+          <HabitCard key={habit.id} habit={habit} />
         ))}
-        </div>
+      </div>
     </div>
   );
 }

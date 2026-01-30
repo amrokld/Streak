@@ -1,10 +1,21 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTheme } from "../Context/ThemeContext";
 
-export default function Onboarding() {
+/**
+ * mode:
+ * - "onboarding"  -> full screen first-time flow
+ * - "new-habit"   -> modal reuse from Home
+ *
+ * onClose:
+ * - required only for "new-habit" mode
+ */
+export default function Onboarding({
+  mode = "onboarding",
+  onClose
+}) {
   const [habit, setHabit] = useState("");
-  const navigate = useNavigate();
+  const [category, setCategory] = useState("important");
+
   const { isDark } = useTheme();
 
   const accent = isDark ? "#d4af37" : "#2563eb";
@@ -22,21 +33,41 @@ export default function Onboarding() {
     habits.push({
       id: Date.now(),
       name: habit.trim(),
+      category,
       streak: 0,
+      longestStreak: 0,
+      completedDays: [],
       lastCheck: null
     });
 
     localStorage.setItem("habits", JSON.stringify(habits));
 
-    navigate("/");
+    if (mode === "onboarding") {
+      window.location.href = "/";
+    } else {
+      onClose?.();
+    }
   };
+
+  const categories = ["important", "urgent", "optional"];
 
   return (
     <div
-      className="h-screen flex items-center justify-center"
-      style={{ backgroundColor: bg }}
+      className={`flex items-center justify-center
+        ${mode === "new-habit" ? "fixed inset-0 z-50" : "h-screen"}
+      `}
+      style={{
+        backgroundColor:
+          mode === "new-habit"
+            ? isDark
+              ? "rgba(0,0,0,0.6)"
+              : "rgba(0,0,0,0.3)"
+            : bg
+      }}
+      onClick={mode === "new-habit" ? onClose : undefined}
     >
       <div
+        onClick={(e) => e.stopPropagation()}
         className="flex flex-col items-center gap-6 px-10 py-12 rounded-3xl"
         style={{
           backgroundColor: cardBg,
@@ -73,7 +104,37 @@ export default function Onboarding() {
             value={habit}
             onChange={(e) => setHabit(e.target.value)}
             placeholder="Gym, Study, Reading..."
+            autoFocus
           />
+
+          {/* Categories */}
+          <div className="flex justify-center gap-2">
+            {categories.map((cat) => {
+              const active = category === cat;
+
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategory(cat)}
+                  className="px-3 py-1 rounded-full text-xs transition"
+                  style={{
+                    border: `1px solid ${
+                      isDark ? "#444" : "#cbd5e1"
+                    }`,
+                    backgroundColor: active
+                      ? isDark
+                        ? "#3a3a3a"
+                        : "#e5e7eb"
+                      : "transparent",
+                    color: active ? accent : subText
+                  }}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
 
           <button
             type="submit"
@@ -85,9 +146,18 @@ export default function Onboarding() {
               }`
             }}
           >
-            Start
+            {mode === "onboarding" ? "Start" : "Create"}
           </button>
         </form>
+
+        {mode === "new-habit" && (
+          <button
+            onClick={onClose}
+            className="text-sm opacity-50"
+          >
+            Cancel
+          </button>
+        )}
       </div>
     </div>
   );

@@ -10,24 +10,28 @@ import Statistics from "./pages/Statistics";
 import Calendar from "./pages/Calender";
 import Onboarding from "./pages/Onboarding";
 
+import { HabitProvider } from "./Context/HabitContext";
+
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
 
   return (
-    <BrowserRouter>
+    <HabitProvider>
+      <BrowserRouter>
         {showSplash && <Splash onFinish={() => setShowSplash(false)} />}
 
         {!showSplash && (
-          <AppLayout>
-            <Routes>
+          <Routes>
+            <Route element={<AppLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/streak/:habit" element={<StreakPage />} />
               <Route path="/statistics" element={<Statistics />} />
               <Route path="/calendar" element={<Calendar />} />
-            </Routes>
-          </AppLayout>
+            </Route>
+          </Routes>
         )}
-    </BrowserRouter>
+      </BrowserRouter>
+    </HabitProvider>
   );
 }
