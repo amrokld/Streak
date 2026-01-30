@@ -1,11 +1,13 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
+import { runDailyCheck } from "./reminder.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let win;
+let lastNotifiedDate = null;
 
 function createWindow() {
   win = new BrowserWindow({
@@ -24,4 +26,35 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow);
+function startDailyReminderLoop() {
+  setInterval(() => {
+    const today = new Date().toDateString();
+
+    // prevent multiple notifications per day
+    if (lastNotifiedDate === today) return;
+
+    const didNotify = runDailyCheck();
+
+    if (didNotify) {
+      lastNotifiedDate = today;
+    }
+  }, 1000 * 60 * 60); // every hour
+}
+
+app.whenReady().then(() => {
+  createWindow();
+  startDailyReminderLoop();
+});
+
+app.on("window-all-closed", () => {
+  // keep app alive on Windows/Linux
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("activate", () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
