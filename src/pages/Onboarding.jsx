@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { useTheme } from "../Context/ThemeContext";
+import { useHabits } from "../Context/HabitContext";
 
-/**
- * mode:
- * - "onboarding"  -> full screen first-time flow
- * - "new-habit"   -> modal reuse from Home
- *
- * onClose:
- * - required only for "new-habit" mode
- */
 export default function Onboarding({
   mode = "onboarding",
   onClose
@@ -17,6 +10,7 @@ export default function Onboarding({
   const [category, setCategory] = useState("important");
 
   const { isDark } = useTheme();
+  const { addHabit } = useHabits();
 
   const accent = isDark ? "#d4af37" : "#2563eb";
   const bg = isDark ? "#1f1f1f" : "#f2f4f8";
