@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../Context/ThemeContext";
 
 function getYesterday() {
   const d = new Date();
