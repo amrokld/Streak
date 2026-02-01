@@ -1,14 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../Context/ThemeContext";
-import { useHabits } from "../Context/HabitContext";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import ConfirmModal from "./ConfirmModel";
 
-export default function HabitCard({ habit, onDeleteRequest }) {
+export default function HabitCard({ habit, onDeleteRequest, onEditCategory, forceClose }) {
   const [flipped, setFlipped] = useState(false);
-  const { deleteHabit } = useHabits();
-  const { updateHabit } = useHabits();
   const navigate = useNavigate();
   const { isDark } = useTheme();
 
@@ -27,6 +23,12 @@ export default function HabitCard({ habit, onDeleteRequest }) {
       : habit.category === "urgent"
       ? isDark ? "#4a3a2a" : "#fde68a"
       : isDark ? "#2a3a3a" : "#d1fae5";
+
+  useEffect(() => {
+    if (forceClose) {
+      setFlipped(false);
+    }
+  }, [forceClose]);
 
   return (
     <motion.div
@@ -123,6 +125,7 @@ export default function HabitCard({ habit, onDeleteRequest }) {
             backgroundColor: isDark ? "#333" : "#e5e7eb",
             color: isDark ? "#fff" : "#1a1a1a"
           }}
+          onClick={() => onEditCategory(habit)}
         >
           Change category
         </button>

@@ -23,7 +23,7 @@ export function HabitProvider({ children }) {
       const updated = prev.map(h => 
         h.id === id ? { ...h, ...updates } : h
       );
-      localStorage.setItem.setItem("habits", JSON.stringify(updated));
+      localStorage.setItem("habits", JSON.stringify(updated));
       return updated;
     });
   };

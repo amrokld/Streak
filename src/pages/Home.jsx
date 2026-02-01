@@ -7,7 +7,7 @@ import Onboarding from "./Onboarding";
 import ConfirmModal from "../components/ConfirmModel";
 
 export default function Home() {
-  const { habits, deleteHabit } = useHabits();
+  const { habits, deleteHabit, updateHabit } = useHabits();
   const { showNewHabit, setShowNewHabit } = useOutletContext();
   const { theme } = useTheme();
 
@@ -16,6 +16,9 @@ export default function Home() {
   const subText = isDark ? "#aaa" : "#6b7280";
 
   const [habitToDelete, setHabitToDelete] = useState(null);
+  const [habitToEdit, setHabitToEdit ] = useState(null);
+
+  const forceCloseCards = Boolean(habitToDelete || habitToEdit);
 
   /* ---------- USERNAME ---------- */
   const [username, setUsername] = useState(
@@ -167,6 +170,8 @@ export default function Home() {
                 key={habit.id}
                 habit={habit}
                 onDeleteRequest={setHabitToDelete}
+                onEditCategory={setHabitToEdit}
+                forceClose={forceCloseCards}
               />
             ))}
         </div>
@@ -184,6 +189,63 @@ export default function Home() {
             setHabitToDelete(null);
           }}
         />
+      )}
+
+      {habitToEdit && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{
+            backgroundColor: isDark
+              ? "rgba(0,0,0,0.6)"
+              : "rgba(0,0,0,0.3)"
+          }}
+          onClick={() => setHabitToEdit(null)}
+        >
+          <div
+            className="rounded-3xl px-8 py-6 w-80"
+            style={{
+              backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
+              color: isDark ? "#ffffff" : "#1a1a1a"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-medium mb-4">
+              Change category
+            </h3>
+
+            <div className="flex flex-col gap-3">
+              {["important", "urgent", "optional"].map((cat) => (
+                <button
+                  key={cat}
+                  className="py-2 rounded-xl transition"
+                  style={{
+                    backgroundColor:
+                      habitToEdit.category === cat
+                        ? isDark ? "#3a3a3a" : "#e5e7eb"
+                        : isDark ? "#333" : "#f3f4f6",
+                    color:
+                      habitToEdit.category === cat
+                        ? accent
+                        : isDark ? "#fff" : "#1a1a1a"
+                  }}
+                  onClick={() => {
+                    updateHabit(habitToEdit.id, { category: cat });
+                    setHabitToEdit(null);
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <button
+              className="mt-4 text-sm opacity-60"
+              onClick={() => setHabitToEdit(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
