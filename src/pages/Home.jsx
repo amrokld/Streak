@@ -4,9 +4,10 @@ import { useHabits } from "../Context/HabitContext";
 import HabitCard from "../components/HabitCard";
 import { useTheme } from "../Context/ThemeContext";
 import Onboarding from "./Onboarding";
+import ConfirmModal from "../components/ConfirmModel";
 
 export default function Home() {
-  const { habits } = useHabits();
+  const { habits, deleteHabit } = useHabits();
   const { showNewHabit, setShowNewHabit } = useOutletContext();
   const { theme } = useTheme();
 
@@ -14,16 +15,16 @@ export default function Home() {
   const accent = isDark ? "#d4af37" : "#2563eb";
   const subText = isDark ? "#aaa" : "#6b7280";
 
-  /* ---------- USERNAME STATE (FIXED) ---------- */
+  const [habitToDelete, setHabitToDelete] = useState(null);
+
+  /* ---------- USERNAME ---------- */
   const [username, setUsername] = useState(
     localStorage.getItem("username") || ""
   );
   const [showNamePrompt, setShowNamePrompt] = useState(false);
 
   useEffect(() => {
-    if (!username) {
-      setShowNamePrompt(true);
-    }
+    if (!username) setShowNamePrompt(true);
   }, [username]);
 
   /* ---------- CATEGORY FILTER ---------- */
@@ -46,7 +47,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex justify-center mt-16 lg:mt-20 pb-20 lg:pb-28">
+    <div className="flex justify-center mt-16 pb-24">
       <div className="w-full max-w-6xl px-2">
 
         {/* ---------- NAME PROMPT ---------- */}
@@ -57,7 +58,6 @@ export default function Home() {
                 isDark ? "bg-black/60" : "bg-black/30"
               }`}
             />
-
             <div
               className="relative w-full max-w-sm rounded-3xl px-8 py-10 text-center"
               style={{
@@ -65,26 +65,22 @@ export default function Home() {
                 color: isDark ? "#ffffff" : "#1a1a1a"
               }}
             >
-              <h2
-                className="text-2xl font-bold mb-2"
-                style={{ color: accent }}
-              >
+              <h2 className="text-2xl font-bold mb-2" style={{ color: accent }}>
                 What should I call you?
               </h2>
 
               <p className="text-sm mb-6" style={{ color: subText }}>
-                Usernames will be asked once only!
+                This is asked once.
               </p>
 
               <input
-                id="username-input"
                 autoFocus
                 type="text"
                 placeholder="Your name"
-                className="w-full mb-6 px-4 py-2 rounded outline-none text-center"
+                className="w-full mb-6 px-4 py-2 rounded text-center outline-none"
                 style={{
                   backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb",
-                  color: isDark ? "#ffffff" : "#1a1a1a"
+                  color: isDark ? "#fff" : "#1a1a1a"
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.target.value.trim()) {
@@ -97,15 +93,14 @@ export default function Home() {
               />
 
               <button
-                className="w-full py-2 rounded-xl font-medium transition"
+                className="w-full py-2 rounded-xl font-medium"
                 style={{
                   color: accent,
                   border: `1px solid ${isDark ? "#444" : "#cbd5e1"}`
                 }}
                 onClick={() => {
-                  const input = document.getElementById("username-input");
-                  if (input?.value.trim()) {
-                    const value = input.value.trim();
+                  const value = document.querySelector("input")?.value.trim();
+                  if (value) {
                     localStorage.setItem("username", value);
                     setUsername(value);
                     setShowNamePrompt(false);
@@ -120,14 +115,10 @@ export default function Home() {
 
         {/* ---------- GREETING ---------- */}
         <div className="mb-6">
-          <h2
-            className="text-2xl font-medium"
-            style={{ color: isDark ? "#ffffff" : "#1a1a1a" }}
-          >
+          <h2 className="text-2xl font-medium">
             {getGreeting()}
-            {username ? `, ${username}!` : ""}
+            {username && `, ${username}!`}
           </h2>
-
           <p className="text-sm mt-1" style={{ color: subText }}>
             It's nice to see you again
           </p>
@@ -137,12 +128,11 @@ export default function Home() {
         <div className="flex gap-3 mb-6">
           {["important", "urgent", "optional"].map((cat) => {
             const active = activeCategories.includes(cat);
-
             return (
               <button
                 key={cat}
                 onClick={() => toggleCategory(cat)}
-                className="px-4 py-1 rounded-full text-sm transition whitespace-nowrap"
+                className="px-4 py-1 rounded-full text-sm"
                 style={{
                   border: `1px solid ${isDark ? "#444" : "#cbd5e1"}`,
                   backgroundColor: active
@@ -167,17 +157,34 @@ export default function Home() {
           )}
 
           {habits
-            .filter((habit) =>
+            .filter((h) =>
               activeCategories.length === 0
                 ? true
-                : activeCategories.includes(habit.category)
+                : activeCategories.includes(h.category)
             )
             .map((habit) => (
-              <HabitCard key={habit.id} habit={habit} />
+              <HabitCard
+                key={habit.id}
+                habit={habit}
+                onDeleteRequest={setHabitToDelete}
+              />
             ))}
         </div>
-
       </div>
+
+      {/* ---------- DELETE CONFIRM ---------- */}
+      {habitToDelete && (
+        <ConfirmModal
+          title="Delete habit?"
+          message={`"${habitToDelete.name}" will be permanently removed.`}
+          confirmText="Delete"
+          onCancel={() => setHabitToDelete(null)}
+          onConfirm={() => {
+            deleteHabit(habitToDelete.id);
+            setHabitToDelete(null);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -28,13 +28,17 @@ export function HabitProvider({ children }) {
     });
   };
 
+  const deleteHabit = (id) => {
+    setHabits(prev => prev.filter(h => h.id !== id));
+  };
+
 
   useEffect(() => {
     localStorage.setItem("habits", JSON.stringify(habits));
   }, [habits]);
 
   return (
-    <HabitContext.Provider value={{ habits, setHabits, addHabit, updateHabit }}>
+    <HabitContext.Provider value={{ habits, setHabits, addHabit, updateHabit, deleteHabit }}>
       {children}
     </HabitContext.Provider>
   );

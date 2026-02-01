@@ -3,9 +3,11 @@ import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import ConfirmModal from "./ConfirmModel";
 
-export default function HabitCard({ habit }) {
+export default function HabitCard({ habit, onDeleteRequest }) {
   const [flipped, setFlipped] = useState(false);
+  const { deleteHabit } = useHabits();
   const { updateHabit } = useHabits();
   const navigate = useNavigate();
   const { isDark } = useTheme();
@@ -131,10 +133,13 @@ export default function HabitCard({ habit }) {
             backgroundColor: isDark ? "#2a1f1f" : "#fee2e2",
             color: "#ef4444"
           }}
+          onClick={() => onDeleteRequest(habit)}
         >
           Delete habit
         </button>
       </div>
+
+
 
       <p className="text-xs opacity-40 text-center">
         Right-click to close

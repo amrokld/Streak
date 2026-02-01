@@ -95,7 +95,7 @@ export default function Header({ habits, onNewHabit }) {
       </nav>
 
       {/* Right actions */}
-      <div className="flex items-center gap-4 text-lg relative justify-self-end">
+      <div className="flex items-center gap-6 text-lg relative justify-self-end">
           <div className="relative">
             <button
               onClick={goToNewHabit}
