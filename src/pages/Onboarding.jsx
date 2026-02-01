@@ -21,10 +21,7 @@ export default function Onboarding({
   const startTracking = () => {
     if (!habit.trim()) return;
 
-    const habits =
-      JSON.parse(localStorage.getItem("habits")) || [];
-
-    habits.push({
+    addHabit({
       id: Date.now(),
       name: habit.trim(),
       category,
@@ -34,10 +31,8 @@ export default function Onboarding({
       lastCheck: null
     });
 
-    localStorage.setItem("habits", JSON.stringify(habits));
-
     if (mode === "onboarding") {
-      window.location.href = "/";
+      navigate("/");
     } else {
       onClose?.();
     }

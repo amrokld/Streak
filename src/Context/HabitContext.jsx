@@ -18,13 +18,23 @@ export function HabitProvider({ children }) {
     });
   };
 
+  const updateHabit = (id, updates) => {
+    setHabits(prev => {
+      const updated = prev.map(h => 
+        h.id === id ? { ...h, ...updates } : h
+      );
+      localStorage.setItem.setItem("habits", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
 
   useEffect(() => {
     localStorage.setItem("habits", JSON.stringify(habits));
   }, [habits]);
 
   return (
-    <HabitContext.Provider value={{ habits, setHabits, addHabit }}>
+    <HabitContext.Provider value={{ habits, setHabits, addHabit, updateHabit }}>
       {children}
     </HabitContext.Provider>
   );

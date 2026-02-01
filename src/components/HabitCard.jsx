@@ -1,7 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../Context/ThemeContext";
+import { useHabits } from "../Context/HabitContext";
+import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function HabitCard({ habit }) {
+  const [flipped, setFlipped] = useState(false);
+  const { updateHabit } = useHabits();
   const navigate = useNavigate();
   const { isDark } = useTheme();
 
@@ -22,62 +27,120 @@ export default function HabitCard({ habit }) {
       : isDark ? "#2a3a3a" : "#d1fae5";
 
   return (
-    <div
-      onClick={() => navigate(`/streak/${habit.name}`)}
-      className="w-64 h-44 rounded-3xl p-6 cursor-pointer transition-transform"
-      style={{
-        backgroundColor: cardBg,
-        boxShadow: shadow
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-2px)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
+    <motion.div
+      className="relative w-64 h-44 rounded-3xl"
+      animate={{ rotateY: flipped ? 180 : 0 }}
+      transition={{ duration: 0.45, ease: "easeInOut" }}
+      style={{ transformStyle: "preserve-3d" }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setFlipped(f => !f);
       }}
     >
-      {/* Text */}
-      <div>
-        <h3
-          className="text-xl font-medium"
-          style={{ color: isDark ? "#ffffff" : "#1a1a1a" }}
-        >
-          {habit.name}
-        </h3>
+      {/* ---------- FRONT ---------- */}
+      <div
+        className="absolute inset-0 p-6 rounded-3xl"
+        style={{
+          backfaceVisibility: "hidden",
+          backgroundColor: cardBg,
+          WebkitBackfaceVisibility: "hidden"
+        }}
+        onClick={() => !flipped && navigate(`/streak/${habit.name}`)}
+      >
+        <div>
+          <h3
+            className="text-xl font-medium"
+            style={{ color: isDark ? "#ffffff" : "#1a1a1a" }}
+          >
+            {habit.name}
+          </h3>
 
-        {/* Category label */}
-        {habit.category && (
-          <span
-            className="inline-block mt-1 px-2 py-[2px] rounded-full text-xs capitalize"
+          <p
+            className="text-sm mt-1"
+            style={{ color: subText }}
+          >
+            click for more details
+          </p>
+
+          <p
+            className="text-[11px] mt-1 opacity-40"
+            style={{ color: subText }}
+          >
+            Right-click for options
+          </p>
+
+          {habit.category && (
+            <span
+              className="inline-block mt-4 px-2 py-[2px] rounded-full text-xs capitalize"
+              style={{
+                backgroundColor: categoryBg,
+                color: accent
+              }}
+            >
+              {habit.category}
+            </span>
+          )}
+        </div>
+
+        <div className="flex justify-end mt-3">
+          <div
+            className="absolute bottom-4 right-4 w-12 h-12 rounded-2xl
+                      flex items-center justify-center font-bold text-lg"
             style={{
-              backgroundColor: categoryBg,
+              backgroundColor: badgeBg,
               color: accent
             }}
           >
-            {habit.category}
-          </span>
-        )}
-
-        <p
-          className="text-sm mt-1"
-          style={{ color: subText }}
-        >
-          click for more details
-        </p>
-      </div>
-
-      {/* Streak badge */}
-      <div className="flex justify-end mt-3">
-        <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg"
-          style={{
-            backgroundColor: badgeBg,
-            color: accent
-          }}
-        >
-          {habit.streak}
+            {habit.streak}
+          </div>
         </div>
       </div>
+
+      {/* ---------- BACK (EDIT CATEGORY) ---------- */}
+      <div
+        className="absolute inset-0 p-6 rounded-3xl"
+        style={{
+          backgroundColor: cardBg,
+          transform: "rotateY(180deg)",
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden"
+        }}
+      >
+
+      
+      
+      <div className="h-full flex flex-col justify-between">
+      <div className="text-xs opacity-40 tracking-wide">
+        OPTIONS
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <button
+          className="py-2 rounded-xl transition"
+          style={{
+            backgroundColor: isDark ? "#333" : "#e5e7eb",
+            color: isDark ? "#fff" : "#1a1a1a"
+          }}
+        >
+          Change category
+        </button>
+
+        <button
+          className="py-2 rounded-xl transition"
+          style={{
+            backgroundColor: isDark ? "#2a1f1f" : "#fee2e2",
+            color: "#ef4444"
+          }}
+        >
+          Delete habit
+        </button>
+      </div>
+
+      <p className="text-xs opacity-40 text-center">
+        Right-click to close
+      </p>
     </div>
+  </div>
+  </motion.div>
   );
 }
