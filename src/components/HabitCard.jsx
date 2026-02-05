@@ -33,22 +33,17 @@ export default function HabitCard({
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden"
-      style={{
-        backgroundColor: cardBg,
-        boxShadow: shadow,
-        height: "180px",
-        minHeight: "180px",
-      }}
+      className="relative rounded-3xl overflow-hidden min-h-[220px]"
+      style={{ backgroundColor: cardBg, boxShadow: shadow }}
     >
-      <div className="card-perspective">
+      <div className="card-perspective h-full">
         <motion.div
-          className="card-inner"
+          className="card-inner h-full"
           variants={cardFlip}
           animate={flipped ? "back" : "front"}
           initial={false}
         >
-          {/* ---------- FRONT ---------- */}
+          {/* FRONT */}
           <div
             className="card-face card-front p-6"
             onClick={() => !flipped && navigate(`/streak/${habit.name}`)}
@@ -75,10 +70,7 @@ export default function HabitCard({
             {habit.category && (
               <span
                 className="inline-block mt-4 px-2 py-[2px] rounded-full text-xs capitalize"
-                style={{
-                  backgroundColor: categoryBg,
-                  color: accent,
-                }}
+                style={{ backgroundColor: categoryBg, color: accent }}
               >
                 {habit.category}
               </span>
@@ -87,16 +79,13 @@ export default function HabitCard({
             <div
               className="absolute bottom-4 right-4 w-12 h-12 rounded-2xl
                          flex items-center justify-center font-bold text-lg"
-              style={{
-                backgroundColor: badgeBg,
-                color: accent,
-              }}
+              style={{ backgroundColor: badgeBg, color: accent }}
             >
               {habit.streak}
             </div>
           </div>
 
-          {/* ---------- BACK ---------- */}
+          {/* BACK */}
           <div
             className="card-face card-back p-6 flex flex-col justify-between"
             onContextMenu={(e) => {

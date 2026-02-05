@@ -1,14 +1,20 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useHabit } from "../Context/HabitContext";
 import { useTheme } from "../Context/ThemeContext";
 
-export default function StreakCounter() {
-  const [streak, setStreak] = useState(0);
+export default function StreakCounter({ habitId }) {
+  const { habits, registerToday } = useHabit();
   const { isDark } = useTheme();
 
   const handleDone = () => {
     setStreak(prev => prev + 1);
   };
+
+  const habit = habits.find((h) => h.id === habitId);
+  if (!habit) return null;
+
+  const today = new Date().toDateString();
+  const alreadyDone = habit.lastCompleted === today;
 
   return (
     <div 
@@ -36,6 +42,12 @@ export default function StreakCounter() {
         Done Today
       </motion.button>
 
+      <button
+        disabled={alreadyDone}
+        onClick={() => registerToday(habit.id)}
+      >
+        {alreadyDone ? "Done Today" : "Register today"}
+      </button>
     </div>
   );
 }
