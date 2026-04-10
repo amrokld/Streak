@@ -9,6 +9,7 @@ import StreakPage from "./pages/StreakPage";
 import Statistics from "./pages/Statistics";
 import Calendar from "./pages/Calender";
 import Onboarding from "./pages/Onboarding";
+import Settings from "./pages/Settings";
 
 import { HabitProvider } from "./Context/HabitContext";
 
@@ -28,6 +29,7 @@ export default function App() {
               <Route path="/streak/:habit" element={<StreakPage />} />
               <Route path="/statistics" element={<Statistics />} />
               <Route path="/calendar" element={<Calendar />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
           </Routes>
         )}

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { syncHabits } from "../services/habitSync";
 
 const HabitContext = createContext();
 
@@ -8,10 +9,12 @@ export function HabitProvider({ children }) {
     return stored ? JSON.parse(stored) : [];
   });
 
+  const MAX_HABITS = 12;
+
   // ---- ADD HABIT ----
   const addHabit = (habit) => {
     setHabits((prev) => {
-      if (prev.length >= 10) return prev;
+      if (prev.length >= MAX_HABITS) return prev;
       return [...prev, habit];
     });
   };
@@ -52,6 +55,7 @@ export function HabitProvider({ children }) {
   // ---- PERSIST TO LOCAL STORAGE (ONE PLACE ONLY) ----
   useEffect(() => {
     localStorage.setItem("habits", JSON.stringify(habits));
+    syncHabits();
   }, [habits]);
 
   return (

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { useTheme } from "../Context/ThemeContext";
+import { useHabits } from "../Context/HabitContext";
 
 function getYesterday() {
   const d = new Date();
@@ -14,7 +15,8 @@ export default function StreakPage() {
   const { isDark } = useTheme();
   const accent = isDark ? "#d4af37" : "#2563eb";
 
-  const { habit: habitName } = useParams();
+  const { habit: habitId } = useParams();
+  const { habits, updateHabit } = useHabits(); // ✅ fixed
   const [habit, setHabit] = useState(null);
   const [message, setMessage] = useState("");
   const [showReset, setShowReset] = useState(false);
@@ -22,8 +24,7 @@ export default function StreakPage() {
   const today = new Date().toDateString();
 
   useEffect(() => {
-    const rawHabits = JSON.parse(localStorage.getItem("habits")) || [];
-    const habits = rawHabits.map(h => ({
+    const rawHabits = habits.map(h => ({
       ...h,
       streak: h.streak ?? 0,
       longestStreak: h.longestStreak ?? h.streak ?? 0,
@@ -32,32 +33,25 @@ export default function StreakPage() {
     }));
 
     const yesterday = getYesterday();
-    let updated = false;
 
-    const updatedHabits = habits.map(h => {
-      if (h.name !== habitName) return h;
+    const updatedHabits = rawHabits.map(h => {
+      if (h.id !== Number(habitId)) return h;
 
       const completedDays = h.completedDays || [];
+      const today = new Date().toDateString();
 
-      if (
-        h.streak > 0 &&
-        !completedDays.includes(yesterday) &&
-        h.lastCheck !== yesterday
-      ) {
-        updated = true;
+      if (h.streak > 0 && h.lastCheck !== yesterday && h.lastCheck !== today) {
+        // ✅ only reset streak (no undefined vars)
+        updateHabit(Number(habitId), { streak: 0 });
         return { ...h, streak: 0 };
       }
 
       return h;
     });
 
-    if (updated) {
-      localStorage.setItem("habits", JSON.stringify(updatedHabits));
-    }
-
-    const found = updatedHabits.find(h => h.name === habitName);
+    const found = updatedHabits.find(h => h.id === Number(habitId));
     if (found) setHabit(found);
-  }, [habitName]);
+  }, [habitId, habits]);
 
   if (!habit) return null;
 
@@ -67,32 +61,22 @@ export default function StreakPage() {
       return;
     }
 
-    const habits = JSON.parse(localStorage.getItem("habits")) || [];
+    const prevDays = habit.completedDays || [];
+    if (prevDays.includes(today)) return;
 
-    const updatedHabits = habits.map(h => {
-      if (h.name !== habit.name) return h;
+    const newStreak = habit.streak + 1;
 
-      const prevDays = h.completedDays || [];
-      if (prevDays.includes(today)) return h;
-
-      const newStreak = h.streak + 1;
-
-      return {
-        ...h,
-        streak: newStreak,
-        longestStreak: Math.max(h.longestStreak || 0, newStreak),
-        lastCheck: today,
-        completedDays: [...prevDays, today]
-      };
+    updateHabit(Number(habitId), {
+      streak: newStreak,
+      longestStreak: Math.max(habit.longestStreak || 0, newStreak),
+      lastCheck: today,
+      completedDays: [...prevDays, today]
     });
 
-    localStorage.setItem("habits", JSON.stringify(updatedHabits));
-    setHabit(updatedHabits.find(h => h.name === habit.name));
 
     setMessage("");
-    window.dispatchEvent(new Event("habitsUpdated"));
 
-    if (habit.streak >= 0) {
+    if (newStreak >= 0) {
       confetti({
         particleCount: 50,
         spread: 70,
@@ -101,22 +85,12 @@ export default function StreakPage() {
     }
   };
 
-  // 🔴 manual reset
   const confirmReset = () => {
-    const habits = JSON.parse(localStorage.getItem("habits")) || [];
-
-    const updatedHabits = habits.map(h =>
-      h.name === habit.name
-        ? { ...h, 
-          streak: 0, 
-          lastCheck: null,
-          completedDays: []
-        }
-        : h
-    );
-
-    localStorage.setItem("habits", JSON.stringify(updatedHabits));
-    setHabit(updatedHabits.find(h => h.name === habit.name));
+    updateHabit(Number(habitId), {
+      streak: 0,
+      lastCheck: null,
+      completedDays: []
+    });
 
     setShowReset(false);
     setMessage("");
@@ -125,7 +99,6 @@ export default function StreakPage() {
   return (
     <div className="relative h-[80vh] flex flex-col items-center justify-center">
 
-      {/* CENTER CONTENT */}
       <div className="flex flex-col items-center">
         <motion.div
           onClick={handleClick}
@@ -143,7 +116,6 @@ export default function StreakPage() {
         )}
       </div>
 
-      {/* RESET BUTTON — FIXED AT BOTTOM */}
       <button
         onClick={() => setShowReset(true)}
         className="absolute bottom-6 text-xs opacity-50 hover:opacity-100"
@@ -151,17 +123,16 @@ export default function StreakPage() {
         Reset streak
       </button>
 
-      {/* CONFIRM MODAL */}
       {showReset && (
-        <div 
-        className="fixed inset-0 flex items-center justify-center z-50"
-        style={{
-          backgroundColor: isDark
-            ? "rgba(0,0,0,0.6)"
-            : "rgba(0,0,0,0.2)"
-        }}
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{
+            backgroundColor: isDark
+              ? "rgba(0,0,0,0.6)"
+              : "rgba(0,0,0,0.2)"
+          }}
         >
-          <div 
+          <div
             className="rounded-2xl px-6 py-4 w-[300px] text-center"
             style={{
               backgroundColor: isDark ? "#1f1f1f" : "#ffffff",

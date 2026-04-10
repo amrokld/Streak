@@ -9,7 +9,7 @@ export default function Header({ habits, onNewHabit }) {
 
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const [ limitHit, setLimitHit] = useState();
+  const [limitHit, setLimitHit] = useState();
 
   const accent = theme === "dark" ? "#d4af37" : "#2563eb";
   const muted = theme === "dark" ? "#bbb" : "#6b7280";
@@ -27,7 +27,7 @@ export default function Header({ habits, onNewHabit }) {
 
   const message = limitMessages[habits.length % limitMessages.length];
 
-  const goToNewHabit = () =>{
+  const goToNewHabit = () => {
     if (habits.length >= MAX_HABITS) {
       setLimitHit(true);
       return;
@@ -48,7 +48,7 @@ export default function Header({ habits, onNewHabit }) {
 
   return (
     <header className="w-full grid grid-cols-3 items-center px-10 py-6">
-      
+
       {/* Logo */}
       <motion.div
         whileTap={{ scale: 0.95 }}
@@ -89,48 +89,55 @@ export default function Header({ habits, onNewHabit }) {
           Calendar
         </span>
 
-        <span className="cursor-not-allowed opacity-50">
-          Info
+        <span
+          onClick={() => navigate("/settings")}
+          style={{ color: muted }}
+          className="cursor-pointer transition"
+          onMouseEnter={(e) => (e.target.style.color = accent)}
+          onMouseLeave={(e) => (e.target.style.color = muted)}
+        >
+          Settings
         </span>
+
       </nav>
 
       {/* Right actions */}
       <div className="flex items-center gap-6 text-lg relative justify-self-end">
-          <div className="relative">
-            <button
-              onClick={goToNewHabit}
-              style={{ color: accent }}
-            >
-              New Habit
-            </button>
-
-            {limitHit && (
-              <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 6 }}
-                className="absolute -bottom-10 right-0 px-3 py-1 rounded-full text-xs whitespace-nowrap"
-                style={{
-                  backgroundColor: theme === "dark" ? "#2a2a2a" : "#ffffff",
-                  color: muted,
-                  boxShadow:
-                    theme === "dark"
-                      ? "0 6px 20px rgba(0,0,0,0.4)"
-                      : "0 6px 20px rgba(0,0,0,0.12)"
-                }}
-              >
-                {message}
-              </motion.div>
-            )}
-          </div>
-
+        <div className="relative">
           <button
-            onClick={toggleTheme}
+            onClick={goToNewHabit}
             style={{ color: accent }}
           >
-            {theme === "dark" ? "Light" : "Dark"}
+            New Habit
           </button>
+
+          {limitHit && (
+            <motion.div
+              initial={{ opacity: 0, y: 6, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6 }}
+              className="absolute -bottom-10 right-0 px-3 py-1 rounded-full text-xs whitespace-nowrap"
+              style={{
+                backgroundColor: theme === "dark" ? "#2a2a2a" : "#ffffff",
+                color: muted,
+                boxShadow:
+                  theme === "dark"
+                    ? "0 6px 20px rgba(0,0,0,0.4)"
+                    : "0 6px 20px rgba(0,0,0,0.12)"
+              }}
+            >
+              {message}
+            </motion.div>
+          )}
         </div>
+
+        <button
+          onClick={toggleTheme}
+          style={{ color: accent }}
+        >
+          {theme === "dark" ? "Light" : "Dark"}
+        </button>
+      </div>
 
     </header>
   );

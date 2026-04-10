@@ -2,31 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-    background-color: #1f1f1f;
-}
 
 button.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .card-perspective {
   perspective: 1200px;
 }
 
-.card-inner {
-  position: relative;
-  transform-style: preserve-3d;
+html[data-theme='light'] {
+  color-scheme: light;
 }
 
-.card-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
+html[data-theme='dark'] {
+  color-scheme: dark;
 }
-
-.card-back {
-  transform: rotateY(180deg);
-}
-

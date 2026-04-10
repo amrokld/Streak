@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Onboarding({
   mode = "onboarding",
@@ -11,6 +12,8 @@ export default function Onboarding({
 
   const { isDark } = useTheme();
   const { addHabit } = useHabits();
+
+  const navigate = useNavigate();
 
   const accent = isDark ? "#d4af37" : "#2563eb";
   const bg = isDark ? "#1f1f1f" : "#f2f4f8";

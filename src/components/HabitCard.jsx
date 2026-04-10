@@ -24,8 +24,8 @@ export default function HabitCard({
     habit.category === "important"
       ? isDark ? "#3a3a3a" : "#e5e7eb"
       : habit.category === "urgent"
-      ? isDark ? "#4a3a2a" : "#fde68a"
-      : isDark ? "#2a3a3a" : "#d1fae5";
+        ? isDark ? "#4a3a2a" : "#fde68a"
+        : isDark ? "#2a3a3a" : "#d1fae5";
 
   useEffect(() => {
     if (forceClose) setFlipped(false);
@@ -33,20 +33,25 @@ export default function HabitCard({
 
   return (
     <div
-      className="relative rounded-3xl overflow-hidden min-h-[220px]"
-      style={{ backgroundColor: cardBg, boxShadow: shadow }}
+      className="relative rounded-3xl min-h-[220px]"
     >
-      <div className="card-perspective h-full">
+      <div className="card-perspective absolute inset-0">
         <motion.div
-          className="card-inner h-full"
+          className="absolute inset-0 rounded-3xl"
+          style={{ transformStyle: "preserve-3d" }}
           variants={cardFlip}
           animate={flipped ? "back" : "front"}
-          initial={false}
         >
+
           {/* FRONT */}
           <div
-            className="card-face card-front p-6"
-            onClick={() => !flipped && navigate(`/streak/${habit.name}`)}
+            className="absolute inset-0 p-6 rounded-3xl"
+            style={{
+              backfaceVisibility: "hidden",
+              backgroundColor: cardBg,
+              boxShadow: shadow
+            }}
+            onClick={() => !flipped && navigate(`/streak/${habit.id}`)}
             onContextMenu={(e) => {
               e.preventDefault();
               setFlipped(true);
@@ -87,7 +92,13 @@ export default function HabitCard({
 
           {/* BACK */}
           <div
-            className="card-face card-back p-6 flex flex-col justify-between"
+            className="absolute inset-0 p-6 rounded-3xl flex flex-col justify-between"
+            style={{
+              transform: "rotateY(180deg)",
+              backfaceVisibility: "hidden",
+              backgroundColor: cardBg,
+              boxShadow: shadow
+            }}
             onContextMenu={(e) => {
               e.preventDefault();
               setFlipped(false);
