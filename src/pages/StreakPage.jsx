@@ -5,6 +5,8 @@ import confetti from "canvas-confetti";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
 
+import ConfirmModal from "../components/ConfirmModel";
+
 function getYesterday() {
   const d = new Date();
   d.setDate(d.getDate() - 1);
@@ -124,43 +126,13 @@ export default function StreakPage() {
       </button>
 
       {showReset && (
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50"
-          style={{
-            backgroundColor: isDark
-              ? "rgba(0,0,0,0.6)"
-              : "rgba(0,0,0,0.2)"
-          }}
-        >
-          <div
-            className="rounded-2xl px-6 py-4 w-[300px] text-center"
-            style={{
-              backgroundColor: isDark ? "#1f1f1f" : "#ffffff",
-              color: isDark ? "#e5e7eb" : "#111827",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.2)"
-            }}
-          >
-            <p className="mb-4 text-sm">
-              This will reset your current streak to 0.
-            </p>
-
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={() => setShowReset(false)}
-                className="text-sm opacity-60"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={confirmReset}
-                className="text-sm text-red-500"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          title="Reset Streak?"
+          message="This is will reset your streak back to ZERO"
+          confirmText="Reset"
+          onCancel={() => setShowReset(false)}
+          onConfirm={confirmReset}
+        />
       )}
     </div>
   );

@@ -1,13 +1,17 @@
 import { useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import Header from "../components/Header";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
-import { Outlet } from "react-router-dom";
+
 
 export default function AppLayout() {
   const { isDark } = useTheme();
   const { habits } = useHabits();
   const [showNewHabit, setShowNewHabit] = useState(false);
+
+  const location = useLocation();
 
   return (
     <div
@@ -23,8 +27,17 @@ export default function AppLayout() {
       />
 
       <main className="px-6">
-        <Outlet context={{ showNewHabit, setShowNewHabit }} />
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Outlet context={{ showNewHabit, setShowNewHabit }} />
+        </motion.div>
       </main>
+
+
     </div>
   );
 }

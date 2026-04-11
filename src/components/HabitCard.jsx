@@ -82,8 +82,8 @@ export default function HabitCard({
             )}
 
             <div
-              className="absolute bottom-4 right-4 w-12 h-12 rounded-2xl
-                         flex items-center justify-center font-bold text-lg"
+              className="absolute bottom-6 right-6 w-16 h-16 rounded-2xl
+                         flex items-center justify-center font-bold text-2xl"
               style={{ backgroundColor: badgeBg, color: accent }}
             >
               {habit.streak}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { useHabits } from "../Context/HabitContext";
 import HabitCard from "../components/HabitCard";
@@ -16,7 +17,7 @@ export default function Home() {
   const subText = isDark ? "#aaa" : "#6b7280";
 
   const [habitToDelete, setHabitToDelete] = useState(null);
-  const [habitToEdit, setHabitToEdit ] = useState(null);
+  const [habitToEdit, setHabitToEdit] = useState(null);
 
   const forceCloseCards = Boolean(habitToDelete || habitToEdit);
 
@@ -57,9 +58,8 @@ export default function Home() {
         {showNamePrompt && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
-              className={`absolute inset-0 ${
-                isDark ? "bg-black/60" : "bg-black/30"
-              }`}
+              className={`absolute inset-0 ${isDark ? "bg-black/60" : "bg-black/30"
+                }`}
             />
             <div
               className="relative w-full max-w-sm rounded-3xl px-8 py-10 text-center"
@@ -117,19 +117,34 @@ export default function Home() {
         )}
 
         {/* ---------- GREETING ---------- */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-medium">
+        <motion.div
+          layout
+          className={
+            habits.length === 0
+              ? "flex flex-col items-center justify-center mt-32 mb-16"
+              : "mb-6 flex flex-col items-start"
+          }
+        >
+          <motion.h2
+            layout
+            className={habits.length === 0 ? "text-4xl md:text-5xl font-bold text-center" : "text-2xl font-medium"}
+          >
             {getGreeting()}
             {username && `, ${username}!`}
-          </h2>
-          <p className="text-sm mt-1" style={{ color: subText }}>
+          </motion.h2>
+          <motion.p
+            layout
+            className={habits.length === 0 ? "text-lg text-center mt-3" : "text-sm mt-1"}
+            style={{ color: subText }}
+          >
             It's nice to see you again
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
+
 
         {/* ---------- CATEGORY FILTERS ---------- */}
         <div className="flex gap-3 mb-6">
-          {["important", "urgent", "optional"].map((cat) => {
+          {["important", "urgent", "optional"].filter((cat) => habits.some((h) => h.category === cat)).map((cat) => {
             const active = activeCategories.includes(cat);
             return (
               <button

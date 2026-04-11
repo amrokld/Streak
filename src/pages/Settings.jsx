@@ -11,6 +11,10 @@ export default function Settings() {
     const [username, setUsername] = useState(localStorage.getItem("username") || "");
     const [reminders, setReminders] = useState(localStorage.getItem("reminders") === "true");
     const [toast, setToast] = useState("");
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [feedbackText, setFeedbackText] = useState("");
+    const [isSending, setIsSending] = useState(false);
+
 
     // UI Tokens
     const accent = isDark ? "#d4af37" : "#2563eb";
@@ -84,6 +88,42 @@ export default function Settings() {
             setTimeout(() => window.location.reload(), 1500);
         }
     };
+
+    const handleFeedbackSubmit = async () => {
+        if (!feedbackText.trim()) return;
+        setIsSending(true);
+
+        try {
+            // Local Storage Backup
+            const existing = JSON.parse(localStorage.getItem("streak_feedback") || "[]");
+            localStorage.setItem("streak_feedback", JSON.stringify([...existing, { text: feedbackText, date: new Date().toISOString() }]));
+            console.log("Feedback saved locally:", feedbackText);
+
+            // --- EMAILJS REST API INTEGRATION ---
+            // To activate live email, insert your keys below! (Uses native fetch, no external libraries)
+
+            await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    service_id: "service_dl3aqxe",
+                    template_id: "template_6zgr0kh",
+                    user_id: "cZICxAp2fpTvA2sVS",
+                    template_params: { message: feedbackText }
+                })
+            });
+
+
+            showToast("Thanks for your feedback!");
+            setFeedbackText("");
+            setShowFeedback(false);
+        } catch (err) {
+            showToast("Error sending feedback");
+        } finally {
+            setIsSending(false);
+        }
+    };
+
 
 
     return (
@@ -236,24 +276,105 @@ export default function Settings() {
 
                         </div>
                     </section>
+
+                    {/* 5. INFO SECTION */}
+                    <section>
+                        <h3 className="text-sm font-semibold tracking-wider mb-4 uppercase" style={{ color: subText }}>
+                            Info
+                        </h3>
+                        <div className="p-6 rounded-3xl flex flex-col gap-5" style={{ backgroundColor: cardBg, border: `1px solid ${borderColor}` }}>
+
+                            <div className="flex flex-col gap-1">
+                                <div className="flex items-end gap-2">
+                                    <h4 className="text-xl font-bold tracking-widest" style={{ color: accent }}>STREAK</h4>
+                                    <span className="text-xs font-medium mb-1" style={{ color: subText }}>v1.0</span>
+                                </div>
+                                <p className="text-sm">A simple habit tracking app focused on consistency.</p>
+                                <p className="text-xs mt-1" style={{ color: subText }}>Privacy note: Your data is stored locally on your device.</p>
+                            </div>
+
+                            <div className="w-full h-px" style={{ backgroundColor: borderColor }} />
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setShowFeedback(!showFeedback)}
+                                    className="text-sm font-medium transition hover:opacity-70"
+                                    style={{ color: accent }}
+                                >
+                                    Report Bug / Feedback
+                                </button>
+                                <button
+                                    onClick={() => window.location.href = "mailto:streakapp.feedback@gmail.com"}
+                                    className="text-sm font-medium transition hover:opacity-70"
+                                    style={{ color: accent }}
+                                >
+                                    Contact
+                                </button>
+
+                            </div>
+
+                            <AnimatePresence>
+                                {showFeedback && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="flex flex-col gap-3 pt-2">
+                                            <textarea
+                                                value={feedbackText}
+                                                onChange={(e) => setFeedbackText(e.target.value)}
+                                                placeholder="Write your feedback..."
+                                                className="w-full h-24 p-3 rounded-xl outline-none text-sm resize-none"
+                                                style={{
+                                                    backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6",
+                                                    color: isDark ? "#fff" : "#1a1a1a",
+                                                    border: `1px solid ${borderColor}`
+                                                }}
+                                            />
+                                            <div className="flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => setShowFeedback(false)}
+                                                    className="px-4 py-2 rounded-xl text-sm transition hover:bg-gray-500/10"
+                                                    style={{ color: subText }}
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    onClick={handleFeedbackSubmit}
+                                                    disabled={!feedbackText.trim() || isSending}
+                                                    className="px-4 py-2 rounded-xl text-sm font-medium transition active:scale-95 disabled:opacity-50"
+                                                    style={{ backgroundColor: accent, color: isDark ? "#000" : "#fff" }}
+                                                >
+                                                    {isSending ? "Sending..." : "Submit"}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </section>
                 </div>
             </div>
 
-
             {/* TOAST SYSTEM (BONUS) */}
-            <AnimatePresence>
-                {toast && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-xl text-sm font-medium z-50 whitespace-nowrap"
-                        style={{ backgroundColor: accent, color: isDark ? "#000" : "#fff" }}
-                    >
-                        {toast}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <div className="fixed bottom-10 inset-x-0 flex justify-center z-50 pointer-events-none">
+                <AnimatePresence>
+                    {toast && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            className="px-6 py-3 rounded-full shadow-xl text-sm font-medium whitespace-nowrap pointer-events-auto"
+                            style={{ backgroundColor: accent, color: isDark ? "#000" : "#fff" }}
+                        >
+                            {toast}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 }
