@@ -49,26 +49,28 @@ export default function Onboarding({
         ${mode === "new-habit" ? "fixed inset-0 z-50" : "h-screen"}
       `}
       style={{
-        backgroundColor:
-          mode === "new-habit"
-            ? isDark
-              ? "rgba(0,0,0,0.6)"
-              : "rgba(0,0,0,0.3)"
-            : bg
+        backgroundColor: mode === "new-habit" ? "transparent" : bg
       }}
+
+
       onClick={mode === "new-habit" ? onClose : undefined}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex flex-col items-center gap-6 px-10 py-12 rounded-3xl"
+        className="flex flex-col items-center gap-6 px-10 py-12 rounded-3xl border"
         style={{
           backgroundColor: cardBg,
           color: text,
+          /* Highlights the crisp edge of the card */
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+
+          /* The magic: Center-spread accent glow + deep floating shadow */
           boxShadow: isDark
-            ? "none"
-            : "0 20px 40px rgba(0,0,0,0.08)"
+            ? `0 0 50px ${accent}20, 0 20px 40px rgba(0, 0, 0, 0.8)`
+            : `0 0 40px ${accent}30, 0 20px 40px rgba(0, 0, 0, 0.15)`
         }}
       >
+
         <h1
           className="text-3xl font-bold"
           style={{ color: accent }}

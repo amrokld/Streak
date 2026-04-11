@@ -76,7 +76,7 @@ export default function Calendar() {
           <select
             value={selectedHabitId}
             onChange={(e) => setSelectedHabitId(e.target.value)}
-            className="px-4 py-2 rounded-lg text-sm font-medium outline-none cursor-pointer border transition-colors hover:opacity-80"
+            className="px-4 py-2 rounded-lg text-sm font-medium outline-none cursor-pointer border transition-colors hover:opacity-80 appearance-none text-center"
             style={{
               backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
               color: isDark ? "#ffffff" : "#1a1a1a",

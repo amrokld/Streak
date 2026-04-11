@@ -34,8 +34,14 @@ export default function Header({ habits, onNewHabit }) {
       return;
     }
     setLimitHit(false);
+
+    if (location.pathname !== "/") {
+      navigate("/");
+    }
+
     onNewHabit?.();
   };
+
 
   useEffect(() => {
     if (!limitHit) return;
@@ -47,7 +53,6 @@ export default function Header({ habits, onNewHabit }) {
     return () => clearTimeout(t);
   }, [limitHit]);
 
-  // Clean navigation links using your exact labels
   const navLinks = [
     { label: "Statistics", path: "/statistics" },
     { label: "Calendar", path: "/calendar" },

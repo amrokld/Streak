@@ -34,7 +34,7 @@ export default function Statistics() {
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() - (6 - i));
-    return d.toISOString().split("T")[0]; // Generates YYYY-MM-DD
+    return d.toDateString();
   });
 
   const weeklyActivity = last7Days.map((dateStr) => {
