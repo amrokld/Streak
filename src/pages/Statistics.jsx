@@ -100,8 +100,16 @@ export default function Statistics() {
         <h1 className="text-3xl font-bold" style={{ color: accent }}>
           Statistics
         </h1>
-        <div className="text-xs font-medium px-3 py-1 rounded-full opacity-80 border" style={{ borderColor: isDark ? "#444" : "#e5e7eb" }}>
-          Today: {isTodayCompleted ? "Completed ✅" : "Not completed ❌"}
+        <div
+          className="flex items-center gap-2 text-xs font-bold px-4 py-1.5 rounded-full border transition-all duration-300 shadow-sm"
+          style={{
+            backgroundColor: isTodayCompleted ? (isDark ? "rgba(34,197,94,0.05)" : "rgba(34,197,94,0.05)") : (isDark ? "rgba(239,68,68,0.05)" : "rgba(239,68,68,0.05)"),
+            borderColor: isTodayCompleted ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
+            color: isTodayCompleted ? "#22c55e" : "#ef4444"
+          }}
+        >
+          <div className={`w-1.5 h-1.5 rounded-full ${isTodayCompleted ? "bg-[#22c55e]" : "bg-[#ef4444]"} animate-pulse`} style={{ boxShadow: `0 0 8px ${isTodayCompleted ? "#22c55e" : "#ef4444"}` }} />
+          <span>Today: {isTodayCompleted ? "Completed" : "Not completed"}</span>
         </div>
       </div>
 

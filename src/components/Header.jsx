@@ -56,7 +56,7 @@ export default function Header({ habits, onNewHabit }) {
   const navLinks = [
     { label: "Statistics", path: "/statistics" },
     { label: "Calendar", path: "/calendar" },
-    { label: "Settings", path: "/settings" }
+    { label: "Tasks", path: "/tasks" }
   ];
 
   return (
@@ -65,11 +65,24 @@ export default function Header({ habits, onNewHabit }) {
       {/* Logo */}
       <motion.div
         whileTap={{ scale: 0.95 }}
+        whileHover={{ y: -3 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
         onClick={() => navigate("/")}
-        className="cursor-pointer select-none"
+        className="cursor-pointer select-none group relative"
       >
         <span
-          className="text-4xl md:text-5xl font-bold"
+          className="text-4xl md:text-5xl font-bold absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{
+            fontFamily: "Space Grotesk",
+            letterSpacing: "0.06em",
+            color: accent,
+            textShadow: `0 0 10px ${accent}bb`
+          }}
+        >
+          STREAK
+        </span>
+        <span
+          className="text-4xl md:text-5xl font-bold relative z-10 transition-opacity duration-300"
           style={{
             fontFamily: "Space Grotesk",
             letterSpacing: "0.06em",
@@ -110,7 +123,8 @@ export default function Header({ habits, onNewHabit }) {
       </nav>
 
       {/* Right actions */}
-      <div className="flex items-center gap-6 text-lg relative justify-self-end">
+      <div className="flex items-center gap-8 text-lg relative justify-self-end">
+        
         <div className="relative">
           <button
             onClick={goToNewHabit}
@@ -138,8 +152,21 @@ export default function Header({ habits, onNewHabit }) {
             </motion.div>
           )}
         </div>
-      </div>
 
+        {/* Settings Far Right */}
+        <button
+          onClick={() => navigate("/settings")}
+          className="transition relative"
+          style={{ color: location.pathname === "/settings" ? accent : muted }}
+          onMouseEnter={(e) => { if (location.pathname !== "/settings") e.currentTarget.style.color = accent; }}
+          onMouseLeave={(e) => { 
+            if (location.pathname !== "/settings") e.currentTarget.style.color = muted; 
+          }}
+        >
+          Settings
+        </button>
+
+      </div>
     </header>
   );
 }

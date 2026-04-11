@@ -22,6 +22,70 @@ export default function Settings() {
     const cardBg = isDark ? "#2a2a2a" : "#ffffff";
     const borderColor = isDark ? "#3f3f3f" : "#e5e7eb";
 
+    const AliveBtn = ({ onClick, children, color, outline, className = "", disabled }) => {
+        const c = color || accent;
+        return (
+            <button
+                onClick={onClick}
+                disabled={disabled}
+                className={`group px-4 py-2 rounded-xl text-sm font-medium overflow-hidden transition-all duration-200 active:scale-95 relative ${className} ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+                style={{
+                    backgroundColor: outline ? "transparent" : c,
+                    color: outline ? c : (isDark ? "#000" : "#fff"),
+                    border: `1px solid ${outline ? c : "transparent"}`
+                }}
+            >
+                {/* Simple hover background fill overlay */}
+                {outline && (
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: c }} />
+                )}
+                {!outline && (
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-15 transition-opacity duration-200 z-0 pointer-events-none bg-black dark:bg-white" />
+                )}
+
+                {/* Duplicated text allows perfect, snappy text color inversion using opacity without relying on dynamic arbitrary tailwind */}
+                {outline && (
+                    <span 
+                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
+                      style={{ color: isDark ? "#000" : "#fff" }}
+                    >
+                        {children}
+                    </span>
+                )}
+                
+                <span className={`relative z-10 block ${outline ? "group-hover:opacity-0 transition-opacity duration-200" : ""}`}>
+                    {children}
+                </span>
+            </button>
+        );
+    };
+
+    const AliveLabel = ({ onChange, children, color, className = "" }) => {
+        const c = color || accent;
+        return (
+            <label
+                className={`group px-4 py-2 rounded-xl text-sm font-medium overflow-hidden transition-all duration-200 active:scale-95 relative cursor-pointer inline-flex items-center justify-center ${className}`}
+                style={{
+                    backgroundColor: "transparent",
+                    color: c,
+                    border: `1px solid ${c}`
+                }}
+            >
+                <input type="file" accept=".json" className="hidden" onChange={onChange} />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: c }} />
+                <span 
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
+                  style={{ color: isDark ? "#000" : "#fff" }}
+                >
+                    {children}
+                </span>
+                <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
+                    {children}
+                </span>
+            </label>
+        );
+    };
+
     // Actions
     const showToast = (msg) => {
         setToast(msg);
@@ -153,13 +217,9 @@ export default function Settings() {
                                         className="px-4 py-2 rounded-xl outline-none text-sm w-32 focus:w-48 transition-all"
                                         style={{ backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6", color: isDark ? "#fff" : "#1a1a1a" }}
                                     />
-                                    <button
-                                        onClick={saveGeneral}
-                                        className="px-4 py-2 rounded-xl text-sm font-medium transition"
-                                        style={{ backgroundColor: accent, color: isDark ? "#000" : "#fff" }}
-                                    >
+                                    <AliveBtn onClick={saveGeneral}>
                                         Save
-                                    </button>
+                                    </AliveBtn>
                                 </div>
                             </div>
 
@@ -168,13 +228,9 @@ export default function Settings() {
                                     <p className="font-medium">Theme</p>
                                     <p className="text-xs mt-1" style={{ color: subText }}>Toggle application theme</p>
                                 </div>
-                                <button
-                                    onClick={toggleTheme}
-                                    className="px-4 py-2 rounded-xl text-sm font-medium transition"
-                                    style={{ border: `1px solid ${borderColor}`, color: accent }}
-                                >
+                                <AliveBtn onClick={toggleTheme} outline>
                                     {isDark ? "Light Mode" : "Dark Mode"}
-                                </button>
+                                </AliveBtn>
                             </div>
                         </div>
                     </section>
@@ -222,9 +278,9 @@ export default function Settings() {
                                     <p className="font-medium">Export Backup</p>
                                     <p className="text-xs mt-1" style={{ color: subText }}>Download your habits as a JSON file</p>
                                 </div>
-                                <button onClick={handleExport} className="px-4 py-2 rounded-xl text-sm font-medium transition" style={{ backgroundColor: isDark ? "#333" : "#f3f4f6", color: isDark ? "#fff" : "#1a1a1a" }}>
+                                <AliveBtn onClick={handleExport} color={isDark ? "#fff" : "#1a1a1a"}>
                                     Download
-                                </button>
+                                </AliveBtn>
                             </div>
 
                             <div className="flex items-center justify-between">
@@ -232,10 +288,9 @@ export default function Settings() {
                                     <p className="font-medium">Import Backup</p>
                                     <p className="text-xs mt-1" style={{ color: subText }}>Restore habits from a previous JSON</p>
                                 </div>
-                                <label className="px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer" style={{ backgroundColor: isDark ? "#333" : "#f3f4f6", color: isDark ? "#fff" : "#1a1a1a" }}>
+                                <AliveLabel onChange={handleImport} color={isDark ? "#fff" : "#1a1a1a"}>
                                     Upload
-                                    <input type="file" accept=".json" className="hidden" onChange={handleImport} />
-                                </label>
+                                </AliveLabel>
                             </div>
 
                             <div className="flex items-center justify-between border-t pt-6 mt-2" style={{ borderColor: borderColor }}>
@@ -243,12 +298,9 @@ export default function Settings() {
                                     <p className="font-medium text-red-500">Reset Habits</p>
                                     <p className="text-xs mt-1" style={{ color: subText }}>Deletes all current habits permanently</p>
                                 </div>
-                                <button
-                                    onClick={resetHabits}
-                                    className="px-4 py-2 rounded-xl text-sm font-medium transition border border-red-500 text-red-500 hover:bg-red-500 hover:text-black"
-                                >
+                                <AliveBtn onClick={resetHabits} color="#ef4444" outline>
                                     Reset Habits
-                                </button>
+                                </AliveBtn>
                             </div>
 
                         </div>
@@ -266,12 +318,9 @@ export default function Settings() {
                                     <p className="font-medium text-red-600 dark:text-red-400">Factory Reset</p>
                                     <p className="text-xs mt-1 opacity-80 text-red-600 dark:text-red-400">Wipes all habits, settings, themes, and your username.</p>
                                 </div>
-                                <button
-                                    onClick={resetEverything}
-                                    className="px-4 py-2 rounded-xl text-sm font-medium text-white transition bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
-                                >
+                                <AliveBtn onClick={resetEverything} color="#ef4444">
                                     Wipe Everything
-                                </button>
+                                </AliveBtn>
                             </div>
 
                         </div>
@@ -296,20 +345,12 @@ export default function Settings() {
                             <div className="w-full h-px" style={{ backgroundColor: borderColor }} />
 
                             <div className="flex gap-4">
-                                <button
-                                    onClick={() => setShowFeedback(!showFeedback)}
-                                    className="text-sm font-medium transition hover:opacity-70"
-                                    style={{ color: accent }}
-                                >
+                                <AliveBtn onClick={() => setShowFeedback(!showFeedback)} outline>
                                     Report Bug / Feedback
-                                </button>
-                                <button
-                                    onClick={() => window.location.href = "mailto:streakapp.feedback@gmail.com"}
-                                    className="text-sm font-medium transition hover:opacity-70"
-                                    style={{ color: accent }}
-                                >
+                                </AliveBtn>
+                                <AliveBtn onClick={() => window.location.href = "mailto:streakapp.feedback@gmail.com"} outline>
                                     Contact
-                                </button>
+                                </AliveBtn>
 
                             </div>
 
@@ -334,21 +375,19 @@ export default function Settings() {
                                                 }}
                                             />
                                             <div className="flex justify-end gap-2">
-                                                <button
-                                                    onClick={() => setShowFeedback(false)}
-                                                    className="px-4 py-2 rounded-xl text-sm transition hover:bg-gray-500/10"
-                                                    style={{ color: subText }}
+                                                <AliveBtn 
+                                                    onClick={() => setShowFeedback(false)} 
+                                                    color={subText}
+                                                    outline
                                                 >
                                                     Cancel
-                                                </button>
-                                                <button
+                                                </AliveBtn>
+                                                <AliveBtn
                                                     onClick={handleFeedbackSubmit}
                                                     disabled={!feedbackText.trim() || isSending}
-                                                    className="px-4 py-2 rounded-xl text-sm font-medium transition active:scale-95 disabled:opacity-50"
-                                                    style={{ backgroundColor: accent, color: isDark ? "#000" : "#fff" }}
                                                 >
                                                     {isSending ? "Sending..." : "Submit"}
-                                                </button>
+                                                </AliveBtn>
                                             </div>
                                         </div>
                                     </motion.div>

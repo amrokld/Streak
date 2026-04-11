@@ -1,5 +1,7 @@
 import { useTheme } from "../Context/ThemeContext";
-import { useState } from "react"; // Added useState!
+import { useState, useRef, useEffect } from "react"; 
+import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 export default function Calendar() {
   const { isDark } = useTheme();
@@ -12,6 +14,19 @@ export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedHabitId, setSelectedHabitId] = useState("all");
   const [selectedDay, setSelectedDay] = useState(null);
+
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const filterRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (filterRef.current && !filterRef.current.contains(e.target)) {
+        setShowFilterMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Derived Month State
   const year = currentDate.getFullYear();
@@ -73,21 +88,61 @@ export default function Calendar() {
         </h1>
 
         {habits.length > 0 && (
-          <select
-            value={selectedHabitId}
-            onChange={(e) => setSelectedHabitId(e.target.value)}
-            className="px-4 py-2 rounded-lg text-sm font-medium outline-none cursor-pointer border transition-colors hover:opacity-80 appearance-none text-center"
-            style={{
-              backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
-              color: isDark ? "#ffffff" : "#1a1a1a",
-              borderColor: isDark ? "#3f3f3f" : "#e5e7eb"
-            }}
-          >
-            <option value="all">All Habits</option>
-            {habits.map(h => (
-              <option key={h.id} value={h.id}>{h.name}</option>
-            ))}
-          </select>
+          <div className="relative" ref={filterRef}>
+            <div 
+              onClick={() => setShowFilterMenu(!showFilterMenu)}
+              className="flex items-center justify-between gap-3 px-4 py-2 rounded-xl text-sm font-medium outline-none cursor-pointer border transition-colors select-none"
+              style={{
+                backgroundColor: showFilterMenu ? (isDark ? "#444" : "#e2e8f0") : (isDark ? "#2a2a2a" : "#ffffff"),
+                borderColor: showFilterMenu ? accent : (isDark ? "#3f3f3f" : "#e5e7eb"),
+                color: isDark ? "#ffffff" : "#1a1a1a",
+              }}
+            >
+              <span className="truncate max-w-[140px]">
+                {selectedHabitId === "all" ? "All Habits" : habits.find(h => String(h.id) === String(selectedHabitId))?.name || "Unknown"}
+              </span>
+              <motion.svg animate={{ rotate: showFilterMenu ? 180 : 0 }} className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+              </motion.svg>
+            </div>
+
+            <AnimatePresence>
+              {showFilterMenu && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-12 right-0 w-56 p-2 rounded-3xl border shadow-2xl z-50 overflow-hidden flex flex-col gap-1 max-h-64 overflow-y-auto"
+                  style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}
+                >
+                  <div 
+                    onClick={() => { setSelectedHabitId("all"); setShowFilterMenu(false); }}
+                    className="px-4 py-2 text-sm font-bold cursor-pointer transition rounded-xl hover:brightness-110"
+                    style={{ 
+                      backgroundColor: selectedHabitId === "all" ? (isDark ? "#333" : "#f1f5f9") : "transparent",
+                      color: selectedHabitId === "all" ? accent : (isDark ? "#aaa" : "#6b7280")
+                    }}
+                  >
+                    All Habits
+                  </div>
+                  {habits.map(h => (
+                    <div 
+                      key={h.id}
+                      onClick={() => { setSelectedHabitId(String(h.id)); setShowFilterMenu(false); }}
+                      className="px-4 py-2 text-sm font-medium cursor-pointer transition rounded-xl hover:brightness-110 truncate"
+                      style={{ 
+                        backgroundColor: String(selectedHabitId) === String(h.id) ? (isDark ? "#333" : "#f1f5f9") : "transparent",
+                        color: String(selectedHabitId) === String(h.id) ? accent : (isDark ? "#fff" : "#000")
+                      }}
+                    >
+                      {h.name}
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         )}
       </div>
 
@@ -178,17 +233,21 @@ export default function Calendar() {
       </div>
 
       {/* 3. DAY DETAILS MODAL OVERLAY */}
-      {selectedDay && (
+      {selectedDay && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md animate-fade-in transition-all duration-300"
+          style={{ backgroundColor: isDark ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.1)" }}
           onClick={() => setSelectedDay(null)}
         >
           <div
-            className="rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5 shadow-2xl transition-all"
+            className="rounded-3xl w-full max-w-sm px-8 py-8 flex flex-col gap-5 border transition-all"
             style={{
               backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
               color: isDark ? "#ffffff" : "#1a1a1a",
-              border: `1px solid ${isDark ? "#3f3f3f" : "#e5e7eb"}`
+              borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+              boxShadow: isDark
+                ? `0 0 50px ${accent}20, 0 20px 40px rgba(0, 0, 0, 0.8)`
+                : `0 0 40px ${accent}30, 0 20px 40px rgba(0, 0, 0, 0.15)`
             }}
             onClick={e => e.stopPropagation()} /* Prevents closing when clicking inside the window */
           >
@@ -229,7 +288,8 @@ export default function Calendar() {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

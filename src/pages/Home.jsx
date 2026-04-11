@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { useHabits } from "../Context/HabitContext";
 import HabitCard from "../components/HabitCard";
 import { useTheme } from "../Context/ThemeContext";
@@ -70,8 +71,8 @@ export default function Home() {
             className={habits.length === 0 ? "text-lg text-center mt-3" : "text-sm mt-1"}
             style={{ color: subText }}
           >
-            {habits.length === 0 
-              ? "Welcome! Ready to build some streaks?" 
+            {habits.length === 0
+              ? "Welcome! Ready to build some streaks?"
               : "It's nice to see you again"}
           </motion.p>
         </motion.div>
@@ -81,17 +82,22 @@ export default function Home() {
         <div className="flex gap-3 mb-6">
           {["important", "urgent", "optional"].filter((cat) => habits.some((h) => h.category === cat)).map((cat) => {
             const active = activeCategories.includes(cat);
+            const colors = {
+              urgent: "#ef4444",
+              important: "#f59e0b",
+              optional: "#22c55e"
+            };
+            const color = colors[cat];
+
             return (
               <button
                 key={cat}
                 onClick={() => toggleCategory(cat)}
-                className="px-4 py-1 rounded-full text-sm"
+                className="px-4 py-1 rounded-full text-sm font-bold capitalize transition-all"
                 style={{
-                  border: `1px solid ${isDark ? "#444" : "#cbd5e1"}`,
-                  backgroundColor: active
-                    ? isDark ? "#3a3a3a" : "#e5e7eb"
-                    : "transparent",
-                  color: active ? accent : subText
+                  border: `1px solid ${active ? color : (isDark ? "#444" : "#cbd5e1")}`,
+                  backgroundColor: active ? (isDark ? `${color}15` : `${color}10`) : "transparent",
+                  color: active ? color : subText
                 }}
               >
                 {cat}
@@ -141,61 +147,82 @@ export default function Home() {
         />
       )}
 
-      {habitToEdit && (
+      {habitToEdit && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md animate-fade-in transition-all duration-300"
           style={{
-            backgroundColor: isDark
-              ? "rgba(0,0,0,0.6)"
-              : "rgba(0,0,0,0.3)"
+            backgroundColor: isDark ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.1)"
           }}
           onClick={() => setHabitToEdit(null)}
         >
           <div
-            className="rounded-3xl px-8 py-6 w-80"
+            className="rounded-3xl px-10 py-10 w-96 border flex flex-col items-center"
             style={{
               backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
-              color: isDark ? "#ffffff" : "#1a1a1a"
+              color: isDark ? "#ffffff" : "#1a1a1a",
+              borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+              boxShadow: isDark
+                ? `0 0 50px ${accent}20, 0 20px 40px rgba(0, 0, 0, 0.8)`
+                : `0 0 40px ${accent}30, 0 20px 40px rgba(0, 0, 0, 0.15)`
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-medium mb-4">
+            <h3 className="text-2xl font-bold mb-8" style={{ color: accent }}>
               Change category
             </h3>
 
-            <div className="flex flex-col gap-3">
-              {["important", "urgent", "optional"].map((cat) => (
-                <button
-                  key={cat}
-                  className="py-2 rounded-xl transition"
-                  style={{
-                    backgroundColor:
-                      habitToEdit.category === cat
-                        ? isDark ? "#3a3a3a" : "#e5e7eb"
-                        : isDark ? "#333" : "#f3f4f6",
-                    color:
-                      habitToEdit.category === cat
-                        ? accent
-                        : isDark ? "#fff" : "#1a1a1a"
-                  }}
-                  onClick={() => {
-                    updateHabit(habitToEdit.id, { category: cat });
-                    setHabitToEdit(null);
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
+            <div className="flex flex-col items-center gap-3 w-full">
+              {["urgent", "important", "optional"].map((cat) => {
+                const colors = {
+                  urgent: "#ef4444",
+                  important: "#f59e0b",
+                  optional: "#22c55e"
+                };
+                const active = habitToEdit.category === cat;
+                const color = colors[cat];
+
+                return (
+                  <button
+                    key={cat}
+                    className="relative block w-full py-2.5 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95 group"
+                    style={{
+                      backgroundColor: active ? color : "transparent",
+                      color: active ? (isDark ? "#000" : "#fff") : color,
+                      border: `1px solid ${active ? "transparent" : color}`
+                    }}
+                    onClick={() => {
+                      updateHabit(habitToEdit.id, { category: cat });
+                      setHabitToEdit(null);
+                    }}
+                  >
+                    {!active && (
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: color }} />
+                    )}
+                    {!active && (
+                        <span 
+                          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none capitalize"
+                          style={{ color: isDark ? "#000" : "#fff" }}
+                        >
+                            {cat}
+                        </span>
+                    )}
+                    <span className={`relative z-10 block capitalize ${!active ? "group-hover:opacity-0 transition-opacity duration-200" : ""}`}>
+                        {cat}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             <button
-              className="mt-4 text-sm opacity-60"
+              className="mt-8 text-sm font-medium opacity-50 hover:opacity-100 transition"
               onClick={() => setHabitToEdit(null)}
             >
               Cancel
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

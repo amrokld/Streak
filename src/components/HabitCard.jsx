@@ -20,12 +20,12 @@ export default function HabitCard({
   const badgeBg = isDark ? "#3a3a3a" : "#e5e7eb";
   const shadow = isDark ? "none" : "0 12px 30px rgba(0,0,0,0.08)";
 
-  const categoryBg =
-    habit.category === "important"
-      ? isDark ? "#3a3a3a" : "#e5e7eb"
-      : habit.category === "urgent"
-        ? isDark ? "#4a3a2a" : "#fde68a"
-        : isDark ? "#2a3a3a" : "#d1fae5";
+  const colors = {
+    urgent: "#ef4444",
+    important: "#f59e0b",
+    optional: "#22c55e"
+  };
+  const catColor = colors[habit.category] || subText;
 
   useEffect(() => {
     if (forceClose) setFlipped(false);
@@ -74,8 +74,12 @@ export default function HabitCard({
 
             {habit.category && (
               <span
-                className="inline-block mt-4 px-2 py-[2px] rounded-full text-xs capitalize"
-                style={{ backgroundColor: categoryBg, color: accent }}
+                className="inline-block mt-4 px-3 py-[2px] rounded-full text-[11px] font-bold capitalize tracking-wide hidden md:inline-block"
+                style={{ 
+                   backgroundColor: "transparent", 
+                   border: `1px solid ${catColor}`,
+                   color: catColor 
+                }}
               >
                 {habit.category}
               </span>
@@ -109,26 +113,48 @@ export default function HabitCard({
             </div>
 
             <div className="flex flex-col gap-3">
+              {/* Change Category (Accent Outline) */}
               <button
-                className="py-2 rounded-xl transition"
+                className="relative group py-2 rounded-xl text-sm font-medium overflow-hidden transition-all duration-200 active:scale-95"
                 style={{
-                  backgroundColor: isDark ? "#333" : "#e5e7eb",
-                  color: isDark ? "#fff" : "#1a1a1a",
+                  backgroundColor: "transparent",
+                  color: accent,
+                  border: `1px solid ${accent}`
                 }}
                 onClick={() => onEditCategory(habit)}
               >
-                Change category
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: accent }} />
+                <span 
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
+                  style={{ color: isDark ? "#000" : "#fff" }}
+                >
+                  Change category
+                </span>
+                <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
+                  Change category
+                </span>
               </button>
 
+              {/* Delete Habit (Red Outline) */}
               <button
-                className="py-2 rounded-xl transition"
+                className="relative group py-2 rounded-xl text-sm font-medium overflow-hidden transition-all duration-200 active:scale-95"
                 style={{
-                  backgroundColor: isDark ? "#2a1f1f" : "#fee2e2",
+                  backgroundColor: "transparent",
                   color: "#ef4444",
+                  border: `1px solid #ef4444`
                 }}
                 onClick={() => onDeleteRequest(habit)}
               >
-                Delete habit
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: "#ef4444" }} />
+                <span 
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
+                  style={{ color: isDark ? "#000" : "#fff" }}
+                >
+                  Delete habit
+                </span>
+                <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
+                  Delete habit
+                </span>
               </button>
             </div>
 

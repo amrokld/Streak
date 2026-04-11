@@ -1,5 +1,6 @@
 import { useTheme } from "../Context/ThemeContext";
 import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
 
 export default function ConfirmModal({
   title = "Are you sure?",
@@ -15,10 +16,10 @@ export default function ConfirmModal({
   const text = isDark ? "#ffffff" : "#1a1a1a";
   const subText = isDark ? "#aaa" : "#6b7280";
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.3)" }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md animate-fade-in transition-all duration-300"
+      style={{ backgroundColor: isDark ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.1)" }}
       onClick={onCancel}
     >
       <motion.div
@@ -26,11 +27,14 @@ export default function ConfirmModal({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.15 }}
-        className="flex flex-col items-center gap-6 px-10 py-12 rounded-3xl text-center max-w-sm w-full"
+        className="flex flex-col items-center gap-6 px-10 py-12 rounded-3xl text-center max-w-sm w-full border"
         style={{
           backgroundColor: cardBg,
           color: text,
-          boxShadow: isDark ? "none" : "0 20px 40px rgba(0,0,0,0.08)"
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+          boxShadow: isDark
+            ? `0 0 50px ${accent}20, 0 20px 40px rgba(0, 0, 0, 0.8)`
+            : `0 0 40px ${accent}30, 0 20px 40px rgba(0, 0, 0, 0.15)`
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -63,8 +67,8 @@ export default function ConfirmModal({
         >
           Cancel
         </button>
-
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }

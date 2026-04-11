@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 
 export default function Onboarding({
   mode = "onboarding",
@@ -43,13 +44,13 @@ export default function Onboarding({
 
   const categories = ["important", "urgent", "optional"];
 
-  return (
+  const modalContent = (
     <div
-      className={`flex items-center justify-center animate-fade-in
-        ${mode === "new-habit" ? "fixed inset-0 z-50" : "h-screen"}
+      className={`flex items-center justify-center animate-fade-in transition-all duration-300
+        ${mode === "new-habit" ? "fixed inset-0 z-[100] backdrop-blur-md" : "h-screen"}
       `}
       style={{
-        backgroundColor: mode === "new-habit" ? "transparent" : bg
+        backgroundColor: mode === "new-habit" ? (isDark ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.1)") : bg
       }}
 
 
@@ -105,22 +106,23 @@ export default function Onboarding({
           <div className="flex justify-center gap-2">
             {categories.map((cat) => {
               const active = category === cat;
+              const colors = {
+                urgent: "#ef4444",
+                important: "#f59e0b",
+                optional: "#22c55e"
+              };
+              const color = colors[cat];
 
               return (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setCategory(cat)}
-                  className="px-3 py-1 rounded-full text-xs transition"
+                  className="px-3 py-1 rounded-full text-xs transition font-bold capitalize"
                   style={{
-                    border: `1px solid ${isDark ? "#444" : "#cbd5e1"
-                      }`,
-                    backgroundColor: active
-                      ? isDark
-                        ? "#3a3a3a"
-                        : "#e5e7eb"
-                      : "transparent",
-                    color: active ? accent : subText
+                    border: `1px solid ${active ? color : (isDark ? "#444" : "#cbd5e1")}`,
+                    backgroundColor: active ? (isDark ? `${color}15` : `${color}15`) : "transparent",
+                    color: color
                   }}
                 >
                   {cat}
@@ -131,26 +133,46 @@ export default function Onboarding({
 
           <button
             type="submit"
-            className="py-2 rounded-xl font-medium transition"
+            className="relative group w-full py-2.5 mt-2 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95"
             style={{
+              backgroundColor: "transparent",
               color: accent,
-              border: `1px solid ${isDark ? "#444" : "#cbd5e1"
-                }`
+              border: `1px solid ${accent}`
             }}
           >
-            {mode === "onboarding" ? "Start" : "Create"}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: accent }} />
+            <span 
+              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
+              style={{ color: isDark ? "#000" : "#fff" }}
+            >
+                {mode === "onboarding" ? "Start" : "Create"}
+            </span>
+            <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
+                {mode === "onboarding" ? "Start" : "Create"}
+            </span>
           </button>
         </form>
 
         {mode === "new-habit" && (
           <button
             onClick={onClose}
-            className="text-sm opacity-50"
+            className="relative group text-sm font-medium transition-all duration-300"
+            style={{ color: subText }}
           >
-            Cancel
+             <span 
+                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{ color: "#ef4444", textShadow: "0 0 12px rgba(239,68,68,0.8)" }}
+             >
+                Cancel
+             </span>
+             <span className="relative z-10 group-hover:opacity-0 transition-opacity duration-300">
+                Cancel
+             </span>
           </button>
         )}
       </div>
     </div>
   );
+
+  return mode === "new-habit" ? createPortal(modalContent, document.body) : modalContent;
 }

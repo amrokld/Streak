@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fixes horizontal layout shift when scrollbars appear/disappear on different pages */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
 
 button.disabled {
   opacity: 0.4;
