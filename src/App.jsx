@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 
 import AppLayout from "./layouts/AppLayout";
@@ -18,7 +18,7 @@ export default function App() {
 
   return (
     <HabitProvider>
-      <BrowserRouter>
+      <HashRouter>
         {showSplash && <Splash onFinish={() => setShowSplash(false)} />}
 
         {!showSplash && (
@@ -33,7 +33,7 @@ export default function App() {
             </Route>
           </Routes>
         )}
-      </BrowserRouter>
+      </HashRouter>
     </HabitProvider>
   );
 }

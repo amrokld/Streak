@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
+    "electron-updater": "^6.8.3",
     "framer-motion": "^12.29.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -35,5 +36,20 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
     "vite": "^7.2.4"
+  },
+  "build": {
+    "appId": "com.streak.app",
+    "icon": "public/Streak.ico",
+    "productName": "Streak",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   }
 }

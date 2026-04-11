@@ -22,14 +22,7 @@ export default function Home() {
   const forceCloseCards = Boolean(habitToDelete || habitToEdit);
 
   /* ---------- USERNAME ---------- */
-  const [username, setUsername] = useState(
-    localStorage.getItem("username") || ""
-  );
-  const [showNamePrompt, setShowNamePrompt] = useState(false);
-
-  useEffect(() => {
-    if (!username) setShowNamePrompt(true);
-  }, [username]);
+  const username = localStorage.getItem("username") || "";
 
   /* ---------- CATEGORY FILTER ---------- */
   const [activeCategories, setActiveCategories] = useState([]);
@@ -54,67 +47,7 @@ export default function Home() {
     <div className="flex justify-center mt-16 pb-24 animate-fade-in">
       <div className="w-full max-w-6xl px-2">
 
-        {/* ---------- NAME PROMPT ---------- */}
-        {showNamePrompt && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div
-              className={`absolute inset-0 ${isDark ? "bg-black/60" : "bg-black/30"
-                }`}
-            />
-            <div
-              className="relative w-full max-w-sm rounded-3xl px-8 py-10 text-center"
-              style={{
-                backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
-                color: isDark ? "#ffffff" : "#1a1a1a"
-              }}
-            >
-              <h2 className="text-2xl font-bold mb-2" style={{ color: accent }}>
-                What should I call you?
-              </h2>
 
-              <p className="text-sm mb-6" style={{ color: subText }}>
-                This is asked once.
-              </p>
-
-              <input
-                autoFocus
-                type="text"
-                placeholder="Your name"
-                className="w-full mb-6 px-4 py-2 rounded text-center outline-none"
-                style={{
-                  backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb",
-                  color: isDark ? "#fff" : "#1a1a1a"
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && e.target.value.trim()) {
-                    const value = e.target.value.trim();
-                    localStorage.setItem("username", value);
-                    setUsername(value);
-                    setShowNamePrompt(false);
-                  }
-                }}
-              />
-
-              <button
-                className="w-full py-2 rounded-xl font-medium"
-                style={{
-                  color: accent,
-                  border: `1px solid ${isDark ? "#444" : "#cbd5e1"}`
-                }}
-                onClick={() => {
-                  const value = document.querySelector("input")?.value.trim();
-                  if (value) {
-                    localStorage.setItem("username", value);
-                    setUsername(value);
-                    setShowNamePrompt(false);
-                  }
-                }}
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* ---------- GREETING ---------- */}
         <motion.div
@@ -137,7 +70,9 @@ export default function Home() {
             className={habits.length === 0 ? "text-lg text-center mt-3" : "text-sm mt-1"}
             style={{ color: subText }}
           >
-            It's nice to see you again
+            {habits.length === 0 
+              ? "Welcome! Ready to build some streaks?" 
+              : "It's nice to see you again"}
           </motion.p>
         </motion.div>
 

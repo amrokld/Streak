@@ -1,4 +1,6 @@
 import { app, BrowserWindow } from "electron";
+import pkg from "electron-updater";
+const { autoUpdater } = pkg;
 import path from "path";
 import { fileURLToPath } from "url";
 import { runDailyCheck } from "./reminder.js";
@@ -14,6 +16,8 @@ function createWindow() {
     width: 1100,
     height: 750,
     backgroundColor: "#1f1f1f",
+    icon: path.join(__dirname, "../public/Streak2.svg"),
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js")
     }
@@ -44,6 +48,9 @@ function startDailyReminderLoop() {
 app.whenReady().then(() => {
   createWindow();
   startDailyReminderLoop();
+  
+  // Silently check for updates on startup
+  autoUpdater.checkForUpdatesAndNotify();
 });
 
 app.on("window-all-closed", () => {
