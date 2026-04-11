@@ -16,7 +16,7 @@ function createWindow() {
     width: 1100,
     height: 750,
     backgroundColor: "#1f1f1f",
-    icon: path.join(__dirname, "../public/Streak2.svg"),
+    icon: path.join(__dirname, "../public/Streak.ico"),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js")
