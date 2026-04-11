@@ -127,9 +127,9 @@ export default function Settings() {
 
 
     return (
-        <div className="flex justify-center mt-12 pb-24 relative">
+        <div className="flex justify-center mt-12 pb-24 relative ">
             <div className="w-full max-w-2xl px-6">
-                <h2 className="text-3xl font-bold mb-8">Settings</h2>
+                <h2 className="text-3xl font-bold mb-8" style={{ color: accent }}> Settings</h2>
 
                 <div className="flex flex-col gap-8">
 
@@ -375,6 +375,6 @@ export default function Settings() {
                     )}
                 </AnimatePresence>
             </div>
-        </div>
+        </div >
     );
 }

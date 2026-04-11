@@ -98,37 +98,108 @@ export default function StreakPage() {
     setMessage("");
   };
 
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d.toDateString();
+  });
+
+  const recentActivity = last7Days.map(date => {
+    return habit.completedDays?.includes(date);
+  })
+
   return (
-    <div className="relative h-[80vh] flex flex-col items-center justify-center">
+    <div className="relative h-[80vh] flex flex-col items-center justify-center p-4 animate-fade-in">
+
+      {/* HIGHLIGHT: HABIT NAME */}
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-2xl font-semibold mb-8 tracking-wide uppercase text-center"
+        style={{ color: isDark ? "#ffffff" : "#1a1a1a", opacity: 0.8 }}
+      >
+        {habit.name}
+      </motion.h1>
 
       <div className="flex flex-col items-center">
+        {/* HUGE STREAK NUMBER WITH GLOW + ANIMATION */}
         <motion.div
           onClick={handleClick}
-          whileTap={{ scale: 0.95 }}
-          className="text-[10rem] md:text-[14rem] font-bold cursor-pointer select-none"
-          style={{ color: accent }}
+          whileTap={{ scale: 0.90 }}
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          className="text-[10rem] md:text-[14rem] font-bold cursor-pointer select-none leading-none"
+          style={{
+            color: accent,
+            textShadow: habit.streak > 0 ? `0 0 60px ${accent}60` : 'none' // Adds a sick glowing aurora effect!
+          }}
         >
           {habit.streak}
         </motion.div>
 
-        {message && (
-          <p className="mt-4 text-sm text-gray-500 text-center">
+        {message ? (
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-8 text-sm font-medium px-4 py-2 rounded-full"
+            style={{ backgroundColor: isDark ? "#2a2a2a" : "#f1f5f9", color: isDark ? "#fff" : "#000" }}
+          >
             {message}
-          </p>
+          </motion.p>
+        ) : (
+          <p className="mt-8 text-sm opacity-50">Tap the number to check in</p>
         )}
       </div>
 
+      {/* MINI STATS & 7-DAY HISTORY FOR THIS HABIT */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="mt-12 w-full max-w-sm flex flex-col gap-6"
+      >
+        <div className="flex justify-around text-sm" style={{ color: isDark ? "#ffffff" : "#1a1a1a" }}>
+          <div className="flex flex-col items-center">
+            <span className="opacity-50 mb-1">Longest</span>
+            <span className="font-bold text-xl">{habit.longestStreak || habit.streak}</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="opacity-50 mb-1">Total Days</span>
+            <span className="font-bold text-xl">{habit.completedDays?.length || 0}</span>
+          </div>
+        </div>
+
+        {/* Mini 7-Day Dots */}
+        <div className="flex justify-center gap-3 mt-2">
+          {recentActivity.map((isDone, i) => (
+            <div
+              key={i}
+              className="w-8 h-8 rounded-full transition-all duration-300"
+              style={{
+                backgroundColor: isDone ? accent : (isDark ? "#3f3f3f" : "#e5e7eb"),
+                opacity: isDone ? 1 : 0.4,
+                transform: isDone ? 'scale(1.1)' : 'scale(1)'
+              }}
+            />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* RESET BUTTON */}
       <button
         onClick={() => setShowReset(true)}
-        className="absolute bottom-6 text-xs opacity-50 hover:opacity-100"
+        className="absolute bottom-6 text-xs opacity-40 hover:opacity-100 transition-opacity"
+        style={{ color: isDark ? "#ffffff" : "#1a1a1a" }}
       >
         Reset streak
       </button>
 
+      {/* RESET MODAL */}
       {showReset && (
         <ConfirmModal
           title="Reset Streak?"
-          message="This is will reset your streak back to ZERO"
+          message="This will reset your current streak back to ZERO. Total days will be kept."
           confirmText="Reset"
           onCancel={() => setShowReset(false)}
           onConfirm={confirmReset}

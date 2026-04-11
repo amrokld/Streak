@@ -51,7 +51,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex justify-center mt-16 pb-24">
+    <div className="flex justify-center mt-16 pb-24 animate-fade-in">
       <div className="w-full max-w-6xl px-2">
 
         {/* ---------- NAME PROMPT ---------- */}

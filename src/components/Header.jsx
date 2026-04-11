@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
 import { useTheme } from "../Context/ThemeContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const MAX_HABITS = 12;
 
 export default function Header({ habits, onNewHabit }) {
 
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme(); // Removed toggleTheme
   const navigate = useNavigate();
+  const location = useLocation(); // Required to know which tab we are on
   const [limitHit, setLimitHit] = useState();
 
   const accent = theme === "dark" ? "#d4af37" : "#2563eb";
@@ -23,12 +24,12 @@ export default function Header({ habits, onNewHabit }) {
     "No more habits. Finish the work.",
     "Are you insane? wanna have more than 12 habits.",
     "Bro, Chill! Dont lie to yourself, You ain't gonna do more than 12 habits at a time."
-  ]
+  ];
 
-  const message = limitMessages[habits.length % limitMessages.length];
+  const message = limitMessages[(habits?.length || 0) % limitMessages.length];
 
   const goToNewHabit = () => {
-    if (habits.length >= MAX_HABITS) {
+    if (habits && habits.length >= MAX_HABITS) {
       setLimitHit(true);
       return;
     }
@@ -45,6 +46,13 @@ export default function Header({ habits, onNewHabit }) {
 
     return () => clearTimeout(t);
   }, [limitHit]);
+
+  // Clean navigation links using your exact labels
+  const navLinks = [
+    { label: "Statistics", path: "/statistics" },
+    { label: "Calendar", path: "/calendar" },
+    { label: "Settings", path: "/settings" }
+  ];
 
   return (
     <header className="w-full grid grid-cols-3 items-center px-10 py-6">
@@ -69,36 +77,31 @@ export default function Header({ habits, onNewHabit }) {
 
       {/* Navigation */}
       <nav className="flex justify-center gap-10 text-lg">
-        <span
-          onClick={() => navigate("/statistics")}
-          style={{ color: muted }}
-          className="cursor-pointer transition"
-          onMouseEnter={(e) => (e.target.style.color = accent)}
-          onMouseLeave={(e) => (e.target.style.color = muted)}
-        >
-          Statistics
-        </span>
+        {navLinks.map((link) => {
+          const isActive = location.pathname === link.path;
 
-        <span
-          onClick={() => navigate("/calendar")}
-          style={{ color: muted }}
-          className="cursor-pointer transition"
-          onMouseEnter={(e) => (e.target.style.color = accent)}
-          onMouseLeave={(e) => (e.target.style.color = muted)}
-        >
-          Calendar
-        </span>
+          return (
+            <span
+              key={link.path}
+              onClick={() => navigate(link.path)}
+              style={{ color: isActive ? accent : muted }}
+              className="cursor-pointer transition relative"
+              onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.color = accent; }}
+              onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.color = muted; }}
+            >
+              {link.label}
 
-        <span
-          onClick={() => navigate("/settings")}
-          style={{ color: muted }}
-          className="cursor-pointer transition"
-          onMouseEnter={(e) => (e.target.style.color = accent)}
-          onMouseLeave={(e) => (e.target.style.color = muted)}
-        >
-          Settings
-        </span>
-
+              {/* This is the new active tab underline animation! */}
+              {isActive && (
+                <motion.div
+                  layoutId="headerActiveTab"
+                  className="absolute -bottom-1 left-0 right-0 h-[2px] rounded-full"
+                  style={{ backgroundColor: accent }}
+                />
+              )}
+            </span>
+          );
+        })}
       </nav>
 
       {/* Right actions */}
@@ -130,13 +133,6 @@ export default function Header({ habits, onNewHabit }) {
             </motion.div>
           )}
         </div>
-
-        <button
-          onClick={toggleTheme}
-          style={{ color: accent }}
-        >
-          {theme === "dark" ? "Light" : "Dark"}
-        </button>
       </div>
 
     </header>

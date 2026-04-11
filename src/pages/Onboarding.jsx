@@ -45,7 +45,7 @@ export default function Onboarding({
 
   return (
     <div
-      className={`flex items-center justify-center
+      className={`flex items-center justify-center animate-fade-in
         ${mode === "new-habit" ? "fixed inset-0 z-50" : "h-screen"}
       `}
       style={{
@@ -111,9 +111,8 @@ export default function Onboarding({
                   onClick={() => setCategory(cat)}
                   className="px-3 py-1 rounded-full text-xs transition"
                   style={{
-                    border: `1px solid ${
-                      isDark ? "#444" : "#cbd5e1"
-                    }`,
+                    border: `1px solid ${isDark ? "#444" : "#cbd5e1"
+                      }`,
                     backgroundColor: active
                       ? isDark
                         ? "#3a3a3a"
@@ -133,9 +132,8 @@ export default function Onboarding({
             className="py-2 rounded-xl font-medium transition"
             style={{
               color: accent,
-              border: `1px solid ${
-                isDark ? "#444" : "#cbd5e1"
-              }`
+              border: `1px solid ${isDark ? "#444" : "#cbd5e1"
+                }`
             }}
           >
             {mode === "onboarding" ? "Start" : "Create"}
