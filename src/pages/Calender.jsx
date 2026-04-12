@@ -1,14 +1,17 @@
 import { useTheme } from "../Context/ThemeContext";
-import { useState, useRef, useEffect } from "react"; 
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
+import { formatDate } from "../utils/dateHelpers";
+import { STORAGE_KEYS } from "../constants/storageKeys";
+import { getTokens } from "../theme/tokens";
 
 export default function Calendar() {
   const { isDark } = useTheme();
-  const accent = isDark ? "#d4af37" : "#2563eb";
+  const { accent } = getTokens(isDark);
 
   // Load all habits
-  const habits = JSON.parse(localStorage.getItem("habits")) || [];
+  const habits = JSON.parse(localStorage.getItem(STORAGE_KEYS.habits)) || [];
 
   // STATE
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -48,11 +51,9 @@ export default function Calendar() {
 
   filteredHabits.forEach((h) => {
     h.completedDays?.forEach((day) => {
-      const dString = new Date(day).toDateString();
-      activityMap[dString] = (activityMap[dString] || 0) + 1;
-
-      if (!dayHabitNames[dString]) dayHabitNames[dString] = [];
-      dayHabitNames[dString].push(h.name);
+      activityMap[day] = (activityMap[day] || 0) + 1;
+      if (!dayHabitNames[day]) dayHabitNames[day] = [];
+      dayHabitNames[day].push(h.name);
     });
   });
 
@@ -61,7 +62,7 @@ export default function Calendar() {
   const firstDayOfMonth = new Date(year, month, 1).getDay(); // Matches Mon/Tue...
   const blanks = Array.from({ length: firstDayOfMonth }, (_, i) => `blank-${i}`);
   const days = Array.from({ length: daysInMonth }, (_, i) =>
-    new Date(year, month, i + 1).toDateString()
+    formatDate(new Date(year, month, i + 1))
   );
 
   const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -89,7 +90,7 @@ export default function Calendar() {
 
         {habits.length > 0 && (
           <div className="relative" ref={filterRef}>
-            <div 
+            <div
               onClick={() => setShowFilterMenu(!showFilterMenu)}
               className="flex items-center justify-between gap-3 px-4 py-2 rounded-xl text-sm font-medium outline-none cursor-pointer border transition-colors select-none"
               style={{
@@ -102,13 +103,13 @@ export default function Calendar() {
                 {selectedHabitId === "all" ? "All Habits" : habits.find(h => String(h.id) === String(selectedHabitId))?.name || "Unknown"}
               </span>
               <motion.svg animate={{ rotate: showFilterMenu ? 180 : 0 }} className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
               </motion.svg>
             </div>
 
             <AnimatePresence>
               {showFilterMenu && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -116,10 +117,10 @@ export default function Calendar() {
                   className="absolute top-12 right-0 w-56 p-2 rounded-3xl border shadow-2xl z-50 overflow-hidden flex flex-col gap-1 max-h-64 overflow-y-auto"
                   style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}
                 >
-                  <div 
+                  <div
                     onClick={() => { setSelectedHabitId("all"); setShowFilterMenu(false); }}
                     className="px-4 py-2 text-sm font-bold cursor-pointer transition rounded-xl hover:brightness-110"
-                    style={{ 
+                    style={{
                       backgroundColor: selectedHabitId === "all" ? (isDark ? "#333" : "#f1f5f9") : "transparent",
                       color: selectedHabitId === "all" ? accent : (isDark ? "#aaa" : "#6b7280")
                     }}
@@ -127,11 +128,11 @@ export default function Calendar() {
                     All Habits
                   </div>
                   {habits.map(h => (
-                    <div 
+                    <div
                       key={h.id}
                       onClick={() => { setSelectedHabitId(String(h.id)); setShowFilterMenu(false); }}
                       className="px-4 py-2 text-sm font-medium cursor-pointer transition rounded-xl hover:brightness-110 truncate"
-                      style={{ 
+                      style={{
                         backgroundColor: String(selectedHabitId) === String(h.id) ? (isDark ? "#333" : "#f1f5f9") : "transparent",
                         color: String(selectedHabitId) === String(h.id) ? accent : (isDark ? "#fff" : "#000")
                       }}
@@ -200,7 +201,7 @@ export default function Calendar() {
 
           {days.map((day) => {
             const count = activityMap[day] || 0;
-            const isToday = day === today.toDateString();
+            const isToday = day === formatDate(today);
             const hasActivity = count > 0;
 
             const cellDate = new Date(day);

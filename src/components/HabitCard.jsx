@@ -3,6 +3,8 @@ import { useTheme } from "../Context/ThemeContext";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { cardFlip } from "../motion/motionVariants";
+import { getTokens } from "../theme/tokens";
+
 
 export default function HabitCard({
   habit,
@@ -14,10 +16,7 @@ export default function HabitCard({
   const navigate = useNavigate();
   const { isDark } = useTheme();
 
-  const accent = isDark ? "#d4af37" : "#2563eb";
-  const cardBg = isDark ? "#2a2a2a" : "#ffffff";
-  const subText = isDark ? "#777" : "#6b7280";
-  const badgeBg = isDark ? "#3a3a3a" : "#e5e7eb";
+  const { accent, cardBg, subText, badgeBg } = getTokens(isDark);
   const shadow = isDark ? "none" : "0 12px 30px rgba(0,0,0,0.08)";
 
   const colors = {
@@ -75,10 +74,10 @@ export default function HabitCard({
             {habit.category && (
               <span
                 className="inline-block mt-4 px-3 py-[2px] rounded-full text-[11px] font-bold capitalize tracking-wide hidden md:inline-block"
-                style={{ 
-                   backgroundColor: "transparent", 
-                   border: `1px solid ${catColor}`,
-                   color: catColor 
+                style={{
+                  backgroundColor: "transparent",
+                  border: `1px solid ${catColor}`,
+                  color: catColor
                 }}
               >
                 {habit.category}
@@ -124,7 +123,7 @@ export default function HabitCard({
                 onClick={() => onEditCategory(habit)}
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: accent }} />
-                <span 
+                <span
                   className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
                   style={{ color: isDark ? "#000" : "#fff" }}
                 >
@@ -146,7 +145,7 @@ export default function HabitCard({
                 onClick={() => onDeleteRequest(habit)}
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: "#ef4444" }} />
-                <span 
+                <span
                   className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
                   style={{ color: isDark ? "#000" : "#fff" }}
                 >

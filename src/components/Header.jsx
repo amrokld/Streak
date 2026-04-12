@@ -2,18 +2,19 @@ import { motion } from "framer-motion";
 import { useTheme } from "../Context/ThemeContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { getTokens } from "../theme/tokens";
+
 
 const MAX_HABITS = 12;
 
 export default function Header({ habits, onNewHabit }) {
 
-  const { theme } = useTheme(); // Removed toggleTheme
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const { accent, subText: muted, cardBg } = getTokens(isDark);
   const navigate = useNavigate();
-  const location = useLocation(); // Required to know which tab we are on
+  const location = useLocation();
   const [limitHit, setLimitHit] = useState();
-
-  const accent = theme === "dark" ? "#d4af37" : "#2563eb";
-  const muted = theme === "dark" ? "#bbb" : "#6b7280";
 
   const canCreate = Array.isArray(habits) && habits.length < MAX_HABITS;
 
@@ -140,10 +141,10 @@ export default function Header({ habits, onNewHabit }) {
               exit={{ opacity: 0, y: 6 }}
               className="absolute -bottom-10 right-0 px-3 py-1 rounded-full text-xs whitespace-nowrap"
               style={{
-                backgroundColor: theme === "dark" ? "#2a2a2a" : "#ffffff",
+                backgroundColor: cardBg,
                 color: muted,
                 boxShadow:
-                  theme === "dark"
+                  isDark
                     ? "0 6px 20px rgba(0,0,0,0.4)"
                     : "0 6px 20px rgba(0,0,0,0.12)"
               }}

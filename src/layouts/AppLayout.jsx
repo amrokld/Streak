@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Header from "../components/Header";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
+import { STORAGE_KEYS } from "../constants/storageKeys";
+import { getTokens } from "../theme/tokens";
 
 
 export default function AppLayout() {
@@ -12,17 +14,17 @@ export default function AppLayout() {
   const [showNewHabit, setShowNewHabit] = useState(false);
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState(
-    localStorage.getItem("username") || ""
+    localStorage.getItem(STORAGE_KEYS.username) || ""
   );
 
-  const accent = isDark ? "#d4af37" : "#2563eb";
-  const subText = isDark ? "#aaa" : "#6b7280";
+  const { accent, subText } = getTokens(isDark);
 
   if (!username) {
     return (
-      <div 
+      <div
         className="min-h-screen flex items-center justify-center transition-colors duration-300"
         style={{
           backgroundColor: isDark ? "#1f1f1f" : "#f2f4f8",
@@ -59,27 +61,39 @@ export default function AppLayout() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && e.target.value.trim()) {
                 const value = e.target.value.trim();
-                localStorage.setItem("username", value);
+                localStorage.setItem(STORAGE_KEYS.username, value)
                 setUsername(value);
+                navigate("/");
               }
             }}
           />
 
           <button
-            className="w-full py-2 rounded-xl font-medium"
+            className="relative group w-full py-2.5 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95"
             style={{
+              backgroundColor: "transparent",
               color: accent,
-              border: `1px solid ${isDark ? "#444" : "#cbd5e1"}`
+              border: `1px solid ${accent}`
             }}
             onClick={() => {
               const value = document.querySelector("input")?.value.trim();
               if (value) {
-                localStorage.setItem("username", value);
+                localStorage.setItem(STORAGE_KEYS.username, value)
                 setUsername(value);
+                navigate("/");
               }
             }}
           >
-            Continue
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: accent }} />
+            <span
+              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
+              style={{ color: isDark ? "#000" : "#fff" }}
+            >
+              Continue
+            </span>
+            <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
+              Continue
+            </span>
           </button>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
+import { getTokens } from "../theme/tokens";
 
 export default function Onboarding({
   mode = "onboarding",
@@ -16,11 +17,7 @@ export default function Onboarding({
 
   const navigate = useNavigate();
 
-  const accent = isDark ? "#d4af37" : "#2563eb";
-  const bg = isDark ? "#1f1f1f" : "#f2f4f8";
-  const cardBg = isDark ? "#2a2a2a" : "#ffffff";
-  const text = isDark ? "#ffffff" : "#1a1a1a";
-  const subText = isDark ? "#aaa" : "#6b7280";
+  const { accent, bg, cardBg, text, subText } = getTokens(isDark);
 
   const startTracking = () => {
     if (!habit.trim()) return;

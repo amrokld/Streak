@@ -4,56 +4,40 @@ import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
+import { getToday, formatDate } from "../utils/dateHelpers";
+import { getTokens } from "../theme/tokens";
 
 import ConfirmModal from "../components/ConfirmModel";
 
-function getYesterday() {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toDateString();
-}
-
 export default function StreakPage() {
   const { isDark } = useTheme();
-  const accent = isDark ? "#d4af37" : "#2563eb";
+  const { accent } = getTokens(isDark);
 
   const { habit: habitId } = useParams();
-  const { habits, updateHabit } = useHabits(); // ✅ fixed
+  const { habits, checkInHabit, resetHabit, handleMissedDay } = useHabits();
   const [habit, setHabit] = useState(null);
   const [message, setMessage] = useState("");
   const [showReset, setShowReset] = useState(false);
 
-  const today = new Date().toDateString();
+  const today = getToday();
 
   useEffect(() => {
-    const rawHabits = habits.map(h => ({
-      ...h,
-      streak: h.streak ?? 0,
-      longestStreak: h.longestStreak ?? h.streak ?? 0,
-      completedDays: Array.isArray(h.completedDays) ? h.completedDays : [],
-      lastCheck: h.lastCheck ?? null
-    }));
+    const found = habits.find(h => h.id === Number(habitId));
+    if (!found) return;
 
-    const yesterday = getYesterday();
+    // Normalize defaults
+    const normalized = {
+      ...found,
+      streak: found.streak ?? 0,
+      longestStreak: found.longestStreak ?? found.streak ?? 0,
+      completedDays: Array.isArray(found.completedDays) ? found.completedDays : [],
+      lastCheck: found.lastCheck ?? null
+    };
 
-    const updatedHabits = rawHabits.map(h => {
-      if (h.id !== Number(habitId)) return h;
-
-      const completedDays = h.completedDays || [];
-      const today = new Date().toDateString();
-
-      if (h.streak > 0 && h.lastCheck !== yesterday && h.lastCheck !== today) {
-        // ✅ only reset streak (no undefined vars)
-        updateHabit(Number(habitId), { streak: 0 });
-        return { ...h, streak: 0 };
-      }
-
-      return h;
-    });
-
-    const found = updatedHabits.find(h => h.id === Number(habitId));
-    if (found) setHabit(found);
+    handleMissedDay(Number(habitId));
+    setHabit(normalized);
   }, [habitId, habits]);
+
 
   if (!habit) return null;
 
@@ -63,37 +47,18 @@ export default function StreakPage() {
       return;
     }
 
-    const prevDays = habit.completedDays || [];
-    if (prevDays.includes(today)) return;
-
-    const newStreak = habit.streak + 1;
-
-    updateHabit(Number(habitId), {
-      streak: newStreak,
-      longestStreak: Math.max(habit.longestStreak || 0, newStreak),
-      lastCheck: today,
-      completedDays: [...prevDays, today]
-    });
-
-
+    checkInHabit(Number(habitId));
     setMessage("");
 
-    if (newStreak >= 0) {
-      confetti({
-        particleCount: 50,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    }
+    confetti({
+      particleCount: 50,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
   };
 
   const confirmReset = () => {
-    updateHabit(Number(habitId), {
-      streak: 0,
-      lastCheck: null,
-      completedDays: []
-    });
-
+    resetHabit(Number(habitId));
     setShowReset(false);
     setMessage("");
   };
@@ -101,7 +66,7 @@ export default function StreakPage() {
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
-    return d.toDateString();
+    return formatDate(d);
   });
 
   const recentActivity = last7Days.map(date => {
@@ -143,10 +108,10 @@ export default function StreakPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-8 text-sm font-medium px-6 py-2.5 rounded-full border shadow-sm"
-            style={{ 
-               backgroundColor: isDark ? "#2a2a2a" : "#ffffff", 
-               color: isDark ? "#fff" : "#000",
-               borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"
+            style={{
+              backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
+              color: isDark ? "#fff" : "#000",
+              borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"
             }}
           >
             {message}
@@ -196,15 +161,15 @@ export default function StreakPage() {
         className="absolute bottom-6 text-xs font-medium transition-all duration-300 group"
         style={{ color: isDark ? "#ffffff" : "#1a1a1a" }}
       >
-         <span 
-            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap"
-            style={{ color: "#ef4444", textShadow: "0 0 12px rgba(239,68,68,0.8)" }}
-         >
-            Reset streak
-         </span>
-         <span className="relative z-10 opacity-40 group-hover:opacity-0 transition-opacity duration-300 whitespace-nowrap">
-            Reset streak
-         </span>
+        <span
+          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap"
+          style={{ color: "#ef4444", textShadow: "0 0 12px rgba(239,68,68,0.8)" }}
+        >
+          Reset streak
+        </span>
+        <span className="relative z-10 opacity-40 group-hover:opacity-0 transition-opacity duration-300 whitespace-nowrap">
+          Reset streak
+        </span>
       </button>
 
       {/* RESET MODAL */}

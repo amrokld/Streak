@@ -2,25 +2,25 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
+import { useNavigate } from "react-router-dom";
+import { STORAGE_KEYS } from "../constants/storageKeys";
+import { getTokens } from "../theme/tokens";
 
 export default function Settings() {
     const { toggleTheme, isDark } = useTheme();
     const { habits } = useHabits();
+    const navigate = useNavigate();
 
     // State Management
-    const [username, setUsername] = useState(localStorage.getItem("username") || "");
-    const [reminders, setReminders] = useState(localStorage.getItem("reminders") === "true");
+    const [username, setUsername] = useState(localStorage.getItem(STORAGE_KEYS.username) || "");
+    const [reminders, setReminders] = useState(localStorage.getItem(STORAGE_KEYS.reminders) === "true");
     const [toast, setToast] = useState("");
     const [showFeedback, setShowFeedback] = useState(false);
     const [feedbackText, setFeedbackText] = useState("");
     const [isSending, setIsSending] = useState(false);
 
 
-    // UI Tokens
-    const accent = isDark ? "#d4af37" : "#2563eb";
-    const subText = isDark ? "#aaa" : "#6b7280";
-    const cardBg = isDark ? "#2a2a2a" : "#ffffff";
-    const borderColor = isDark ? "#3f3f3f" : "#e5e7eb";
+    const { accent, subText, cardBg, borderColor } = getTokens(isDark);
 
     const AliveBtn = ({ onClick, children, color, outline, className = "", disabled }) => {
         const c = color || accent;
@@ -37,22 +37,22 @@ export default function Settings() {
             >
                 {/* Simple hover background fill overlay */}
                 {outline && (
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: c }} />
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: c }} />
                 )}
                 {!outline && (
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-15 transition-opacity duration-200 z-0 pointer-events-none bg-black dark:bg-white" />
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-15 transition-opacity duration-200 z-0 pointer-events-none bg-black dark:bg-white" />
                 )}
 
                 {/* Duplicated text allows perfect, snappy text color inversion using opacity without relying on dynamic arbitrary tailwind */}
                 {outline && (
-                    <span 
-                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
-                      style={{ color: isDark ? "#000" : "#fff" }}
+                    <span
+                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
+                        style={{ color: isDark ? "#000" : "#fff" }}
                     >
                         {children}
                     </span>
                 )}
-                
+
                 <span className={`relative z-10 block ${outline ? "group-hover:opacity-0 transition-opacity duration-200" : ""}`}>
                     {children}
                 </span>
@@ -73,9 +73,9 @@ export default function Settings() {
             >
                 <input type="file" accept=".json" className="hidden" onChange={onChange} />
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: c }} />
-                <span 
-                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
-                  style={{ color: isDark ? "#000" : "#fff" }}
+                <span
+                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
+                    style={{ color: isDark ? "#000" : "#fff" }}
                 >
                     {children}
                 </span>
@@ -93,14 +93,14 @@ export default function Settings() {
     };
 
     const saveGeneral = () => {
-        localStorage.setItem("username", username);
+        localStorage.setItem(STORAGE_KEYS.username, username);
         showToast("Username saved successfully");
     };
 
     const toggleReminders = () => {
         const newState = !reminders;
         setReminders(newState);
-        localStorage.setItem("reminders", newState);
+        localStorage.setItem(STORAGE_KEYS.reminders, newState);
         showToast(newState ? "Reminders enabled" : "Reminders disabled");
     };
 
@@ -124,7 +124,7 @@ export default function Settings() {
             try {
                 const parsed = JSON.parse(e.target.result);
                 if (Array.isArray(parsed)) {
-                    localStorage.setItem("habits", JSON.stringify(parsed));
+                    localStorage.setItem(STORAGE_KEYS.habits, JSON.stringify(parsed));
                     showToast("Import successful! Refreshing...");
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
@@ -139,7 +139,7 @@ export default function Settings() {
 
     const resetHabits = () => {
         if (window.confirm("Are you sure you want to delete ALL habits?")) {
-            localStorage.setItem("habits", "[]");
+            localStorage.setItem(STORAGE_KEYS.habits, "[]");
             showToast("Habits cleared! Refreshing...");
             setTimeout(() => window.location.reload(), 1000);
         }
@@ -159,8 +159,8 @@ export default function Settings() {
 
         try {
             // Local Storage Backup
-            const existing = JSON.parse(localStorage.getItem("streak_feedback") || "[]");
-            localStorage.setItem("streak_feedback", JSON.stringify([...existing, { text: feedbackText, date: new Date().toISOString() }]));
+            const existing = JSON.parse(localStorage.getItem(STORAGE_KEYS.feedback) || "[]");
+            localStorage.setItem(STORAGE_KEYS.feedback, JSON.stringify([...existing, { text: feedbackText, date: new Date().toISOString() }]));
             console.log("Feedback saved locally:", feedbackText);
 
             // --- EMAILJS REST API INTEGRATION ---
@@ -326,7 +326,25 @@ export default function Settings() {
                         </div>
                     </section>
 
-                    {/* 5. INFO SECTION */}
+                    {/* 5. UPDATE PATCHES */}
+                    <section>
+                        <h3 className="text-sm font-semibold tracking-wider mb-4 uppercase" style={{ color: subText }}>
+                            Updates
+                        </h3>
+                        <div className="p-6 rounded-3xl flex flex-col gap-6" style={{ backgroundColor: cardBg, border: `1px solid ${borderColor}` }}>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-medium">Patch Notes</p>
+                                    <p className="text-xs mt-1" style={{ color: subText }}>See what's new in the latest versions</p>
+                                </div>
+                                <AliveBtn onClick={() => navigate("/updates")} outline>
+                                    View
+                                </AliveBtn>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* 6. INFO SECTION */}
                     <section>
                         <h3 className="text-sm font-semibold tracking-wider mb-4 uppercase" style={{ color: subText }}>
                             Info
@@ -336,7 +354,7 @@ export default function Settings() {
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-end gap-2">
                                     <h4 className="text-xl font-bold tracking-widest" style={{ color: accent }}>STREAK</h4>
-                                    <span className="text-xs font-medium mb-1" style={{ color: subText }}>v1.0</span>
+                                    <span className="text-xs font-medium mb-1" style={{ color: subText }}>v1.1</span>
                                 </div>
                                 <p className="text-sm">A simple habit tracking app focused on consistency.</p>
                                 <p className="text-xs mt-1" style={{ color: subText }}>Privacy note: Your data is stored locally on your device.</p>
@@ -375,8 +393,8 @@ export default function Settings() {
                                                 }}
                                             />
                                             <div className="flex justify-end gap-2">
-                                                <AliveBtn 
-                                                    onClick={() => setShowFeedback(false)} 
+                                                <AliveBtn
+                                                    onClick={() => setShowFeedback(false)}
                                                     color={subText}
                                                     outline
                                                 >

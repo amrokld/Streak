@@ -1,10 +1,13 @@
 import { useTheme } from "../Context/ThemeContext";
+import { formatDate } from "../utils/dateHelpers";
+import { STORAGE_KEYS } from "../constants/storageKeys";
+import { getTokens } from "../theme/tokens";
 
 export default function Statistics() {
   const { isDark } = useTheme();
-  const accent = isDark ? "#d4af37" : "#2563eb";
+  const { accent } = getTokens(isDark);
 
-  const habits = JSON.parse(localStorage.getItem("habits")) || [];
+  const habits = JSON.parse(localStorage.getItem(STORAGE_KEYS.habits)) || [];
 
   // total number of habits
   const totalHabits = habits.length;
@@ -34,13 +37,14 @@ export default function Statistics() {
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() - (6 - i));
-    return d.toDateString();
+    return formatDate(d);
   });
+
 
   const weeklyActivity = last7Days.map((dateStr) => {
     // Check if any habit has a completion date on this date
     return habits.some((h) =>
-      h.completedDays?.some((completedDate) => completedDate.startsWith(dateStr))
+      h.completedDays?.includes(dateStr)
     );
   });
 
@@ -72,9 +76,8 @@ export default function Statistics() {
   const uniqueActiveDaysThisMonth = new Set();
   habits.forEach((h) => {
     h.completedDays?.forEach((dateStr) => {
-      const d = new Date(dateStr);
-      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-        uniqueActiveDaysThisMonth.add(d.toISOString().split('T')[0]);
+      if (dateStr.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`)) {
+        uniqueActiveDaysThisMonth.add(dateStr);
       }
     });
   });

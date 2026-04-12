@@ -1,14 +1,17 @@
 import { motion } from "framer-motion";
 import { useTheme } from "../Context/ThemeContext";
+import { getTokens } from "../theme/tokens";
+
 
 export default function Splash({ onFinish }) {
   const { isDark } = useTheme();
+  const { bg, accent } = getTokens(isDark);
 
   return (
     <motion.div
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{
-        backgroundColor: isDark ? "#1f1f1f" : "#f2f4f8"
+        backgroundColor: bg
       }}
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
@@ -23,7 +26,7 @@ export default function Splash({ onFinish }) {
         style={{
           fontFamily: "Space Grotesk",
           letterSpacing: "0.08em",
-          color: isDark ? "#d4af37" : "#2563eb"
+          color: accent
         }}
       >
         STREAK

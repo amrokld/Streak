@@ -1,6 +1,8 @@
 import { useTheme } from "../Context/ThemeContext";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
+import { getTokens } from "../theme/tokens";
+
 
 export default function ConfirmModal({
   title = "Are you sure?",
@@ -11,10 +13,7 @@ export default function ConfirmModal({
 }) {
   const { isDark } = useTheme();
 
-  const accent = isDark ? "#d4af37" : "#2563eb";
-  const cardBg = isDark ? "#2a2a2a" : "#ffffff";
-  const text = isDark ? "#ffffff" : "#1a1a1a";
-  const subText = isDark ? "#aaa" : "#6b7280";
+  const { accent, cardBg, text, subText } = getTokens(isDark);
 
   return createPortal(
     <div

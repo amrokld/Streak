@@ -7,6 +7,8 @@ import HabitCard from "../components/HabitCard";
 import { useTheme } from "../Context/ThemeContext";
 import Onboarding from "./Onboarding";
 import ConfirmModal from "../components/ConfirmModel";
+import { STORAGE_KEYS } from "../constants/storageKeys";
+import { getTokens } from "../theme/tokens";
 
 export default function Home() {
   const { habits, deleteHabit, updateHabit } = useHabits();
@@ -14,8 +16,7 @@ export default function Home() {
   const { theme } = useTheme();
 
   const isDark = theme === "dark";
-  const accent = isDark ? "#d4af37" : "#2563eb";
-  const subText = isDark ? "#aaa" : "#6b7280";
+  const { accent, subText } = getTokens(isDark);
 
   const [habitToDelete, setHabitToDelete] = useState(null);
   const [habitToEdit, setHabitToEdit] = useState(null);
@@ -23,7 +24,7 @@ export default function Home() {
   const forceCloseCards = Boolean(habitToDelete || habitToEdit);
 
   /* ---------- USERNAME ---------- */
-  const username = localStorage.getItem("username") || "";
+  const username = localStorage.getItem(STORAGE_KEYS.username) || "";
 
   /* ---------- CATEGORY FILTER ---------- */
   const [activeCategories, setActiveCategories] = useState([]);
@@ -199,15 +200,15 @@ export default function Home() {
                       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: color }} />
                     )}
                     {!active && (
-                        <span 
-                          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none capitalize"
-                          style={{ color: isDark ? "#000" : "#fff" }}
-                        >
-                            {cat}
-                        </span>
+                      <span
+                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none capitalize"
+                        style={{ color: isDark ? "#000" : "#fff" }}
+                      >
+                        {cat}
+                      </span>
                     )}
                     <span className={`relative z-10 block capitalize ${!active ? "group-hover:opacity-0 transition-opacity duration-200" : ""}`}>
-                        {cat}
+                      {cat}
                     </span>
                   </button>
                 );
