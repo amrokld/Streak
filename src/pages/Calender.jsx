@@ -5,10 +5,12 @@ import { createPortal } from "react-dom";
 import { formatDate } from "../utils/dateHelpers";
 import { STORAGE_KEYS } from "../constants/storageKeys";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 export default function Calendar() {
   const { isDark } = useTheme();
   const { accent } = getTokens(isDark);
+  const { t, lang } = useLanguage();
 
   // Load all habits
   const habits = JSON.parse(localStorage.getItem(STORAGE_KEYS.habits)) || [];
@@ -34,7 +36,7 @@ export default function Calendar() {
   // Derived Month State
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth(); // 0-11
-  const monthName = currentDate.toLocaleString("default", { month: "long" });
+  const monthKeys = ["monthJanuary", "monthFebruary", "monthMarch", "monthApril", "monthMay", "monthJune", "monthJuly", "monthAugust", "monthSeptember", "monthOctober", "monthNovember", "monthDecember"];
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
@@ -65,7 +67,7 @@ export default function Calendar() {
     formatDate(new Date(year, month, i + 1))
   );
 
-  const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  const dayKeys = ["daySu", "dayMo", "dayTu", "dayWe", "dayTh", "dayFr", "daySa"];
 
   // Heatmap Logic
   const getOpacity = (count) => {
@@ -85,7 +87,7 @@ export default function Calendar() {
       {/* 1. HEADER & HABIT FILTER */}
       <div className="w-full flex justify-between items-center px-2">
         <h1 className="text-3xl font-bold" style={{ color: accent }}>
-          Calendar
+          {t("calendar")}
         </h1>
 
         {habits.length > 0 && (
@@ -100,7 +102,7 @@ export default function Calendar() {
               }}
             >
               <span className="truncate max-w-[140px]">
-                {selectedHabitId === "all" ? "All Habits" : habits.find(h => String(h.id) === String(selectedHabitId))?.name || "Unknown"}
+                {selectedHabitId === "all" ? t("allHabits") : habits.find(h => String(h.id) === String(selectedHabitId))?.name || t("unknown")}
               </span>
               <motion.svg animate={{ rotate: showFilterMenu ? 180 : 0 }} className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
@@ -125,7 +127,7 @@ export default function Calendar() {
                       color: selectedHabitId === "all" ? accent : (isDark ? "#aaa" : "#6b7280")
                     }}
                   >
-                    All Habits
+                    {t("allHabits")}
                   </div>
                   {habits.map(h => (
                     <div
@@ -171,7 +173,7 @@ export default function Calendar() {
             onClick={goToToday}
             title="Click to jump to Today"
           >
-            <span className="font-bold text-lg tracking-wide uppercase">{monthName}</span>
+            <span className="font-bold text-lg tracking-wide uppercase">{t(monthKeys[month])}</span>
             <span className="text-xs opacity-50">{year}</span>
           </div>
 
@@ -186,9 +188,9 @@ export default function Calendar() {
 
         {/* WEEKDAYS HEADER */}
         <div className="grid grid-cols-7 gap-2 mb-4 text-center border-b pb-3" style={{ borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}>
-          {weekDays.map((wd) => (
-            <div key={wd} className="text-[10px] md:text-xs font-semibold opacity-40 uppercase tracking-widest">
-              {wd}
+          {dayKeys.map((dk) => (
+            <div key={dk} className="text-[10px] md:text-xs font-semibold opacity-40 uppercase tracking-widest">
+              {t(dk)}
             </div>
           ))}
         </div>
@@ -224,7 +226,7 @@ export default function Calendar() {
                   outlineOffset: "3px",
                   boxShadow: isToday ? `0 0 10px ${accent}40` : "none" // Nice subtle pop for Today
                 }}
-                title={hasActivity ? `${count} ${count === 1 ? 'habit' : 'habits'} completed` : `No activity`}
+                title={hasActivity ? `${count} ${count === 1 ? t("habitCompleted") : t("habitsCompleted")}` : t("noActivity")}
               >
                 {cellDate.getDate()}
               </div>
@@ -256,7 +258,7 @@ export default function Calendar() {
             {/* Modal Header */}
             <div className="flex justify-between items-start border-b pb-3" style={{ borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}>
               <h3 className="text-xl font-bold">
-                {new Date(selectedDay).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                {new Date(selectedDay).toLocaleDateString(lang === "ar" ? "ar-SA" : undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
               </h3>
               <div
                 onClick={() => setSelectedDay(null)}
@@ -269,7 +271,7 @@ export default function Calendar() {
             {/* Modal Content */}
             <div className="flex flex-col gap-2">
               <span className="text-xs font-semibold uppercase opacity-40 tracking-wider mb-1">
-                Activity
+                {t("activity")}
               </span>
 
               {dayHabitNames[selectedDay]?.length > 0 ? (
@@ -284,7 +286,7 @@ export default function Calendar() {
                   </div>
                 ))
               ) : (
-                <p className="opacity-50 italic text-sm mt-1">No habits were completed on this day.</p>
+                <p className="opacity-50 italic text-sm mt-1">{t("noHabitsCompleted")}</p>
               )}
             </div>
 

@@ -4,6 +4,7 @@ import { useHabits } from "../Context/HabitContext";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 export default function Onboarding({
   mode = "onboarding",
@@ -14,6 +15,7 @@ export default function Onboarding({
 
   const { isDark } = useTheme();
   const { addHabit } = useHabits();
+  const { t } = useLanguage();
 
   const navigate = useNavigate();
 
@@ -73,11 +75,11 @@ export default function Onboarding({
           className="text-3xl font-bold"
           style={{ color: accent }}
         >
-          What do you want to track?
+          {t("whatToTrack")}
         </h1>
 
         <p className="text-sm" style={{ color: subText }}>
-          One habit. One streak. Every day.
+          {t("oneHabit")}
         </p>
 
         <form
@@ -95,7 +97,7 @@ export default function Onboarding({
             }}
             value={habit}
             onChange={(e) => setHabit(e.target.value)}
-            placeholder="Gym, Study, Reading..."
+            placeholder={t("habitPlaceholder")}
             autoFocus
           />
 
@@ -122,7 +124,7 @@ export default function Onboarding({
                     color: color
                   }}
                 >
-                  {cat}
+                  {t(cat)}
                 </button>
               );
             })}
@@ -142,10 +144,10 @@ export default function Onboarding({
               className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
               style={{ color: isDark ? "#000" : "#fff" }}
             >
-                {mode === "onboarding" ? "Start" : "Create"}
+                {mode === "onboarding" ? t("start") : t("create")}
             </span>
             <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
-                {mode === "onboarding" ? "Start" : "Create"}
+                {mode === "onboarding" ? t("start") : t("create")}
             </span>
           </button>
         </form>
@@ -160,10 +162,10 @@ export default function Onboarding({
                 className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                 style={{ color: "#ef4444", textShadow: "0 0 12px rgba(239,68,68,0.8)" }}
              >
-                Cancel
+                {t("cancel")}
              </span>
              <span className="relative z-10 group-hover:opacity-0 transition-opacity duration-300">
-                Cancel
+                {t("cancel")}
              </span>
           </button>
         )}

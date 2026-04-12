@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { cardFlip } from "../motion/motionVariants";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 
 export default function HabitCard({
@@ -15,6 +16,7 @@ export default function HabitCard({
   const [flipped, setFlipped] = useState(false);
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { t } = useLanguage();
 
   const { accent, cardBg, subText, badgeBg } = getTokens(isDark);
   const shadow = isDark ? "none" : "0 12px 30px rgba(0,0,0,0.08)";
@@ -64,11 +66,11 @@ export default function HabitCard({
             </h3>
 
             <p className="text-sm mt-1" style={{ color: subText }}>
-              click for more details
+              {t("clickForDetails")}
             </p>
 
             <p className="text-[11px] mt-1 opacity-40" style={{ color: subText }}>
-              Right-click for options
+              {t("rightClickOptions")}
             </p>
 
             {habit.category && (
@@ -80,7 +82,7 @@ export default function HabitCard({
                   color: catColor
                 }}
               >
-                {habit.category}
+                {t(habit.category)}
               </span>
             )}
 
@@ -108,7 +110,7 @@ export default function HabitCard({
             }}
           >
             <div className="text-xs opacity-40 tracking-wide">
-              OPTIONS
+              {t("options")}
             </div>
 
             <div className="flex flex-col gap-3">
@@ -127,10 +129,10 @@ export default function HabitCard({
                   className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
                   style={{ color: isDark ? "#000" : "#fff" }}
                 >
-                  Change category
+                  {t("changeCategory")}
                 </span>
                 <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
-                  Change category
+                  {t("changeCategory")}
                 </span>
               </button>
 
@@ -149,16 +151,16 @@ export default function HabitCard({
                   className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
                   style={{ color: isDark ? "#000" : "#fff" }}
                 >
-                  Delete habit
+                  {t("deleteHabit")}
                 </span>
                 <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
-                  Delete habit
+                  {t("deleteHabit")}
                 </span>
               </button>
             </div>
 
             <p className="text-xs opacity-40 text-center">
-              Right-click to close
+              {t("rightClickClose")}
             </p>
           </div>
         </motion.div>

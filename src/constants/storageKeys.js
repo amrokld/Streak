@@ -5,4 +5,5 @@ export const STORAGE_KEYS = {
     reminders: "reminders",
     theme: "theme",
     feedback: "streak_feedback",
+    language: "streak_lang",
 };

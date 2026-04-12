@@ -3,11 +3,13 @@ import { useTheme } from "../Context/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTasks } from "../Context/TaskContext";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 export default function Tasks() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const { accent, bg, cardBg, text, subText, borderColor } = getTokens(isDark);
+  const { t, lang } = useLanguage();
 
   const { tasks, addTask, toggleDone, deleteTask, editTask, clearCompleted } = useTasks();
 
@@ -99,7 +101,7 @@ export default function Tasks() {
   const curMonth = calDate.getMonth();
   const firstDay = new Date(curYear, curMonth, 1).getDay();
   const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthKeys = ["monthJanuary", "monthFebruary", "monthMarch", "monthApril", "monthMay", "monthJune", "monthJuly", "monthAugust", "monthSeptember", "monthOctober", "monthNovember", "monthDecember"];
 
   const handlePrevMonth = (e) => { e.preventDefault(); setCalDate(new Date(curYear, curMonth - 1, 1)); };
   const handleNextMonth = (e) => { e.preventDefault(); setCalDate(new Date(curYear, curMonth + 1, 1)); };
@@ -111,20 +113,22 @@ export default function Tasks() {
     setShowDateMenu(false);
   };
 
+  const dayKeys = ["daySu", "dayMo", "dayTu", "dayWe", "dayTh", "dayFr", "daySa"];
+
   return (
     <div className="flex flex-col items-center mt-12 pb-24 animate-fade-in w-full px-4">
       <div className="w-full max-w-4xl">
 
         {/* Header */}
         <div className="flex items-end justify-between mb-16">
-          <h1 className="text-3xl font-bold" style={{ color: accent }}>Tasks</h1>
-          {tasks.some(t => t.done) && (
+          <h1 className="text-3xl font-bold" style={{ color: accent }}>{t("tasks")}</h1>
+          {tasks.some(tk => tk.done) && (
             <button
               onClick={clearCompleted}
               className="text-sm font-medium transition opacity-70 hover:opacity-100 mb-1"
               style={{ color: accent }}
             >
-              Clear Completed
+              {t("clearCompleted")}
             </button>
           )}
         </div>
@@ -141,7 +145,7 @@ export default function Tasks() {
         >
           <input
             type="text"
-            placeholder="What needs to be done?"
+            placeholder={t("whatNeedsDone")}
             value={newTaskText}
             onChange={e => setNewTaskText(e.target.value)}
             className="flex-1 bg-transparent outline-none text-lg md:pl-2"
@@ -167,7 +171,7 @@ export default function Tasks() {
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    Date
+                    {t("date")}
                   </div>
                 )}
               </div>
@@ -185,7 +189,7 @@ export default function Tasks() {
                   >
                     {/* Calendar Header */}
                     <div className="flex justify-between items-center mb-4">
-                      <span className="font-bold text-sm" style={{ color: text }}>{monthNames[curMonth]} {curYear}</span>
+                      <span className="font-bold text-sm" style={{ color: text }}>{t(monthKeys[curMonth])} {curYear}</span>
                       <div className="flex gap-2">
                         <button onClick={handlePrevMonth} className="p-1 rounded-full hover:bg-gray-500/20 transition">
                           <svg className="w-4 h-4" style={{ color: text }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
@@ -198,7 +202,7 @@ export default function Tasks() {
 
                     {/* Day Labels */}
                     <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold mb-2 uppercase" style={{ color: subText }}>
-                      {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <span key={d}>{d}</span>)}
+                      {dayKeys.map(dk => <span key={dk}>{t(dk)}</span>)}
                     </div>
 
                     {/* Day Grid */}
@@ -237,13 +241,13 @@ export default function Tasks() {
                         onClick={(e) => { e.preventDefault(); setNewTaskDate(""); setShowDateMenu(false); }}
                         className="text-xs font-bold transition hover:opacity-70" style={{ color: subText }}
                       >
-                        Clear
+                        {t("clear")}
                       </button>
                       <button
                         onClick={(e) => { e.preventDefault(); setNewTaskDate(todayStr); setShowDateMenu(false); }}
                         className="text-xs font-bold transition hover:opacity-70" style={{ color: accent }}
                       >
-                        Today
+                        {t("today")}
                       </button>
                     </div>
                   </motion.div>
@@ -262,7 +266,7 @@ export default function Tasks() {
                   color: getPriorityColor(newTaskPriority)
                 }}
               >
-                <span className="capitalize">{newTaskPriority}</span>
+                <span className="capitalize">{t(newTaskPriority)}</span>
                 <motion.svg animate={{ rotate: showPriorityMenu ? 180 : 0 }} className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
                 </motion.svg>
@@ -288,7 +292,7 @@ export default function Tasks() {
                           backgroundColor: newTaskPriority === p ? (isDark ? "#333" : "#f1f5f9") : "transparent"
                         }}
                       >
-                        {p}
+                        {t(p)}
                       </div>
                     ))}
                   </motion.div>
@@ -307,7 +311,7 @@ export default function Tasks() {
               }}
               disabled={!newTaskText.trim()}
             >
-              Add
+              {t("add")}
             </button>
           </div>
         </form>
@@ -321,7 +325,7 @@ export default function Tasks() {
                 className="text-center py-12 opacity-50"
                 style={{ color: subText }}
               >
-                No tasks yet. You're all caught up!
+                {t("noTasksYet")}
               </motion.div>
             )}
 
@@ -407,7 +411,7 @@ export default function Tasks() {
                       className="opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
                       style={{ color: subText }}
                       onClick={() => deleteTask(task.id)}
-                      title="Delete task"
+                      title={t("delete")}
                     >
                       <svg className="w-5 h-5 hover:text-red-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

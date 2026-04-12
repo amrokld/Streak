@@ -8,25 +8,37 @@
 
 ## 📖 About The Project
 
-**STREAK** is a highly-polished, completely offline habit tracker built for users who demand premium design without app bloat. By leveraging modern fluid animations, dynamic theming, and an uncompromising stance on data privacy, STREAK delivers a native-feeling tracking experience directly inside the browser.
+**STREAK** is a highly-polished, completely offline habit tracker built for users who demand premium design without app bloat. By leveraging modern fluid animations, dynamic theming, and an uncompromising stance on data privacy, STREAK delivers a native-feeling tracking experience — now with full bilingual support.
 
 ## ✨ Key Features
 
 - 🎯 **Frictionless Tracking:** Increment streaks with massive, satisfying counter interactions & confetti celebrations
 - 🎨 **Premium Animations:** Physics-based layout transitions and frosted-glass modals using Framer Motion
-- 🌓 **Dynamic Theming:** Deeply integrated Dark Mode and Light Mode that responds beautifully to user preference
-- 📂 **Smart Categorization:** Organize, filter, and prioritize habits by *Important*, *Urgent*, or *Optional* 
-- 🔒 **Absolute Privacy:** 100% offline. Your data never leaves your device and lives entirely in your browser's Local Storage
+- 🌓 **Dynamic Theming:** Deeply integrated Dark Mode and Light Mode with a centralized token system
+- 📂 **Smart Categorization:** Organize, filter, and prioritize habits by *Important*, *Urgent*, or *Optional*
+- 🌍 **Bilingual Support:** Full English & Arabic localization with automatic RTL layout and native Arabic typography
+- ✅ **Task Management:** A complete to-do system with priorities, due dates, and a built-in calendar picker
+- 📊 **Rich Statistics:** Overview cards, weekly consistency tracking, insights, and an integrated activity heatmap calendar
+- 🔒 **Absolute Privacy:** 100% offline. Your data never leaves your device and lives entirely in Local Storage
 - 💾 **Data Portability:** Safely backup your entire history via JSON Export/Import capabilities
 - 📩 **Built-in Support:** In-app Bug & Feedback reporting natively hooked into EmailJS
+
+## 🏗️ Architecture
+
+- **Centralized State:** All habits, tasks, and settings managed through dedicated React Contexts (`HabitContext`, `TaskContext`, `ThemeContext`, `LanguageContext`)
+- **Theme Tokens:** A single `getTokens(isDark)` function replaces all hardcoded colors across the app
+- **i18n System:** Translation files in `/locales` with a `t(key)` function — scalable to any number of languages
+- **Normalized Dates:** All date logic uses `YYYY-MM-DD` format via `dateHelpers.js` for timezone-safe comparisons
+- **Centralized Storage:** All `localStorage` keys live in `constants/storageKeys.js`
 
 ## 🛠️ Built With
 
 * **React 18 (Vite):** Core architecture and fast bundling
+* **Electron:** Desktop application packaging with auto-update support
 * **TailwindCSS:** Utility-first, geometric aesthetic styling
 * **Framer Motion:** Physics and layout-based animations
 * **React Router v6:** Seamless page transitions
-* **React Context API:** Global `Habit` and `Theme` state management
+* **React Context API:** Global state management for Habits, Tasks, Theme, and Language
 
 ## 🚀 Getting Started
 
@@ -50,6 +62,10 @@
 4. Start the development server:
    ```bash
    npm run dev
+   ```
+5. Build the Electron desktop app:
+   ```bash
+   npm run electron:build
    ```
 
 ## ⚙️ Additional Configuration

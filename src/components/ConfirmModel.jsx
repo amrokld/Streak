@@ -2,6 +2,7 @@ import { useTheme } from "../Context/ThemeContext";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 
 export default function ConfirmModal({
@@ -14,6 +15,7 @@ export default function ConfirmModal({
   const { isDark } = useTheme();
 
   const { accent, cardBg, text, subText } = getTokens(isDark);
+  const { t } = useLanguage();
 
   return createPortal(
     <div
@@ -64,7 +66,7 @@ export default function ConfirmModal({
           onClick={onCancel}
           className="text-sm opacity-50 transition hover:opacity-100"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </motion.div>
     </div>,

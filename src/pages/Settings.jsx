@@ -5,11 +5,13 @@ import { useHabits } from "../Context/HabitContext";
 import { useNavigate } from "react-router-dom";
 import { STORAGE_KEYS } from "../constants/storageKeys";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 export default function Settings() {
     const { toggleTheme, isDark } = useTheme();
     const { habits } = useHabits();
     const navigate = useNavigate();
+    const { t, lang, toggleLang } = useLanguage();
 
     // State Management
     const [username, setUsername] = useState(localStorage.getItem(STORAGE_KEYS.username) || "");
@@ -94,14 +96,14 @@ export default function Settings() {
 
     const saveGeneral = () => {
         localStorage.setItem(STORAGE_KEYS.username, username);
-        showToast("Username saved successfully");
+        showToast(t("usernameSaved"));
     };
 
     const toggleReminders = () => {
         const newState = !reminders;
         setReminders(newState);
         localStorage.setItem(STORAGE_KEYS.reminders, newState);
-        showToast(newState ? "Reminders enabled" : "Reminders disabled");
+        showToast(newState ? t("remindersEnabled") : t("remindersDisabled"));
     };
 
     // === Data & Danger Actions ===
@@ -113,7 +115,7 @@ export default function Settings() {
         document.body.appendChild(downloadNode);
         downloadNode.click();
         downloadNode.remove();
-        showToast("Backup downloaded!");
+        showToast(t("backupDownloaded"));
     };
 
     const handleImport = (e) => {
@@ -125,30 +127,30 @@ export default function Settings() {
                 const parsed = JSON.parse(e.target.result);
                 if (Array.isArray(parsed)) {
                     localStorage.setItem(STORAGE_KEYS.habits, JSON.stringify(parsed));
-                    showToast("Import successful! Refreshing...");
+                    showToast(t("importSuccess"));
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
-                    showToast("Error: Invalid file format");
+                    showToast(t("invalidFormat"));
                 }
             } catch (err) {
-                showToast("Error reading file");
+                showToast(t("errorReading"));
             }
         };
         reader.readAsText(file);
     };
 
     const resetHabits = () => {
-        if (window.confirm("Are you sure you want to delete ALL habits?")) {
+        if (window.confirm(t("confirmResetHabits"))) {
             localStorage.setItem(STORAGE_KEYS.habits, "[]");
-            showToast("Habits cleared! Refreshing...");
+            showToast(t("habitsCleared"));
             setTimeout(() => window.location.reload(), 1000);
         }
     };
 
     const resetEverything = () => {
-        if (window.confirm("⚠️ DANGER: This wipes absolutely everything. Proceed?")) {
+        if (window.confirm(t("confirmFactoryReset"))) {
             localStorage.clear();
-            showToast("Factory reset complete. Bye!");
+            showToast(t("factoryResetDone"));
             setTimeout(() => window.location.reload(), 1500);
         }
     };
@@ -178,11 +180,11 @@ export default function Settings() {
             });
 
 
-            showToast("Thanks for your feedback!");
+            showToast(t("feedbackThanks"));
             setFeedbackText("");
             setShowFeedback(false);
         } catch (err) {
-            showToast("Error sending feedback");
+            showToast(t("feedbackError"));
         } finally {
             setIsSending(false);
         }
@@ -193,21 +195,21 @@ export default function Settings() {
     return (
         <div className="flex justify-center mt-12 pb-24 relative ">
             <div className="w-full max-w-2xl px-6">
-                <h2 className="text-3xl font-bold mb-8" style={{ color: accent }}> Settings</h2>
+                <h2 className="text-3xl font-bold mb-8" style={{ color: accent }}> {t("settings")}</h2>
 
                 <div className="flex flex-col gap-8">
 
                     {/* 1. GENERAL SECTION */}
                     <section>
                         <h3 className="text-sm font-semibold tracking-wider mb-4 uppercase" style={{ color: subText }}>
-                            General
+                            {t("general")}
                         </h3>
                         <div className="p-6 rounded-3xl flex flex-col gap-6" style={{ backgroundColor: cardBg, border: `1px solid ${borderColor}` }}>
 
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium">Username</p>
-                                    <p className="text-xs mt-1" style={{ color: subText }}>How you want to be greeted</p>
+                                    <p className="font-medium">{t("username")}</p>
+                                    <p className="text-xs mt-1" style={{ color: subText }}>{t("howGreeted")}</p>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <input
@@ -218,18 +220,28 @@ export default function Settings() {
                                         style={{ backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6", color: isDark ? "#fff" : "#1a1a1a" }}
                                     />
                                     <AliveBtn onClick={saveGeneral}>
-                                        Save
+                                        {t("save")}
                                     </AliveBtn>
                                 </div>
                             </div>
 
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium">Theme</p>
-                                    <p className="text-xs mt-1" style={{ color: subText }}>Toggle application theme</p>
+                                    <p className="font-medium">{t("theme")}</p>
+                                    <p className="text-xs mt-1" style={{ color: subText }}>{t("toggleTheme")}</p>
                                 </div>
                                 <AliveBtn onClick={toggleTheme} outline>
-                                    {isDark ? "Light Mode" : "Dark Mode"}
+                                    {isDark ? t("lightMode") : t("darkMode")}
+                                </AliveBtn>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-medium">{t("language")}</p>
+                                    <p className="text-xs mt-1" style={{ color: subText }}>{t("languageDesc")}</p>
+                                </div>
+                                <AliveBtn onClick={toggleLang} outline>
+                                    {lang === "en" ? t("arabic") : t("english")}
                                 </AliveBtn>
                             </div>
                         </div>
@@ -238,14 +250,14 @@ export default function Settings() {
                     {/* 2. NOTIFICATIONS SECTION */}
                     <section>
                         <h3 className="text-sm font-semibold tracking-wider mb-4 uppercase" style={{ color: subText }}>
-                            Notifications
+                            {t("notifications")}
                         </h3>
                         <div className="p-6 rounded-3xl flex flex-col gap-6" style={{ backgroundColor: cardBg, border: `1px solid ${borderColor}` }}>
 
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium">Daily Reminders</p>
-                                    <p className="text-xs mt-1" style={{ color: subText }}>Get notified about your habits</p>
+                                    <p className="font-medium">{t("dailyReminders")}</p>
+                                    <p className="text-xs mt-1" style={{ color: subText }}>{t("getNotified")}</p>
                                 </div>
                                 {/* Custom Toggle Switch */}
                                 <button
@@ -269,37 +281,37 @@ export default function Settings() {
                     {/* 3. DATA SECTION */}
                     <section>
                         <h3 className="text-sm font-semibold tracking-wider mb-4 uppercase" style={{ color: subText }}>
-                            Data Management
+                            {t("dataManagement")}
                         </h3>
                         <div className="p-6 rounded-3xl flex flex-col gap-6" style={{ backgroundColor: cardBg, border: `1px solid ${borderColor}` }}>
 
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium">Export Backup</p>
-                                    <p className="text-xs mt-1" style={{ color: subText }}>Download your habits as a JSON file</p>
+                                    <p className="font-medium">{t("exportBackup")}</p>
+                                    <p className="text-xs mt-1" style={{ color: subText }}>{t("exportDesc")}</p>
                                 </div>
                                 <AliveBtn onClick={handleExport} color={isDark ? "#fff" : "#1a1a1a"}>
-                                    Download
+                                    {t("download")}
                                 </AliveBtn>
                             </div>
 
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium">Import Backup</p>
-                                    <p className="text-xs mt-1" style={{ color: subText }}>Restore habits from a previous JSON</p>
+                                    <p className="font-medium">{t("importBackup")}</p>
+                                    <p className="text-xs mt-1" style={{ color: subText }}>{t("importDesc")}</p>
                                 </div>
                                 <AliveLabel onChange={handleImport} color={isDark ? "#fff" : "#1a1a1a"}>
-                                    Upload
+                                    {t("upload")}
                                 </AliveLabel>
                             </div>
 
                             <div className="flex items-center justify-between border-t pt-6 mt-2" style={{ borderColor: borderColor }}>
                                 <div>
-                                    <p className="font-medium text-red-500">Reset Habits</p>
-                                    <p className="text-xs mt-1" style={{ color: subText }}>Deletes all current habits permanently</p>
+                                    <p className="font-medium text-red-500">{t("resetHabits")}</p>
+                                    <p className="text-xs mt-1" style={{ color: subText }}>{t("resetHabitsDesc")}</p>
                                 </div>
                                 <AliveBtn onClick={resetHabits} color="#ef4444" outline>
-                                    Reset Habits
+                                    {t("resetHabits")}
                                 </AliveBtn>
                             </div>
 
@@ -309,17 +321,17 @@ export default function Settings() {
                     {/* 4. DANGER ZONE */}
                     <section>
                         <h3 className="text-sm font-semibold tracking-wider mb-4 uppercase text-red-500">
-                            Danger Zone
+                            {t("dangerZone")}
                         </h3>
                         <div className="p-6 rounded-3xl flex flex-col gap-6" style={{ backgroundColor: isDark ? "#2a1f1f" : "#fee2e2", border: "1px solid #f87171" }}>
 
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium text-red-600 dark:text-red-400">Factory Reset</p>
-                                    <p className="text-xs mt-1 opacity-80 text-red-600 dark:text-red-400">Wipes all habits, settings, themes, and your username.</p>
+                                    <p className="font-medium text-red-600 dark:text-red-400">{t("factoryReset")}</p>
+                                    <p className="text-xs mt-1 opacity-80 text-red-600 dark:text-red-400">{t("factoryResetDesc")}</p>
                                 </div>
                                 <AliveBtn onClick={resetEverything} color="#ef4444">
-                                    Wipe Everything
+                                    {t("wipeEverything")}
                                 </AliveBtn>
                             </div>
 
@@ -329,16 +341,16 @@ export default function Settings() {
                     {/* 5. UPDATE PATCHES */}
                     <section>
                         <h3 className="text-sm font-semibold tracking-wider mb-4 uppercase" style={{ color: subText }}>
-                            Updates
+                            {t("updates")}
                         </h3>
                         <div className="p-6 rounded-3xl flex flex-col gap-6" style={{ backgroundColor: cardBg, border: `1px solid ${borderColor}` }}>
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium">Patch Notes</p>
-                                    <p className="text-xs mt-1" style={{ color: subText }}>See what's new in the latest versions</p>
+                                    <p className="font-medium">{t("patchNotes")}</p>
+                                    <p className="text-xs mt-1" style={{ color: subText }}>{t("patchNotesDesc")}</p>
                                 </div>
                                 <AliveBtn onClick={() => navigate("/updates")} outline>
-                                    View
+                                    {t("view")}
                                 </AliveBtn>
                             </div>
                         </div>
@@ -347,27 +359,27 @@ export default function Settings() {
                     {/* 6. INFO SECTION */}
                     <section>
                         <h3 className="text-sm font-semibold tracking-wider mb-4 uppercase" style={{ color: subText }}>
-                            Info
+                            {t("info")}
                         </h3>
                         <div className="p-6 rounded-3xl flex flex-col gap-5" style={{ backgroundColor: cardBg, border: `1px solid ${borderColor}` }}>
 
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-end gap-2">
                                     <h4 className="text-xl font-bold tracking-widest" style={{ color: accent }}>STREAK</h4>
-                                    <span className="text-xs font-medium mb-1" style={{ color: subText }}>v1.1</span>
+                                    <span className="text-xs font-medium mb-1" style={{ color: subText }}>v2.0</span>
                                 </div>
-                                <p className="text-sm">A simple habit tracking app focused on consistency.</p>
-                                <p className="text-xs mt-1" style={{ color: subText }}>Privacy note: Your data is stored locally on your device.</p>
+                                <p className="text-sm">{t("appDescription")}</p>
+                                <p className="text-xs mt-1" style={{ color: subText }}>{t("privacyNote")}</p>
                             </div>
 
                             <div className="w-full h-px" style={{ backgroundColor: borderColor }} />
 
                             <div className="flex gap-4">
                                 <AliveBtn onClick={() => setShowFeedback(!showFeedback)} outline>
-                                    Report Bug / Feedback
+                                    {t("reportBug")}
                                 </AliveBtn>
                                 <AliveBtn onClick={() => window.location.href = "mailto:streakapp.feedback@gmail.com"} outline>
-                                    Contact
+                                    {t("contact")}
                                 </AliveBtn>
 
                             </div>
@@ -384,7 +396,7 @@ export default function Settings() {
                                             <textarea
                                                 value={feedbackText}
                                                 onChange={(e) => setFeedbackText(e.target.value)}
-                                                placeholder="Write your feedback..."
+                                                placeholder={t("writeFeedback")}
                                                 className="w-full h-24 p-3 rounded-xl outline-none text-sm resize-none"
                                                 style={{
                                                     backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6",
@@ -398,13 +410,13 @@ export default function Settings() {
                                                     color={subText}
                                                     outline
                                                 >
-                                                    Cancel
+                                                    {t("cancel")}
                                                 </AliveBtn>
                                                 <AliveBtn
                                                     onClick={handleFeedbackSubmit}
                                                     disabled={!feedbackText.trim() || isSending}
                                                 >
-                                                    {isSending ? "Sending..." : "Submit"}
+                                                    {isSending ? t("sending") : t("submit")}
                                                 </AliveBtn>
                                             </div>
                                         </div>

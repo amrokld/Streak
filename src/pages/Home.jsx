@@ -9,11 +9,13 @@ import Onboarding from "./Onboarding";
 import ConfirmModal from "../components/ConfirmModel";
 import { STORAGE_KEYS } from "../constants/storageKeys";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 export default function Home() {
   const { habits, deleteHabit, updateHabit } = useHabits();
   const { showNewHabit, setShowNewHabit } = useOutletContext();
   const { theme } = useTheme();
+  const { t } = useLanguage();
 
   const isDark = theme === "dark";
   const { accent, subText } = getTokens(isDark);
@@ -40,9 +42,9 @@ export default function Home() {
   /* ---------- GREETING ---------- */
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return t("goodMorning");
+    if (hour < 18) return t("goodAfternoon");
+    return t("goodEvening");
   };
 
   return (
@@ -73,8 +75,8 @@ export default function Home() {
             style={{ color: subText }}
           >
             {habits.length === 0
-              ? "Welcome! Ready to build some streaks?"
-              : "It's nice to see you again"}
+              ? t("welcomeMessage")
+              : t("welcomeBack")}
           </motion.p>
         </motion.div>
 
@@ -101,7 +103,7 @@ export default function Home() {
                   color: active ? color : subText
                 }}
               >
-                {cat}
+                {t(cat)}
               </button>
             );
           })}
@@ -137,9 +139,9 @@ export default function Home() {
       {/* ---------- DELETE CONFIRM ---------- */}
       {habitToDelete && (
         <ConfirmModal
-          title="Delete habit?"
-          message={`"${habitToDelete.name}" will be permanently removed.`}
-          confirmText="Delete"
+          title={t("deleteHabitQ")}
+          message={`"${habitToDelete.name}" ${t("willBeRemoved")}`}
+          confirmText={t("delete")}
           onCancel={() => setHabitToDelete(null)}
           onConfirm={() => {
             deleteHabit(habitToDelete.id);
@@ -169,7 +171,7 @@ export default function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl font-bold mb-8" style={{ color: accent }}>
-              Change category
+              {t("changeCategory")}
             </h3>
 
             <div className="flex flex-col items-center gap-3 w-full">
@@ -204,11 +206,11 @@ export default function Home() {
                         className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none capitalize"
                         style={{ color: isDark ? "#000" : "#fff" }}
                       >
-                        {cat}
+                        {t(cat)}
                       </span>
                     )}
                     <span className={`relative z-10 block capitalize ${!active ? "group-hover:opacity-0 transition-opacity duration-200" : ""}`}>
-                      {cat}
+                      {t(cat)}
                     </span>
                   </button>
                 );
@@ -219,7 +221,7 @@ export default function Home() {
               className="mt-8 text-sm font-medium opacity-50 hover:opacity-100 transition"
               onClick={() => setHabitToEdit(null)}
             >
-              Cancel
+              {t("cancel")}
             </button>
           </div>
         </div>,

@@ -1,31 +1,42 @@
 import { motion } from "framer-motion";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import confetti from "canvas-confetti";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
 import { getToday, formatDate } from "../utils/dateHelpers";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 import ConfirmModal from "../components/ConfirmModel";
 
 export default function StreakPage() {
   const { isDark } = useTheme();
   const { accent } = getTokens(isDark);
+  const { t } = useLanguage();
 
   const { habit: habitId } = useParams();
   const { habits, checkInHabit, resetHabit, handleMissedDay } = useHabits();
   const [habit, setHabit] = useState(null);
   const [message, setMessage] = useState("");
   const [showReset, setShowReset] = useState(false);
+  const missedDayChecked = useRef(null);
 
   const today = getToday();
 
+  // Run handleMissedDay ONCE per habitId visit (not on every habits change)
+  useEffect(() => {
+    if (missedDayChecked.current !== habitId) {
+      handleMissedDay(Number(habitId));
+      missedDayChecked.current = habitId;
+    }
+  }, [habitId]);
+
+  // Sync local state from habits context (safe — no state mutation here)
   useEffect(() => {
     const found = habits.find(h => h.id === Number(habitId));
     if (!found) return;
 
-    // Normalize defaults
     const normalized = {
       ...found,
       streak: found.streak ?? 0,
@@ -34,7 +45,6 @@ export default function StreakPage() {
       lastCheck: found.lastCheck ?? null
     };
 
-    handleMissedDay(Number(habitId));
     setHabit(normalized);
   }, [habitId, habits]);
 
@@ -43,7 +53,7 @@ export default function StreakPage() {
 
   const handleClick = () => {
     if (habit.lastCheck === today) {
-      setMessage("Come back again tomorrow!");
+      setMessage(t("comeBackTomorrow"));
       return;
     }
 
@@ -117,7 +127,7 @@ export default function StreakPage() {
             {message}
           </motion.p>
         ) : (
-          <p className="mt-8 text-sm opacity-50">Tap the number to check in</p>
+          <p className="mt-8 text-sm opacity-50">{t("tapToCheckIn")}</p>
         )}
       </div>
 
@@ -130,11 +140,11 @@ export default function StreakPage() {
       >
         <div className="flex justify-around text-sm" style={{ color: isDark ? "#ffffff" : "#1a1a1a" }}>
           <div className="flex flex-col items-center">
-            <span className="opacity-50 mb-1">Longest</span>
+            <span className="opacity-50 mb-1">{t("longest")}</span>
             <span className="font-bold text-xl">{habit.longestStreak || habit.streak}</span>
           </div>
           <div className="flex flex-col items-center">
-            <span className="opacity-50 mb-1">Total Days</span>
+            <span className="opacity-50 mb-1">{t("totalDays")}</span>
             <span className="font-bold text-xl">{habit.completedDays?.length || 0}</span>
           </div>
         </div>
@@ -165,19 +175,19 @@ export default function StreakPage() {
           className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap"
           style={{ color: "#ef4444", textShadow: "0 0 12px rgba(239,68,68,0.8)" }}
         >
-          Reset streak
+          {t("resetStreak")}
         </span>
         <span className="relative z-10 opacity-40 group-hover:opacity-0 transition-opacity duration-300 whitespace-nowrap">
-          Reset streak
+          {t("resetStreak")}
         </span>
       </button>
 
       {/* RESET MODAL */}
       {showReset && (
         <ConfirmModal
-          title="Reset Streak?"
-          message="This will reset your current streak back to ZERO. Total days will be kept."
-          confirmText="Reset"
+          title={t("resetStreakQ")}
+          message={t("resetStreakMsg")}
+          confirmText={t("reset")}
           onCancel={() => setShowReset(false)}
           onConfirm={confirmReset}
         />

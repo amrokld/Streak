@@ -6,12 +6,14 @@ import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
 import { STORAGE_KEYS } from "../constants/storageKeys";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 
 export default function AppLayout() {
   const { isDark } = useTheme();
   const { habits } = useHabits();
   const [showNewHabit, setShowNewHabit] = useState(false);
+  const { t } = useLanguage();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,17 +44,17 @@ export default function AppLayout() {
           }}
         >
           <h2 className="text-2xl font-bold mb-2" style={{ color: accent }}>
-            What should I call you?
+            {t("whatToCall")}
           </h2>
 
           <p className="text-sm mb-6" style={{ color: subText }}>
-            You can change it from the settings
+            {t("changeFromSettings")}
           </p>
 
           <input
             autoFocus
             type="text"
-            placeholder="Your name"
+            placeholder={t("yourName")}
             className="w-full mb-6 px-4 py-2 rounded text-center outline-none"
             style={{
               backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb",
@@ -89,10 +91,10 @@ export default function AppLayout() {
               className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
               style={{ color: isDark ? "#000" : "#fff" }}
             >
-              Continue
+              {t("continue")}
             </span>
             <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
-              Continue
+              {t("continue")}
             </span>
           </button>
         </div>

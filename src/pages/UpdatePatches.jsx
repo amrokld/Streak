@@ -2,8 +2,26 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../Context/ThemeContext";
 import { useNavigate } from "react-router-dom";
+import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
+    {
+        version: "v2.0",
+        date: "April 2026",
+        notes: [
+            "🌍 Full bilingual support — switch between English and Arabic instantly from Settings.",
+            "🔄 Automatic RTL layout — the entire UI flips naturally when Arabic is selected.",
+            "✏️ Native Arabic typography — Cairo font loads automatically for a premium Arabic experience.",
+            "📊 Activity Calendar merged into Statistics — view your heatmap, filter by habit, and tap any day for details, all in one page.",
+            "🏗️ Centralized theme system — all colors now flow from a single token file, making the app easier to customize.",
+            "🧠 Smarter state management — tasks and habits both run through dedicated Contexts with clean separation from UI.",
+            "📅 Normalized date handling — streak resets are now timezone-safe across all environments.",
+            "🔑 Centralized storage keys — all localStorage access goes through a single constants file.",
+            "🐛 Fixed streak page freeze — resolved an infinite loop that could lock navigation.",
+            "✨ Cleaner navigation — Calendar replaced with an 'Other' placeholder for future features."
+        ]
+    },
     {
         version: "v1.1",
         date: "April 2026",
@@ -30,11 +48,9 @@ export default function UpdatePatches() {
     const { isDark } = useTheme();
     const navigate = useNavigate();
     const [openVersion, setOpenVersion] = useState(null);
+    const { t } = useLanguage();
 
-    const accent = isDark ? "#d4af37" : "#2563eb";
-    const subText = isDark ? "#aaa" : "#6b7280";
-    const cardBg = isDark ? "#2a2a2a" : "#ffffff";
-    const borderColor = isDark ? "#3f3f3f" : "#e5e7eb";
+    const { accent, subText, cardBg, borderColor } = getTokens(isDark);
 
     const toggleOpen = (version) => {
         setOpenVersion(openVersion === version ? null : version);
@@ -55,7 +71,7 @@ export default function UpdatePatches() {
                             <polyline points="12 19 5 12 12 5"></polyline>
                         </svg>
                     </button>
-                    <h2 className="text-3xl font-bold" style={{ color: accent }}>Patch Notes</h2>
+                    <h2 className="text-3xl font-bold" style={{ color: accent }}>{t("patchNotes")}</h2>
                 </div>
 
                 <div className="flex flex-col gap-4">

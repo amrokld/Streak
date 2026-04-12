@@ -3,6 +3,7 @@ import { useTheme } from "../Context/ThemeContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getTokens } from "../theme/tokens";
+import { useLanguage } from "../Context/LanguageContext";
 
 
 const MAX_HABITS = 12;
@@ -15,16 +16,17 @@ export default function Header({ habits, onNewHabit }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [limitHit, setLimitHit] = useState();
+  const { t } = useLanguage();
 
   const canCreate = Array.isArray(habits) && habits.length < MAX_HABITS;
 
   const limitMessages = [
-    "Thats enough for now. 12 habits max.",
-    "Slow down, 12 habits is the limit. ",
-    "Limit reached. Finish before adding more",
-    "No more habits. Finish the work.",
-    "Are you insane? wanna have more than 12 habits.",
-    "Bro, Chill! Dont lie to yourself, You ain't gonna do more than 12 habits at a time."
+    t("limitMsg1"),
+    t("limitMsg2"),
+    t("limitMsg3"),
+    t("limitMsg4"),
+    t("limitMsg5"),
+    t("limitMsg6"),
   ];
 
   const message = limitMessages[(habits?.length || 0) % limitMessages.length];
@@ -47,17 +49,17 @@ export default function Header({ habits, onNewHabit }) {
   useEffect(() => {
     if (!limitHit) return;
 
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setLimitHit(false);
     }, 2000);
 
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [limitHit]);
 
   const navLinks = [
-    { label: "Statistics", path: "/statistics" },
-    { label: "Calendar", path: "/calendar" },
-    { label: "Tasks", path: "/tasks" }
+    { label: t("statistics"), path: "/statistics" },
+    { label: t("other"), path: "/other" },
+    { label: t("tasks"), path: "/tasks" }
   ];
 
   return (
@@ -69,26 +71,17 @@ export default function Header({ habits, onNewHabit }) {
         whileHover={{ y: -3 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
         onClick={() => navigate("/")}
-        className="cursor-pointer select-none group relative"
+        className="cursor-pointer select-none group"
       >
         <span
-          className="text-4xl md:text-5xl font-bold absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          className="text-4xl md:text-5xl font-bold transition-all duration-300"
           style={{
             fontFamily: "Space Grotesk",
             letterSpacing: "0.06em",
             color: accent,
-            textShadow: `0 0 10px ${accent}bb`
           }}
-        >
-          STREAK
-        </span>
-        <span
-          className="text-4xl md:text-5xl font-bold relative z-10 transition-opacity duration-300"
-          style={{
-            fontFamily: "Space Grotesk",
-            letterSpacing: "0.06em",
-            color: accent
-          }}
+          onMouseEnter={(e) => e.currentTarget.style.textShadow = `0 0 10px ${accent}bb`}
+          onMouseLeave={(e) => e.currentTarget.style.textShadow = "none"}
         >
           STREAK
         </span>
@@ -131,7 +124,7 @@ export default function Header({ habits, onNewHabit }) {
             onClick={goToNewHabit}
             style={{ color: accent }}
           >
-            New Habit
+            {t("newHabit")}
           </button>
 
           {limitHit && (
@@ -164,7 +157,7 @@ export default function Header({ habits, onNewHabit }) {
             if (location.pathname !== "/settings") e.currentTarget.style.color = muted; 
           }}
         >
-          Settings
+          {t("settings")}
         </button>
 
       </div>

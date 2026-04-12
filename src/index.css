@@ -41,3 +41,27 @@ html[data-theme='dark'] {
 .animate-fade-in {
   animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ============ RTL Support ============ */
+
+/* Flip the reminder toggle knob direction in RTL */
+html[dir="rtl"] button .absolute.top-0\.5 {
+  right: auto;
+}
+
+/* Ensure the streak badge stays in the correct corner */
+html[dir="rtl"] .absolute.bottom-6.right-6 {
+  right: auto;
+  left: 1.5rem;
+}
+
+/* Flip nav chevron arrows appearance */
+html[dir="rtl"] .grid header nav {
+  direction: rtl;
+}
+
+/* Keep the STREAK logo always LTR */
+html[dir="rtl"] header span[style*="Space Grotesk"] {
+  direction: ltr;
+  unicode-bidi: bidi-override;
+}
