@@ -7,19 +7,29 @@ import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
     {
+        version: "v3.0",
+        date: "April 2026",
+        notes: [
+            " Added the TODAY page, a focused daily execution layer for habits and tasks.",
+            " Centered and added a premium glow effect to the TODAY link in the header.",
+            " New two-column layout for Today page to see all goals at a glance.",
+            " Implemented Full Task Editing — you can now modify Name, Priority, and Dates.",
+            " New 'Show Completed' section to track and celebrate your daily wins.",
+            " Fully localized all new features for both English and Arabic."
+        ]
+    },
+    {
         version: "v2.0",
         date: "April 2026",
         notes: [
-            "🌍 Full bilingual support — switch between English and Arabic instantly from Settings.",
-            "🔄 Automatic RTL layout — the entire UI flips naturally when Arabic is selected.",
-            "✏️ Native Arabic typography — Cairo font loads automatically for a premium Arabic experience.",
-            "📊 Activity Calendar merged into Statistics — view your heatmap, filter by habit, and tap any day for details, all in one page.",
-            "🏗️ Centralized theme system — all colors now flow from a single token file, making the app easier to customize.",
-            "🧠 Smarter state management — tasks and habits both run through dedicated Contexts with clean separation from UI.",
-            "📅 Normalized date handling — streak resets are now timezone-safe across all environments.",
-            "🔑 Centralized storage keys — all localStorage access goes through a single constants file.",
-            "🐛 Fixed streak page freeze — resolved an infinite loop that could lock navigation.",
-            "✨ Cleaner navigation — Calendar replaced with an 'Other' placeholder for future features."
+            " Switch between English and Arabic instantly from Settings.",
+            " The entire UI flips naturally when Arabic is selected.",
+            " View your heatmap, filter by habit, and tap any day for details, all in one page.",
+            " Tasks and habits both run through dedicated Contexts with clean separation from UI.",
+            " Streak resets are now timezone-safe across all environments.",
+            " All localStorage access goes through a single constants file.",
+            " Resolved an infinite loop that could lock navigation.",
+            " Calendar replaced with an 'Other' placeholder for future features."
         ]
     },
     {
@@ -59,7 +69,7 @@ export default function UpdatePatches() {
     return (
         <div className="flex justify-center mt-12 pb-24 relative animate-fade-in">
             <div className="w-full max-w-2xl px-6">
-                
+
                 <div className="flex items-center gap-4 mb-8">
                     <button
                         onClick={() => navigate(-1)}
@@ -79,8 +89,8 @@ export default function UpdatePatches() {
                         const isOpen = openVersion === patch.version;
 
                         return (
-                            <div 
-                                key={patch.version} 
+                            <div
+                                key={patch.version}
                                 className="rounded-3xl overflow-hidden transition-all duration-300 cursor-pointer"
                                 style={{ backgroundColor: cardBg, border: `1px solid ${isOpen ? accent : borderColor}` }}
                                 onClick={() => toggleOpen(patch.version)}

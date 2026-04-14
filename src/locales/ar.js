@@ -33,7 +33,7 @@ export const ar = {
   tasks: "المهام",
   settings: "الإعدادات",
   newHabit: "عادة جديدة",
-  other: "أخرى",
+  todayPage: "اليوم",
 
   // Limit messages
   limitMsg1: "كفاية الآن. الحد الأقصى 12 عادة.",
@@ -184,4 +184,18 @@ export const ar = {
   dayTh: "خم",
   dayFr: "جم",
   daySa: "سب",
+
+  // Today page
+  todayTitle: "اليوم",
+  focusSubtitle: "ركز على ما يهم الآن",
+  habitsLeft: "تم إكمال {completed} / {total} عادات",
+  habitsSection: "العادات",
+  overdueSection: "متأخر",
+  dueTodaySection: "مستحق اليوم",
+  showCompletedLink: "▼ عرض المكتمل",
+  hideCompletedLink: "▲ إخفاء المكتمل",
+  completedHabits: "العادات المكتملة",
+  completedTasks: "المهام المكتملة",
+  doneForToday: "انتهيت لهذا اليوم",
+  restWell: "لا يوجد شيء متبقٍ. ارتح جيدًا.",
 };

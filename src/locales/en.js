@@ -33,7 +33,7 @@ export const en = {
   tasks: "Tasks",
   settings: "Settings",
   newHabit: "New Habit",
-  other: "Other",
+  todayPage: "TODAY",
 
   // Limit messages
   limitMsg1: "That's enough for now. 12 habits max.",
@@ -184,4 +184,18 @@ export const en = {
   dayTh: "Th",
   dayFr: "Fr",
   daySa: "Sa",
+
+  // Today page
+  todayTitle: "TODAY",
+  focusSubtitle: "Focus on what matters now",
+  habitsLeft: "{completed} / {total} habits completed",
+  habitsSection: "Habits",
+  overdueSection: "Overdue",
+  dueTodaySection: "Due Today",
+  showCompletedLink: "▼ Show completed",
+  hideCompletedLink: "▲ Hide completed",
+  completedHabits: "Completed Habits",
+  completedTasks: "Completed Tasks",
+  doneForToday: "You're done for today",
+  restWell: "Nothing left. Rest well.",
 };

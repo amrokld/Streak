@@ -49,12 +49,19 @@ export function TaskProvider({ children }) {
         );
     };
 
+    // ---- UPDATE TASK ----
+    const updateTask = (id, updates) => {
+        setTasks((prev) =>
+            prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
+        );
+    };
+
     // ---- CLEAR COMPLETED ----
     const clearCompleted = () =>
         setTasks((prev) => prev.filter((t) => !t.done));
 
     return (
-        <TaskContext.Provider value={{ tasks, addTask, toggleDone, deleteTask, editTask, clearCompleted }}>
+        <TaskContext.Provider value={{ tasks, addTask, toggleDone, deleteTask, editTask, clearCompleted, updateTask }}>
             {children}
         </TaskContext.Provider>
     );

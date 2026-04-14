@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../Context/ThemeContext";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTasks } from "../Context/TaskContext";
 import { getTokens } from "../theme/tokens";
@@ -11,7 +12,7 @@ export default function Tasks() {
   const { accent, bg, cardBg, text, subText, borderColor } = getTokens(isDark);
   const { t, lang } = useLanguage();
 
-  const { tasks, addTask, toggleDone, deleteTask, editTask, clearCompleted } = useTasks();
+  const { tasks, addTask, toggleDone, deleteTask, editTask, clearCompleted, updateTask } = useTasks();
 
   // --- LOCAL UI STATE (stays in component, not in context) ---
   const [newTaskText, setNewTaskText] = useState("");
@@ -20,6 +21,9 @@ export default function Tasks() {
 
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
+  const [taskToEdit, setTaskToEdit] = useState(null);
+  const [showEditPriorityMenu, setShowEditPriorityMenu] = useState(false);
+  const [showEditDateMenu, setShowEditDateMenu] = useState(false);
 
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
   const [showDateMenu, setShowDateMenu] = useState(false);
@@ -58,13 +62,13 @@ export default function Tasks() {
   const startEditing = (task) => {
     setEditingId(task.id);
     setEditText(task.text);
+    setTaskToEdit(task);
   };
 
   const saveEditing = (id) => {
     setEditingId(null);
     editTask(id, editText);
   };
-
 
   const handleEditKeyDown = (e, id) => {
     if (e.key === "Enter") saveEditing(id);
@@ -407,24 +411,282 @@ export default function Tasks() {
                       </span>
                     )}
 
-                    <button
-                      className="opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-                      style={{ color: subText }}
-                      onClick={() => deleteTask(task.id)}
-                      title={t("delete")}
-                    >
-                      <svg className="w-5 h-5 hover:text-red-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all">
+                      {/* Edit Button */}
+                      <button
+                        className="hover:scale-110 transition-transform"
+                        style={{ color: subText }}
+                        onClick={() => startEditing(task)}
+                      >
+                        <svg className="w-5 h-5 hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+
+                      {/* Delete Button */}
+                      <button
+                        className="hover:scale-110 transition-transform"
+                        style={{ color: subText }}
+                        onClick={() => deleteTask(task.id)}
+                      >
+                        <svg className="w-5 h-5 hover:text-red-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+
                   </div>
                 </motion.div>
               );
             })}
           </AnimatePresence>
         </div>
-
       </div>
-    </div>
+
+      {taskToEdit && createPortal(
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center backdrop-blur-xl animate-fade-in"
+          style={{ backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.4)" }}
+          onClick={() => { setTaskToEdit(null); setShowEditPriorityMenu(false); setShowEditDateMenu(false); }}
+        >
+          <motion.div
+            initial={{ scale: 0.95, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            className="w-full max-w-lg p-10 rounded-[30px] border relative"
+            style={{
+              backgroundColor: cardBg,
+              borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation(); // IMPORTANT
+
+                if (!taskToEdit.text.trim()) return;
+
+                updateTask(taskToEdit.id, {
+                  ...taskToEdit,
+                  text: taskToEdit.text.trim(),
+                });
+
+                setTaskToEdit(null);
+              }}
+            >
+
+              {/* TITLE */}
+              <h2 className="text-xl font-bold text-center mb-6" style={{ color: accent }}>
+                Editing Task
+              </h2>
+
+              {/* INPUT */}
+              <input
+                autoFocus
+                value={taskToEdit.text}
+                onChange={(e) => setTaskToEdit({ ...taskToEdit, text: e.target.value })}
+                placeholder={t("whatToCall")}
+                className="w-full bg-transparent outline-none text-lg px-4 py-3 rounded-xl border mb-6"
+                style={{
+                  color: text,
+                  borderColor: isDark ? "#444" : "#e2e8f0"
+                }}
+              />
+
+              {/* BUTTONS ROW (UPDATED EXACT COPY STYLE) */}
+              <div className="flex items-center justify-center gap-3 mb-8 relative">
+
+                {/* DATE BUTTON */}
+                <div className="relative">
+                  <div
+                    onClick={() => { setShowEditDateMenu(!showEditDateMenu); setShowEditPriorityMenu(false); }}
+                    className="flex items-center justify-center px-4 py-2 rounded-xl transition cursor-pointer overflow-hidden border select-none"
+                    style={{
+                      backgroundColor: showEditDateMenu ? (isDark ? "#444" : "#e2e8f0") : (isDark ? "#333" : "#f8fafc"),
+                      borderColor: showEditDateMenu ? accent : (isDark ? "#444" : "#e2e8f0"),
+                    }}
+                  >
+                    {taskToEdit.dueDate ? (
+                      <span className="text-sm font-bold tracking-wider" style={{ color: text }}>
+                        {taskToEdit.dueDate}
+                      </span>
+                    ) : (
+                      <div className="flex items-center gap-2 text-sm font-bold" style={{ color: subText }}>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {t("date")}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* FULL CALENDAR (EXACT COPY) */}
+                  <AnimatePresence>
+                    {showEditDateMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-12 left-0 md:-left-16 w-64 p-4 rounded-3xl border shadow-2xl z-50 overflow-hidden"
+                        style={{ backgroundColor: cardBg, borderColor: isDark ? "#444" : "#e2e8f0" }}
+                      >
+                        {/* Header */}
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="font-bold text-sm" style={{ color: text }}>
+                            {t(monthKeys[curMonth])} {curYear}
+                          </span>
+                          <div className="flex gap-2">
+                            <button onClick={handlePrevMonth} className="p-1 rounded-full hover:bg-gray-500/20">
+                              <svg className="w-4 h-4" style={{ color: text }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                              </svg>
+                            </button>
+                            <button onClick={handleNextMonth} className="p-1 rounded-full hover:bg-gray-500/20">
+                              <svg className="w-4 h-4" style={{ color: text }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Days */}
+                        <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold mb-2 uppercase" style={{ color: subText }}>
+                          {dayKeys.map(dk => <span key={dk}>{t(dk)}</span>)}
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-1">
+                          {Array.from({ length: firstDay }).map((_, i) => <div key={i} />)}
+                          {Array.from({ length: daysInMonth }).map((_, i) => {
+                            const day = i + 1;
+                            const m = String(curMonth + 1).padStart(2, '0');
+                            const d = String(day).padStart(2, '0');
+                            const dateStr = `${curYear}-${m}-${d}`;
+                            const isSelected = taskToEdit.dueDate === dateStr;
+                            const isCalToday = todayStr === dateStr;
+
+                            return (
+                              <button
+                                key={day}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setTaskToEdit({ ...taskToEdit, dueDate: dateStr });
+                                  setShowEditDateMenu(false);
+                                }}
+                                className="w-full aspect-square flex items-center justify-center rounded-full text-xs font-medium"
+                                style={{
+                                  backgroundColor: isSelected ? accent : (isCalToday ? `${accent}30` : "transparent"),
+                                  color: isSelected ? (isDark ? "#000" : "#fff") : text,
+                                  border: isCalToday && !isSelected ? `1px solid ${accent}` : "1px solid transparent"
+                                }}
+                              >
+                                {day}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex justify-between mt-4 pt-3 border-t" style={{ borderColor: isDark ? "#444" : "#e2e8f0" }}>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setTaskToEdit({ ...taskToEdit, dueDate: "" });
+                              setShowEditDateMenu(false);
+                            }}
+                            className="text-xs font-bold"
+                            style={{ color: subText }}
+                          >
+                            {t("clear")}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setTaskToEdit({ ...taskToEdit, dueDate: todayStr });
+                              setShowEditDateMenu(false);
+                            }}
+                            className="text-xs font-bold"
+                            style={{ color: accent }}
+                          >
+                            {t("today")}
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* PRIORITY BUTTON (EXACT COPY) */}
+                <div className="relative">
+                  <div
+                    onClick={() => { setShowEditPriorityMenu(!showEditPriorityMenu); setShowEditDateMenu(false); }}
+                    className="flex items-center justify-between gap-3 text-sm px-4 py-2 rounded-xl font-bold border cursor-pointer"
+                    style={{
+                      backgroundColor: showEditPriorityMenu ? (isDark ? "#444" : "#e2e8f0") : (isDark ? "#333" : "#f8fafc"),
+                      borderColor: showEditPriorityMenu ? getPriorityColor(taskToEdit.priority) : (isDark ? "#444" : "#e2e8f0"),
+                      color: getPriorityColor(taskToEdit.priority)
+                    }}
+                  >
+                    <span className="capitalize">{t(taskToEdit.priority)}</span>
+                    <motion.svg animate={{ rotate: showEditPriorityMenu ? 180 : 0 }} className="w-3 h-3" fill="none" viewBox="0 0 24 24">
+                      <path strokeWidth={3} d="M19 9l-7 7-7-7" stroke="currentColor" />
+                    </motion.svg>
+                  </div>
+
+                  <AnimatePresence>
+                    {showEditPriorityMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-12 right-0 w-36 p-2 rounded-3xl border shadow-2xl z-50 flex flex-col gap-1"
+                        style={{ backgroundColor: cardBg, borderColor: isDark ? "#444" : "#e2e8f0" }}
+                      >
+                        {["urgent", "important", "optional"].map(p => (
+                          <div
+                            key={p}
+                            onClick={() => {
+                              setTaskToEdit({ ...taskToEdit, priority: p });
+                              setShowEditPriorityMenu(false);
+                            }}
+                            className="px-4 py-2 text-sm font-bold cursor-pointer capitalize rounded-xl"
+                            style={{
+                              color: getPriorityColor(p),
+                              backgroundColor: taskToEdit.priority === p ? (isDark ? "#333" : "#f1f5f9") : "transparent"
+                            }}
+                          >
+                            {t(p)}
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+              </div>
+
+              {/* SAVE BUTTON */}
+              <motion.button
+                type="submit"
+                onClick={(e) => e.stopPropagation()} // IMPORTANT
+                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                className="w-full py-3 rounded-xl font-bold transition-all shadow-lg"
+                style={{
+                  backgroundColor: accent,
+                  color: isDark ? "#000" : "#fff",
+                  boxShadow: `0 6px 20px ${accent}40`
+                }}
+              >
+                {t("save")}
+              </motion.button>
+
+            </form>
+          </motion.div>
+        </div>,
+        document.body
+      )}
+
+    </div >
   );
 }

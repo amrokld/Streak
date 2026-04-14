@@ -58,8 +58,8 @@ export default function Header({ habits, onNewHabit }) {
 
   const navLinks = [
     { label: t("statistics"), path: "/statistics" },
-    { label: t("other"), path: "/other" },
-    { label: t("tasks"), path: "/tasks" }
+    { label: t("todayPage"), path: "/today", isSpecial: true },
+    { label: t("tasks"), path: "/tasks" },
   ];
 
   return (
@@ -88,27 +88,47 @@ export default function Header({ habits, onNewHabit }) {
       </motion.div>
 
       {/* Navigation */}
-      <nav className="flex justify-center gap-10 text-lg">
+      <nav className="flex justify-center gap-12 text-lg items-center">
         {navLinks.map((link) => {
           const isActive = location.pathname === link.path;
+          const isToday = link.isSpecial;
 
           return (
             <span
               key={link.path}
               onClick={() => navigate(link.path)}
-              style={{ color: isActive ? accent : muted }}
-              className="cursor-pointer transition relative"
-              onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.color = accent; }}
-              onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.color = muted; }}
+              style={{
+                color: isActive ? accent : muted,
+                fontWeight: isToday ? 800 : "normal",
+                fontSize: isToday ? "20px" : "17px",
+                filter: isToday && isActive ? `drop-shadow(0 0 8px ${accent}aa)` : "none",
+                transition: "all 0.3s ease",
+                transform: isToday ? "scale(1.1)" : "none",
+                letterSpacing: isToday ? "0.05em" : "normal",
+              }}
+
+              className="cursor-pointer transition relative px-1"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = accent;
+                if (isToday) e.currentTarget.style.filter = `drop-shadow(0 0 12px ${accent})`;
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = muted;
+                  if (isToday) e.currentTarget.style.filter = "none";
+                } else if (isToday) {
+                  e.currentTarget.style.filter = `drop-shadow(0 0 8px ${accent}aa)`;
+                }
+              }}
             >
               {link.label}
 
-              {/* This is the new active tab underline animation! */}
+              {/* Active Tab Underline */}
               {isActive && (
                 <motion.div
                   layoutId="headerActiveTab"
                   className="absolute -bottom-1 left-0 right-0 h-[2px] rounded-full"
-                  style={{ backgroundColor: accent }}
+                  style={{ backgroundColor: accent, boxShadow: isToday ? `0 0 10px ${accent}` : "none" }}
                 />
               )}
             </span>
@@ -118,7 +138,6 @@ export default function Header({ habits, onNewHabit }) {
 
       {/* Right actions */}
       <div className="flex items-center gap-8 text-lg relative justify-self-end">
-        
         <div className="relative">
           <button
             onClick={goToNewHabit}
@@ -153,8 +172,8 @@ export default function Header({ habits, onNewHabit }) {
           className="transition relative"
           style={{ color: location.pathname === "/settings" ? accent : muted }}
           onMouseEnter={(e) => { if (location.pathname !== "/settings") e.currentTarget.style.color = accent; }}
-          onMouseLeave={(e) => { 
-            if (location.pathname !== "/settings") e.currentTarget.style.color = muted; 
+          onMouseLeave={(e) => {
+            if (location.pathname !== "/settings") e.currentTarget.style.color = muted;
           }}
         >
           {t("settings")}
