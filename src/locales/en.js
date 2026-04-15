@@ -59,6 +59,7 @@ export const en = {
 
   // Streak Page
   comeBackTomorrow: "Come back again tomorrow!",
+  checkedIn: "✓ Checked in!",
   tapToCheckIn: "Tap the number to check in",
   longest: "Longest",
   totalDays: "Total Days",

@@ -42,8 +42,15 @@ export default function Today() {
     const [taskText, setTaskText] = useState("");
     const [taskPriority, setTaskPriority] = useState("important");
     const [showPriorityMenu, setShowPriorityMenu] = useState(false);
+    const [toast, setToast] = useState("");
+    const [hiddenDoneHabitIds, setHiddenDoneHabitIds] = useState(new Set());
 
     const today = getToday();
+    const showToast = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(""), 2500);
+    };
+
 
     // -- Priority helpers --
     const getPriorityColor = (p) => {
@@ -92,11 +99,15 @@ export default function Today() {
     const tasksLeftToday = overdueTasks.length + todayTasks.length;
     const totalTasksToday = tasksLeftToday + completedTasks.length;
 
-    const hasCompleted = doneHabits.length > 0 || completedTasks.length > 0;
+    const visibleCompletedHabits = doneHabits.filter(h => !hiddenDoneHabitIds.has(h.id));
+    const hasCompleted = visibleCompletedHabits.length > 0 || completedTasks.length > 0;
+
+
 
     const handleRemoveAllCompleted = () => {
         completedTasks.forEach(task => deleteTask(task.id));
-        doneHabits.forEach(habit => updateHabit(habit.id, { lastCheck: getYesterday() }));
+        setHiddenDoneHabitIds(new Set(doneHabits.map(h => h.id)));
+        setShowCompleted(false);
     };
 
 
@@ -180,44 +191,51 @@ export default function Today() {
 
                     {/* LEFT: HABITS */}
                     <section>
-                        <div style={{ marginBottom: "12px" }}>
+                        {(completedTasks.length > 0 || visibleCompletedHabits.length > 0) && (
+                            <div style={{ marginBottom: "12px" }}>
 
-                            <p style={{
-                                color: accent,
-                                fontSize: "11px",
-                                fontWeight: 800,
-                                letterSpacing: "0.15em",
-                                textTransform: "uppercase"
-                            }}>
-                                {t("habitsSection")}
-                            </p>
-
-                            {totalHabits > 0 && remainingHabits > 0 && (
-                                <p style={{ color: subText, fontSize: "13px", marginTop: "4px" }}>
-                                    {remainingHabits === totalHabits ? (
-                                        <>
-                                            <span style={{ color: accent, fontWeight: 700 }}>{remainingHabits}</span> {t("habitsWaitingToday")}
-                                        </>
-                                    ) : remainingHabits === 1 ? (
-                                        <>
-                                            <span style={{ color: accent, fontWeight: 700 }}>1</span> {t("habitLeftFinishStrong")}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span style={{ color: accent, fontWeight: 700 }}>{remainingHabits}</span> {t("habitsLeftToday")}
-                                        </>
-                                    )}
+                                <p style={{
+                                    color: accent,
+                                    fontSize: "11px",
+                                    fontWeight: 800,
+                                    letterSpacing: "0.15em",
+                                    textTransform: "uppercase"
+                                }}>
+                                    {t("habitsSection")}
                                 </p>
-                            )}
+
+                                {totalHabits > 0 && remainingHabits > 0 && (
+                                    <p style={{ color: subText, fontSize: "13px", marginTop: "4px" }}>
+                                        {remainingHabits === totalHabits ? (
+                                            <>
+                                                <span style={{ color: accent, fontWeight: 700 }}>{remainingHabits}</span> {t("habitsWaitingToday")}
+                                            </>
+                                        ) : remainingHabits === 1 ? (
+                                            <>
+                                                <span style={{ color: accent, fontWeight: 700 }}>1</span> {t("habitLeftFinishStrong")}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span style={{ color: accent, fontWeight: 700 }}>{remainingHabits}</span> {t("habitsLeftToday")}
+                                            </>
+                                        )}
+                                    </p>
+                                )}
 
 
-                        </div>
+                            </div>
+                        )}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             <AnimatePresence>
                                 {pendingHabits.map((habit) => (
                                     <HabitCard
                                         key={habit.id}
                                         habit={habit}
+                                        mode="today"
+                                        onCheckIn={(id) => {
+                                            checkInHabit(id);
+                                            showToast(t("checkedIn"));
+                                        }}
                                         onDeleteRequest={setHabitToDelete}
                                         onEditCategory={setHabitToEdit}
                                         forceClose={forceCloseCards}
@@ -481,7 +499,7 @@ export default function Today() {
                                     <div>
                                         {sectionTitle(t("completedHabits"))}
                                         <div className="flex flex-col gap-2 opacity-50">
-                                            {doneHabits.map(habit => (
+                                            {visibleCompletedHabits.map((habit) => (
                                                 <div key={habit.id} style={{ backgroundColor: cardBg, padding: "12px 16px", borderRadius: "12px", display: "flex", justifyContent: "space-between" }}>
                                                     <span style={{ textDecoration: "line-through" }}>{habit.name}</span>
                                                     <span>🔥 {habit.streak}</span>
@@ -768,6 +786,24 @@ export default function Today() {
                 </div>,
                 document.body
             )}
+
+            {/* TOAST */}
+            <div className="fixed bottom-10 inset-x-0 flex justify-center z-50 pointer-events-none">
+                <AnimatePresence>
+                    {toast && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            className="px-6 py-3 rounded-full shadow-xl text-sm font-medium whitespace-nowrap"
+                            style={{ backgroundColor: accent, color: isDark ? "#000" : "#fff" }}
+                        >
+                            {toast}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
+
     );
 }

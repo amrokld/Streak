@@ -59,6 +59,7 @@ export const ar = {
 
   // Streak Page
   comeBackTomorrow: "!ارجع بكرة",
+  checkedIn: "✓ تم التسجيل!",
   tapToCheckIn: "اضغط على الرقم لتسجيل الحضور",
   longest: "الأطول",
   totalDays: "إجمالي الأيام",

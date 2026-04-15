@@ -1,19 +1,31 @@
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../Context/ThemeContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { cardFlip } from "../motion/motionVariants";
 import { getTokens } from "../theme/tokens";
 import { useLanguage } from "../Context/LanguageContext";
-
+import { getToday } from "../utils/dateHelpers";
 
 export default function HabitCard({
   habit,
   onDeleteRequest,
   onEditCategory,
   forceClose,
+  mode,
+  onCheckIn,
 }) {
   const [flipped, setFlipped] = useState(false);
+  const [message, setMessage] = useState("");
+  const clickedTodayRef = useRef(false);
+
+  // Auto-clear message after 2s
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(""), 2000);
+    return () => clearTimeout(timer);
+  }, [message]);
+
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const { t } = useLanguage();
@@ -31,6 +43,11 @@ export default function HabitCard({
   useEffect(() => {
     if (forceClose) setFlipped(false);
   }, [forceClose]);
+
+  // Sync ref with actual lastCheck state — handles resets and re-appears
+  useEffect(() => {
+    clickedTodayRef.current = habit?.lastCheck === getToday();
+  }, [habit?.lastCheck]);
 
   return (
     <div
@@ -86,13 +103,51 @@ export default function HabitCard({
               </span>
             )}
 
-            <div
-              className="absolute bottom-6 right-6 w-16 h-16 rounded-2xl
-                         flex items-center justify-center font-bold text-2xl"
-              style={{ backgroundColor: badgeBg, color: accent }}
+            {/* Message bubble */}
+            {message && (
+              <motion.p
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute bottom-20 right-4 text-xs font-medium px-3 py-1.5 rounded-full border shadow-sm"
+                style={{
+                  backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
+                  color: isDark ? "#fff" : "#000",
+                  borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+                  zIndex: 10,
+                }}
+              >
+                {message}
+              </motion.p>
+            )}
+
+            {/* Streak number — clickable in today mode */}
+            <motion.div
+              className="absolute bottom-6 right-6 w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-2xl"
+              style={{
+                backgroundColor: badgeBg,
+                color: accent,
+                cursor: mode === "today" ? "pointer" : "default",
+                textShadow: mode === "today" ? `0 0 15px ${accent}50` : "none",
+              }}
+              whileHover={mode === "today" ? { scale: 1.1 } : {}}
+              whileTap={mode === "today" ? { scale: 0.9 } : {}}
+              onClick={(e) => {
+                if (mode !== "today") return;
+                e.stopPropagation();
+
+                if (habit.lastCheck === getToday() || clickedTodayRef.current) {
+                  setMessage(t("comeBackTomorrow") || "Come back tomorrow!");
+                  return;
+                }
+
+                clickedTodayRef.current = true;
+                onCheckIn(habit.id);
+              }}
             >
               {habit.streak}
-            </div>
+            </motion.div>
+
           </div>
 
           {/* BACK */}
