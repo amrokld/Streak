@@ -11,30 +11,42 @@ import { useLanguage } from "../Context/LanguageContext";
 import ConfirmModal from "../components/ConfirmModel";
 
 export default function StreakPage() {
-  const { isDark } = useTheme();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const { accent } = getTokens(isDark);
   const { t } = useLanguage();
 
+
   const { habit: habitId } = useParams();
   const { habits, checkInHabit, resetHabit, handleMissedDay } = useHabits();
+  const resolvedId = habits.find(h => String(h.id) === String(habitId))?.id ?? Number(habitId);
   const [habit, setHabit] = useState(null);
   const [message, setMessage] = useState("");
   const [showReset, setShowReset] = useState(false);
   const missedDayChecked = useRef(null);
+  const clickedTodayRef = useRef(false);
 
   const today = getToday();
 
-  // Run handleMissedDay ONCE per habitId visit (not on every habits change)
   useEffect(() => {
     if (missedDayChecked.current !== habitId) {
-      handleMissedDay(Number(habitId));
+      const h = habits.find(h => String(h.id) === String(habitId));
+      if (h && h.streak > 0 && h.lastCheck) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        if (h.lastCheck !== yesterdayStr && h.lastCheck !== today) {
+          setMessage(t("streakBroken") || "Streak broken — start again!");
+        }
+      }
+      handleMissedDay(habits.find(h => String(h.id) === String(habitId))?.id ?? Number(habitId));
       missedDayChecked.current = habitId;
     }
   }, [habitId]);
 
   // Sync local state from habits context (safe — no state mutation here)
   useEffect(() => {
-    const found = habits.find(h => h.id === Number(habitId));
+    const found = habits.find(h => String(h.id) === String(habitId));
     if (!found) return;
 
     const normalized = {
@@ -48,16 +60,26 @@ export default function StreakPage() {
     setHabit(normalized);
   }, [habitId, habits]);
 
+  // Reset clickedTodayRef if habit already has today's check (page reload / return visit)
+  useEffect(() => {
+    if (habit?.lastCheck === today) {
+      clickedTodayRef.current = true;
+    }
+  }, [habit?.lastCheck]);
 
   if (!habit) return null;
 
   const handleClick = () => {
-    if (habit.lastCheck === today) {
+    // Block if already checked in (either from context or this session)
+    if (habit.lastCheck === today || clickedTodayRef.current) {
       setMessage(t("comeBackTomorrow"));
       return;
     }
 
-    checkInHabit(Number(habitId));
+    // Lock immediately — synchronous, no async state involved
+    clickedTodayRef.current = true;
+
+    checkInHabit(resolvedId);
     setMessage("");
 
     confetti({
@@ -66,6 +88,7 @@ export default function StreakPage() {
       origin: { y: 0.6 }
     });
   };
+
 
   const confirmReset = () => {
     resetHabit(Number(habitId));

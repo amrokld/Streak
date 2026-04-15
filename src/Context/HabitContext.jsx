@@ -25,8 +25,7 @@ export function HabitProvider({ children }) {
   const updateHabit = (id, updater) => {
     setHabits((prev) =>
       prev.map((habit) => {
-        if (habit.id !== id) return habit;
-
+        if (String(habit.id) !== String(id)) return habit;
         return typeof updater === "function"
           ? updater(habit)
           : { ...habit, ...updater };

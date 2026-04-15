@@ -7,8 +7,9 @@ import { useTheme } from "../Context/ThemeContext";
 import { getTokens } from "../theme/tokens";
 import { useHabits } from "../Context/HabitContext";
 import { useTasks } from "../Context/TaskContext";
-import { getToday } from "../utils/dateHelpers";
+import { getToday, getYesterday } from "../utils/dateHelpers";
 import { useLanguage } from "../Context/LanguageContext";
+
 
 import HabitCard from "../components/HabitCard";
 import ConfirmModal from "../components/ConfirmModel";
@@ -19,7 +20,7 @@ export default function Today() {
     const { theme } = useTheme();
     const isDark = theme === "dark";
     const { accent, bg, cardBg, text, subText, borderColor } = getTokens(isDark);
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     const navigate = useNavigate();
 
     // Contexts
@@ -44,6 +45,35 @@ export default function Today() {
 
     const today = getToday();
 
+    // -- Priority helpers --
+    const getPriorityColor = (p) => {
+        if (p === "urgent") return "#ef4444";
+        if (p === "important") return "#f59e0b";
+        return "#22c55e";
+    };
+
+    const getPriorityBg = (p) => {
+        if (p === "urgent") return isDark ? "rgba(239,68,68,0.12)" : "rgba(239,68,68,0.08)";
+        if (p === "important") return isDark ? "rgba(245,158,11,0.12)" : "rgba(245,158,11,0.08)";
+        return isDark ? "rgba(34,197,94,0.12)" : "rgba(34,197,94,0.08)";
+    };
+
+    const getDateLabel = (dueDate) => {
+        if (!dueDate) return null;
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+        if (dueDate === today) return t("todayBadge");
+        if (dueDate === yesterdayStr) return t("yesterday");
+        if (dueDate === tomorrowStr) return t("tomorrow");
+        return new Date(dueDate + 'T00:00:00').toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-GB', { day: 'numeric', month: 'short' });
+    };
+
+
     // Filtering
     const pendingHabits = habits.filter((h) => h.lastCheck !== today);
     const doneHabits = habits.filter((h) => h.lastCheck === today);
@@ -57,7 +87,19 @@ export default function Today() {
 
     const totalHabits = habits.length;
     const completedHabitsCount = doneHabits.length;
+    const remainingHabits = totalHabits - completedHabitsCount;
     const allDone = pendingHabits.length === 0 && overdueTasks.length === 0 && todayTasks.length === 0;
+    const tasksLeftToday = overdueTasks.length + todayTasks.length;
+    const totalTasksToday = tasksLeftToday + completedTasks.length;
+
+    const hasCompleted = doneHabits.length > 0 || completedTasks.length > 0;
+
+    const handleRemoveAllCompleted = () => {
+        completedTasks.forEach(task => deleteTask(task.id));
+        doneHabits.forEach(habit => updateHabit(habit.id, { lastCheck: getYesterday() }));
+    };
+
+
 
     const sectionTitle = (label, color = subText) => (
         <p style={{ color, fontSize: "11px", fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
@@ -133,223 +175,340 @@ export default function Today() {
             </div>
 
             {/* 2. BODY COLUMNS */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "40px", alignItems: "start" }}>
+            {!allDone && (
+                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "40px", alignItems: "start" }}>
 
-                {/* LEFT: HABITS */}
-                <section>
-                    <div style={{ marginBottom: "12px" }}>
+                    {/* LEFT: HABITS */}
+                    <section>
+                        <div style={{ marginBottom: "12px" }}>
 
-                        <p style={{
-                            color: accent,
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            letterSpacing: "0.15em",
-                            textTransform: "uppercase"
-                        }}>
-                            {t("habitsSection")}
-                        </p>
-
-                        {totalHabits > 0 && (
-                            <p style={{ color: subText, fontSize: "13px", marginTop: "4px" }}>
-                                <span style={{ color: accent, fontWeight: 700 }}>
-                                    {completedHabitsCount}
-                                </span>
-                                {` / ${totalHabits} ${t("completedHabits")}`}
+                            <p style={{
+                                color: accent,
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                letterSpacing: "0.15em",
+                                textTransform: "uppercase"
+                            }}>
+                                {t("habitsSection")}
                             </p>
-                        )}
 
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <AnimatePresence>
-                            {pendingHabits.map((habit) => (
-                                <HabitCard
-                                    key={habit.id}
-                                    habit={habit}
-                                    onDeleteRequest={setHabitToDelete}
-                                    onEditCategory={setHabitToEdit}
-                                    forceClose={forceCloseCards}
-                                />
-                            ))}
-                        </AnimatePresence>
-                        {pendingHabits.length === 0 && !allDone && (
-                            <p style={{ color: subText, opacity: 0.5, fontStyle: "italic" }}>{t("allHabits")}</p>
-                        )}
-                    </div>
-                </section>
+                            {totalHabits > 0 && remainingHabits > 0 && (
+                                <p style={{ color: subText, fontSize: "13px", marginTop: "4px" }}>
+                                    {remainingHabits === totalHabits ? (
+                                        <>
+                                            <span style={{ color: accent, fontWeight: 700 }}>{remainingHabits}</span> {t("habitsWaitingToday")}
+                                        </>
+                                    ) : remainingHabits === 1 ? (
+                                        <>
+                                            <span style={{ color: accent, fontWeight: 700 }}>1</span> {t("habitLeftFinishStrong")}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span style={{ color: accent, fontWeight: 700 }}>{remainingHabits}</span> {t("habitsLeftToday")}
+                                        </>
+                                    )}
+                                </p>
+                            )}
 
-                {/* RIGHT: TASKS */}
-                <section>
 
-                    <div style={{ marginBottom: "12px" }}>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <AnimatePresence>
+                                {pendingHabits.map((habit) => (
+                                    <HabitCard
+                                        key={habit.id}
+                                        habit={habit}
+                                        onDeleteRequest={setHabitToDelete}
+                                        onEditCategory={setHabitToEdit}
+                                        forceClose={forceCloseCards}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                            {pendingHabits.length === 0 && !allDone && (
+                                <p style={{ color: subText, opacity: 0.5, fontStyle: "italic" }}>{t("allHabits")}</p>
+                            )}
+                        </div>
+                    </section>
 
-                        <p style={{
-                            color: accent,
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            letterSpacing: "0.15em",
-                            textTransform: "uppercase"
-                        }}>
-                            {t("tasks")}
-                        </p>
+                    {/* RIGHT: TASKS */}
+                    <section>
+                        <div style={{ marginBottom: "12px" }}>
 
-                        {totalTasks > 0 && (
-                            <p style={{ color: subText, fontSize: "13px", marginTop: "4px" }}>
-                                <span style={{ color: accent, fontWeight: 700 }}>
-                                    {completedTasksCount}
-                                </span>
-                                {` / ${totalTasks} ${t("Completed tasks")}`}
+                            <p style={{
+                                color: accent,
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                letterSpacing: "0.15em",
+                                textTransform: "uppercase"
+                            }}>
+                                {t("tasks")}
                             </p>
-                        )}
-                    </div>
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <AnimatePresence mode="popLayout">
-                            {[...overdueTasks, ...todayTasks].map((task) => {
-                                const isOverdue = task.dueDate && task.dueDate < today;
-                                const isTodayStr = task.dueDate === today;
+                            {totalTasksToday > 0 && tasksLeftToday > 0 && (
+                                <p style={{ color: subText, fontSize: "13px", marginTop: "4px" }}>
+                                    {tasksLeftToday === totalTasksToday ? (
+                                        <>
+                                            <span style={{ color: accent, fontWeight: 700 }}>{tasksLeftToday}</span> {t("tasksWaitingToday")}
+                                        </>
+                                    ) : tasksLeftToday === 1 ? (
+                                        <>
+                                            <span style={{ color: accent, fontWeight: 700 }}>1</span> {t("taskLeftFinishStrong")}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span style={{ color: accent, fontWeight: 700 }}>{tasksLeftToday}</span> {t("tasksLeftToday")}
+                                        </>
+                                    )}
+                                </p>
+                            )}
+                        </div>
 
-                                // Priority color helper
-                                const getPriorityColor = (p) => {
-                                    if (p === "urgent") return "#ef4444";
-                                    if (p === "important") return "#f59e0b";
-                                    return "#22c55e";
-                                };
+                        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                            <AnimatePresence mode="popLayout">
+                                {[...overdueTasks, ...todayTasks].map((task) => {
+                                    const isOverdue = task.dueDate && task.dueDate < today;
+                                    const isTodayStr = task.dueDate === today;
 
-                                return (
-                                    <motion.div
-                                        layout
-                                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                                        key={task.id}
-                                        className="group flex items-center gap-4 p-4 rounded-3xl border transition-colors relative"
-                                        style={{
-                                            backgroundColor: cardBg,
-                                            borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"
-                                        }}
-                                    >
-                                        {/* Checkbox (Same as Task Page) */}
-                                        <div className="flex items-center justify-center cursor-pointer" onClick={() => toggleDone(task.id)}>
-                                            <div
-                                                className="w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all group-hover:scale-110 shadow-sm"
-                                                style={{
-                                                    borderColor: task.done ? accent : borderColor,
-                                                    backgroundColor: task.done ? accent : "transparent"
-                                                }}
-                                            >
-                                                <AnimatePresence>
-                                                    {task.done && (
-                                                        <motion.svg
-                                                            initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-                                                            className="w-3.5 h-3.5"
-                                                            style={{ color: isDark ? "#000" : "#ffffff" }}
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}
-                                                        >
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                                        </motion.svg>
-                                                    )}
-                                                </AnimatePresence>
+                                    return (
+                                        <motion.div
+                                            layout
+                                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                            key={task.id}
+                                            className="group flex items-center gap-4 p-4 rounded-3xl border transition-colors relative"
+                                            style={{
+                                                backgroundColor: cardBg,
+                                                borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"
+                                            }}
+                                        >
+                                            {/* Checkbox (Same as Task Page) */}
+                                            <div className="flex items-center justify-center cursor-pointer" onClick={() => toggleDone(task.id)}>
+                                                <div
+                                                    className="w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all group-hover:scale-110 shadow-sm"
+                                                    style={{
+                                                        borderColor: task.done ? accent : borderColor,
+                                                        backgroundColor: task.done ? accent : "transparent"
+                                                    }}
+                                                >
+                                                    <AnimatePresence>
+                                                        {task.done && (
+                                                            <motion.svg
+                                                                initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                                                                className="w-3.5 h-3.5"
+                                                                style={{ color: isDark ? "#000" : "#ffffff" }}
+                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}
+                                                            >
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                            </motion.svg>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        {/* Task Title */}
-                                        <div className="flex-1 overflow-hidden">
-                                            <span
-                                                className="text-lg font-medium block truncate"
-                                                style={{ color: task.done ? subText : getPriorityColor(task.priority) }}
+                                            {/* Task Title */}
+                                            <div className="flex-1 overflow-hidden">
+                                                <span
+                                                    className="text-lg font-medium block truncate"
+                                                    style={{ color: task.done ? subText : text }}
+                                                >
+                                                    {task.text}
+                                                </span>
+                                            </div>
+
+                                            {/* Labels */}
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                {/* Priority badge */}
+                                                <span
+                                                    className="text-[10px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full"
+                                                    style={{
+                                                        color: getPriorityColor(task.priority),
+                                                        backgroundColor: getPriorityBg(task.priority),
+                                                        border: `1px solid ${getPriorityColor(task.priority)}35`,
+                                                    }}
+                                                >
+                                                    {t(task.priority)}
+                                                </span>
+
+                                                {/* Time / Overdue badge */}
+                                                {task.dueDate && (
+                                                    <span
+                                                        className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                                        style={{
+                                                            color: isOverdue ? "#3b82f6" : subText,
+                                                            backgroundColor: isOverdue ? "rgba(59,130,246,0.12)" : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"),
+                                                            border: isOverdue ? "1px solid rgba(59,130,246,0.35)" : "1px solid transparent",
+                                                            boxShadow: isOverdue ? "0 0 6px rgba(59,130,246,0.25)" : "none",
+                                                        }}
+                                                    >
+                                                        {isOverdue ? t("overdue") : getDateLabel(task.dueDate)}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Edit Action */}
+                                            <button
+                                                className="opacity-0 group-hover:opacity-100 transition-all hover:scale-110 ml-2"
+                                                style={{ color: subText }}
+                                                onClick={() => setTaskToEdit(task)}
                                             >
-                                                {task.text}
-                                            </span>
-                                        </div>
+                                                <svg className="w-5 h-5 hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
 
-                                        {/* Overdue Badge */}
-                                        {isOverdue && (
-                                            <span
-                                                className="text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider"
-                                                style={{ backgroundColor: "rgba(239, 68, 68, 0.15)", color: "#ef4444" }}
+                                            {/* Delete Action */}
+                                            <button
+                                                className="opacity-0 group-hover:opacity-100 transition-all hover:scale-110 ml-2"
+                                                style={{ color: subText }}
+                                                onClick={() => deleteTask(task.id)}
                                             >
-                                                {t("overdueSection")}
-                                            </span>
-                                        )}
-
-                                        {/* Edit Action */}
-                                        <button
-                                            className="opacity-0 group-hover:opacity-100 transition-all hover:scale-110 ml-2"
-                                            style={{ color: subText }}
-                                            onClick={() => setTaskToEdit(task)}
-                                        >
-                                            <svg className="w-5 h-5 hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </button>
-
-                                        {/* Delete Action */}
-                                        <button
-                                            className="opacity-0 group-hover:opacity-100 transition-all hover:scale-110 ml-2"
-                                            style={{ color: subText }}
-                                            onClick={() => deleteTask(task.id)}
-                                        >
-                                            <svg className="w-5 h-5 hover:text-red-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </motion.div>
-                                );
-                            })}
-                        </AnimatePresence>
-                    </div>
-                </section>
-            </div>
-
-            {/* 3. EMPTY STATE */}
-            {allDone && (
-                <div style={{ textAlign: "center", marginTop: "100px" }}>
-                    <div style={{ fontSize: "40px", marginBottom: "10px" }}>✦</div>
-                    <h2 style={{ fontSize: "24px", fontWeight: 800, color: accent }}>{t("doneForToday")}</h2>
-                    <p style={{ color: subText }}>{t("restWell")}</p>
+                                                <svg className="w-5 h-5 hover:text-red-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </motion.div>
+                                    );
+                                })}
+                            </AnimatePresence>
+                        </div>
+                    </section>
                 </div>
             )}
 
+            {/* 3. EMPTY STATE (UPGRADED) */}
+            {allDone && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4 }}
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginTop: "80px", // Pushes it higher than exact center for better balance
+                        textAlign: "center"
+                    }}
+                >
+                    {/* Animated Icon */}
+                    <div
+                        style={{
+                            fontSize: "44px",
+                            color: accent,
+                            marginBottom: "20px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            letterSpacing: "2px",
+                            textShadow: `
+                                0 1px 0 rgba(255,255,255,0.15),
+                                0 2px 6px rgba(0,0,0,0.4),
+                                0 0 12px ${accent}22
+                                `
+                        }}
+                    >
+                        ✦
+                    </div>
+
+                    {/* Title */}
+                    <h2 style={{
+                        fontSize: "32px",
+                        fontWeight: 900,
+                        color: accent,
+                        marginBottom: "14px", // 14px spacing
+                        textShadow: `0 0 20px ${accent}33`,
+                        letterSpacing: "0.02em"
+                    }}>
+                        {t("doneForToday")}
+                    </h2>
+
+                    {/* Subtitle */}
+                    <p style={{
+                        color: subText,
+                        fontSize: "16px",
+                        opacity: 0.6,
+                        fontWeight: 500
+                    }}>
+                        {t("restWell")}
+                    </p>
+
+                    {/* Optional Secondary Text Enhancement */}
+                    <p style={{
+                        color: subText,
+                        fontSize: "12px",
+                        marginTop: "24px",
+                        opacity: 0.3,
+                        fontWeight: 700,
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase"
+                    }}>
+                        {t("earnedBreak")}
+                    </p>
+                </motion.div>
+            )}
+
             {/* 4. COMPLETED SECTION */}
-            <div style={{ marginTop: "60px", borderTop: `1px solid ${borderColor}`, paddingTop: "20px" }}>
-                <button onClick={() => setShowCompleted(!showCompleted)} style={{ background: "none", border: "none", color: subText, fontSize: "13px", cursor: "pointer" }}>
-                    {showCompleted ? t("hideCompletedLink") : t("showCompletedLink")}
-                </button>
+            {hasCompleted && (
+                <div style={{ marginTop: "60px", borderTop: `1px solid ${borderColor}`, paddingTop: "20px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <button
+                            onClick={() => setShowCompleted(!showCompleted)}
+                            style={{ background: "none", border: "none", color: subText, fontSize: "13px", cursor: "pointer", fontWeight: 700 }}
+                        >
+                            {showCompleted ? t("hideCompletedLink") : t("showCompletedLink")}
+                        </button>
 
-                <AnimatePresence>
-                    {showCompleted && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden", marginTop: "20px" }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "60px" }}>
-                                {/* Completed Habits Column */}
-                                <div>
-                                    {sectionTitle(t("completedHabits"))}
-                                    <div className="flex flex-col gap-2 opacity-50">
-                                        {doneHabits.map(habit => (
-                                            <div key={habit.id} style={{ backgroundColor: cardBg, padding: "12px 16px", borderRadius: "12px", display: "flex", justifyContent: "space-between" }}>
-                                                <span style={{ textDecoration: "line-through" }}>{habit.name}</span>
-                                                <span>🔥 {habit.streak}</span>
-                                            </div>
-                                        ))}
+                        {/* Remove All Button — only when expanded */}
+                        {showCompleted && (
+                            <button
+                                onClick={handleRemoveAllCompleted}
+                                style={{ background: "none", border: "none", color: "#ef4444", fontSize: "11px", cursor: "pointer", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.6 }}
+                                onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                                onMouseLeave={(e) => e.currentTarget.style.opacity = 0.6}
+                            >
+                                {t("clearAll") || "Clear All"}
+                            </button>
+                        )}
+                    </div>
+
+
+                    <AnimatePresence>
+                        {showCompleted && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden", marginTop: "20px" }}>
+                                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "60px" }}>
+                                    {/* Completed Habits Column */}
+                                    <div>
+                                        {sectionTitle(t("completedHabits"))}
+                                        <div className="flex flex-col gap-2 opacity-50">
+                                            {doneHabits.map(habit => (
+                                                <div key={habit.id} style={{ backgroundColor: cardBg, padding: "12px 16px", borderRadius: "12px", display: "flex", justifyContent: "space-between" }}>
+                                                    <span style={{ textDecoration: "line-through" }}>{habit.name}</span>
+                                                    <span>🔥 {habit.streak}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Completed Tasks Column */}
+                                    <div>
+                                        {sectionTitle(t("completedTasks"))}
+                                        <div className="flex flex-col gap-2 opacity-50">
+                                            {completedTasks.map(task => (
+                                                <div key={task.id} style={{ backgroundColor: cardBg, padding: "12px 16px", borderRadius: "12px", display: "flex", justifyContent: "space-between" }}>
+                                                    <span style={{ textDecoration: "line-through" }}>{task.text}</span>
+                                                    <div style={{ width: "16px", height: "16px", borderRadius: "50%", backgroundColor: accent }} />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            )}
 
-                                {/* Completed Tasks Column */}
-                                <div>
-                                    {sectionTitle(t("completedTasks"))}
-                                    <div className="flex flex-col gap-2 opacity-50">
-                                        {completedTasks.map(task => (
-                                            <div key={task.id} style={{ backgroundColor: cardBg, padding: "12px 16px", borderRadius: "12px", display: "flex", justifyContent: "space-between" }}>
-                                                <span style={{ textDecoration: "line-through" }}>{task.text}</span>
-                                                <div style={{ width: "16px", height: "16px", borderRadius: "50%", backgroundColor: accent }} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
 
             {/* 5. NEW TASK MODAL */}
             {showNewTaskModal && createPortal(

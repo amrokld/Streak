@@ -17,7 +17,7 @@ export default function Tasks() {
   // --- LOCAL UI STATE (stays in component, not in context) ---
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("important");
-  const [newTaskDate, setNewTaskDate] = useState("");
+  const [newTaskDate, setNewTaskDate] = useState(new Date().toISOString().split('T')[0]);
 
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
@@ -28,6 +28,7 @@ export default function Tasks() {
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
   const [showDateMenu, setShowDateMenu] = useState(false);
   const [calDate, setCalDate] = useState(new Date());
+
 
   const formRef = useRef(null);
 
@@ -54,7 +55,7 @@ export default function Tasks() {
 
     setNewTaskText("");
     setNewTaskPriority("important");
-    setNewTaskDate("");
+    setNewTaskDate(new Date().toISOString().split('T')[0]);
     setShowDateMenu(false);
     setShowPriorityMenu(false);
   };
@@ -75,22 +76,24 @@ export default function Tasks() {
     if (e.key === "Escape") setEditingId(null);
   };
 
-  // -- Sorting --
+  // -- Sorting: done last, overdue first, then by date asc --
   const sortedTasks = [...tasks].sort((a, b) => {
+    // done tasks sink to bottom
     if (a.done !== b.done) return a.done ? 1 : -1;
 
-    if (a.dueDate && b.dueDate) {
-      return a.dueDate.localeCompare(b.dueDate);
-    }
+    const todayVal = new Date().toISOString().split('T')[0];
+    const aOverdue = a.dueDate && a.dueDate < todayVal && !a.done;
+    const bOverdue = b.dueDate && b.dueDate < todayVal && !b.done;
+    if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+
+    if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
     if (a.dueDate) return -1;
     if (b.dueDate) return 1;
 
     const pWeight = { urgent: 3, important: 2, optional: 1 };
-    if (pWeight[a.priority] !== pWeight[b.priority]) {
-      return pWeight[b.priority] - pWeight[a.priority];
-    }
-    return b.id - a.id;
+    return (pWeight[b.priority] || 0) - (pWeight[a.priority] || 0);
   });
+
 
   const getPriorityColor = (p) => {
     if (p === "urgent") return "#ef4444";
@@ -116,6 +119,30 @@ export default function Tasks() {
     setNewTaskDate(`${curYear}-${m}-${d}`);
     setShowDateMenu(false);
   };
+
+  // -- Date label helper --
+  const getDateLabel = (dueDate) => {
+    if (!dueDate) return null;
+    const yesterday = new Date(todayStr);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const tomorrow = new Date(todayStr);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    if (dueDate === todayStr) return t("todayBadge");
+    if (dueDate === yesterdayStr) return t("yesterday");
+    if (dueDate === tomorrowStr) return t("tomorrow");
+    // e.g. "12 Aug"
+    return new Date(dueDate + 'T00:00:00').toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-GB', { day: 'numeric', month: 'short' });
+  };
+
+  const getPriorityBg = (p) => {
+    if (p === "urgent") return isDark ? "rgba(239,68,68,0.12)" : "rgba(239,68,68,0.08)";
+    if (p === "important") return isDark ? "rgba(245,158,11,0.12)" : "rgba(245,158,11,0.08)";
+    return isDark ? "rgba(34,197,94,0.12)" : "rgba(34,197,94,0.08)";
+  };
+
 
   const dayKeys = ["daySu", "dayMo", "dayTu", "dayWe", "dayTh", "dayFr", "daySa"];
 
@@ -390,7 +417,7 @@ export default function Tasks() {
                     ) : (
                       <span
                         className={`text-xl font-medium block truncate transition-colors ${task.done ? "line-through" : ""}`}
-                        style={{ color: task.done ? subText : getPriorityColor(task.priority) }}
+                        style={{ color: task.done ? subText : text }}
                       >
                         {task.text}
                       </span>
@@ -398,19 +425,41 @@ export default function Tasks() {
                   </div>
 
                   {/* Meta & Actions */}
-                  <div className="flex items-center justify-between md:justify-end gap-6 ml-10 md:ml-0">
-                    {task.dueDate && (
-                      <span
-                        className="text-xs px-3 py-1.5 rounded-xl font-bold tracking-wide shadow-sm"
-                        style={{
-                          color: task.done ? subText : (isOverdue ? "#ef4444" : isToday ? accent : subText),
-                          backgroundColor: task.done ? "transparent" : (isOverdue ? "rgba(239, 68, 68, 0.15)" : isToday ? `${accent}20` : (isDark ? "#333" : "#f1f5f9"))
-                        }}
-                      >
-                        {task.dueDate}
-                      </span>
+                  <div className="flex items-center justify-between md:justify-end gap-3 ml-10 md:ml-0">
+
+                    {/* Labels (only for active tasks) */}
+                    {!task.done && (
+                      <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                        {/* Priority badge */}
+                        <span
+                          className="text-[10px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full"
+                          style={{
+                            color: getPriorityColor(task.priority),
+                            backgroundColor: getPriorityBg(task.priority),
+                            border: `1px solid ${getPriorityColor(task.priority)}35`,
+                          }}
+                        >
+                          {t(task.priority)}
+                        </span>
+
+                        {/* Time badge */}
+                        {task.dueDate && (
+                          <span
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            style={{
+                              color: isOverdue ? "#3b82f6" : subText,
+                              backgroundColor: isOverdue ? "rgba(59,130,246,0.12)" : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"),
+                              border: isOverdue ? "1px solid rgba(59,130,246,0.35)" : "1px solid transparent",
+                              boxShadow: isOverdue ? "0 0 6px rgba(59,130,246,0.25)" : "none",
+                            }}
+                          >
+                            {isOverdue ? t("overdue") : getDateLabel(task.dueDate)}
+                          </span>
+                        )}
+                      </div>
                     )}
 
+                    {/* Hover actions */}
                     <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all">
                       {/* Edit Button */}
                       <button
