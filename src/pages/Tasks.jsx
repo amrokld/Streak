@@ -505,7 +505,11 @@ export default function Tasks() {
             style={{
               backgroundColor: cardBg,
               borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+              boxShadow: isDark
+                ? `0 0 50px ${accent}20, 0 20px 40px rgba(0,0,0,0.8)`
+                : `0 0 40px ${accent}30, 0 20px 40px rgba(0,0,0,0.15)`,
             }}
+
             onClick={(e) => e.stopPropagation()}
           >
             <form
@@ -525,8 +529,8 @@ export default function Tasks() {
             >
 
               {/* TITLE */}
-              <h2 className="text-xl font-bold text-center mb-6" style={{ color: accent }}>
-                Editing Task
+              <h2 className="text-2xl font-bold text-center mb-8" style={{ color: accent }}>
+                {t("editingTask")}
               </h2>
 
               {/* INPUT */}
@@ -715,21 +719,31 @@ export default function Tasks() {
               </div>
 
               {/* SAVE BUTTON */}
-              <motion.button
+              <button
                 type="submit"
-                onClick={(e) => e.stopPropagation()} // IMPORTANT
-                whileTap={{ scale: 0.95 }}
-                whileHover={{ scale: 1.02 }}
-                className="w-full py-3 rounded-xl font-bold transition-all shadow-lg"
-                style={{
-                  backgroundColor: accent,
-                  color: isDark ? "#000" : "#fff",
-                  boxShadow: `0 6px 20px ${accent}40`
-                }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative group w-full py-2.5 mt-2 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95"
+                style={{ backgroundColor: "transparent", color: accent, border: `1px solid ${accent}` }}
               >
-                {t("save")}
-              </motion.button>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: accent }} />
+                <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none" style={{ color: isDark ? "#000" : "#fff" }}>
+                  {t("save")}
+                </span>
+                <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
+                  {t("save")}
+                </span>
+              </button>
 
+              {/* CANCEL */}
+              <button
+                type="button"
+                className="w-full mt-4 text-sm font-medium opacity-50 hover:opacity-100 transition"
+                style={{ color: subText }}
+                onClick={() => { setTaskToEdit(null); setShowEditPriorityMenu(false); setShowEditDateMenu(false); }}
+              >
+                {t("cancel")}
+              </button>
+              
             </form>
           </motion.div>
         </div>,

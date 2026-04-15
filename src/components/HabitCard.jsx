@@ -6,6 +6,7 @@ import { cardFlip } from "../motion/motionVariants";
 import { getTokens } from "../theme/tokens";
 import { useLanguage } from "../Context/LanguageContext";
 import { getToday } from "../utils/dateHelpers";
+import { getTodayDayKey } from "../utils/dateHelpers";
 
 export default function HabitCard({
   habit,
@@ -39,6 +40,17 @@ export default function HabitCard({
     optional: "#22c55e"
   };
   const catColor = colors[habit.category] || subText;
+
+  const DAY_LABELS_FULL = { mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" };
+
+  const getScheduleLabel = () => {
+    if (!habit.frequency || habit.frequency === "daily") return t("daily") || "Daily";
+    if ((habit.frequency === "weekly" || habit.frequency === "custom") && habit.days?.length > 0) {
+      return habit.days.map(d => DAY_LABELS_FULL[d]).join(", ");
+    }
+    return t("daily") || "Daily";
+  };
+
 
   useEffect(() => {
     if (forceClose) setFlipped(false);
@@ -90,18 +102,37 @@ export default function HabitCard({
               {t("rightClickOptions")}
             </p>
 
-            {habit.category && (
-              <span
-                className="inline-block mt-4 px-3 py-[2px] rounded-full text-[11px] font-bold capitalize tracking-wide hidden md:inline-block"
-                style={{
-                  backgroundColor: "transparent",
-                  border: `1px solid ${catColor}`,
-                  color: catColor
-                }}
-              >
-                {t(habit.category)}
-              </span>
-            )}
+            <div className="flex flex-col items-start gap-1 mt-4">
+              {habit.category && (
+                <span
+                  className="px-3 py-[2px] rounded-full text-[11px] font-bold capitalize tracking-wide hidden md:inline-block"
+                  style={{
+                    backgroundColor: "transparent",
+                    border: `1px solid ${catColor}`,
+                    color: catColor
+                  }}
+                >
+                  {t(habit.category)}
+                </span>
+              )}
+
+              {/* Schedule badge */}
+              {(!habit.frequency || habit.frequency === "daily") ? (
+                <span
+                  className="px-2 py-[10px] rounded-full text-[10px] font-medium hidden md:inline-block"
+                  style={{ color: subText, opacity: 0.5 }}
+                >
+                  {t("daily") || "Daily"}
+                </span>
+              ) : (
+                <span
+                  className="px-2 py-[10px] rounded-full text-[10px] font-bold tracking-wide hidden md:inline-block"
+                  style={{ color: accent, opacity: 0.8 }}
+                >
+                  {getScheduleLabel()}
+                </span>
+              )}
+            </div>
 
             {/* Message bubble */}
             {message && (
@@ -147,7 +178,6 @@ export default function HabitCard({
             >
               {habit.streak}
             </motion.div>
-
           </div>
 
           {/* BACK */}

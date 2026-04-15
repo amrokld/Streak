@@ -13,3 +13,8 @@ export const getYesterday = () => {
     d.setDate(d.getDate() - 1);
     return formatDate(d);
 };
+
+export const getTodayDayKey = () => {
+    const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    return days[new Date().getDay()];
+};

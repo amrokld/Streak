@@ -25,6 +25,28 @@ export default function Home() {
 
   const forceCloseCards = Boolean(habitToDelete || habitToEdit);
 
+  const [editCategory, setEditCategory] = useState("important");
+  const [editFrequency, setEditFrequency] = useState("daily");
+  const [editDays, setEditDays] = useState([]);
+
+  const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  const DAY_LABELS = { mon: "M", tue: "T", wed: "W", thu: "T", fri: "F", sat: "S", sun: "S" };
+
+  const toggleEditDay = (day) => {
+    setEditDays(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
+
+  useEffect(() => {
+    if (habitToEdit) {
+      setEditCategory(habitToEdit.category || "important");
+      setEditFrequency(habitToEdit.frequency || "daily");
+      setEditDays(habitToEdit.days || []);
+    }
+  }, [habitToEdit]);
+
+
   /* ---------- USERNAME ---------- */
   const username = localStorage.getItem(STORAGE_KEYS.username) || "";
 
@@ -174,48 +196,92 @@ export default function Home() {
               {t("changeCategory")}
             </h3>
 
-            <div className="flex flex-col items-center gap-3 w-full">
-              {["urgent", "important", "optional"].map((cat) => {
-                const colors = {
-                  urgent: "#ef4444",
-                  important: "#f59e0b",
-                  optional: "#22c55e"
-                };
-                const active = habitToEdit.category === cat;
+            <div className="flex justify-center gap-2">
+              {["important", "urgent", "optional"].map((cat) => {
+                const colors = { urgent: "#ef4444", important: "#f59e0b", optional: "#22c55e" };
+                const active = editCategory === cat;
                 const color = colors[cat];
-
                 return (
                   <button
                     key={cat}
-                    className="relative block w-full py-2.5 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95 group"
+                    type="button"
+                    onClick={() => setEditCategory(cat)}
+                    className="px-3 py-1 rounded-full text-xs transition font-bold capitalize"
                     style={{
-                      backgroundColor: active ? color : "transparent",
-                      color: active ? (isDark ? "#000" : "#fff") : color,
-                      border: `1px solid ${active ? "transparent" : color}`
-                    }}
-                    onClick={() => {
-                      updateHabit(habitToEdit.id, { category: cat });
-                      setHabitToEdit(null);
+                      border: `1px solid ${active ? color : (isDark ? "#444" : "#cbd5e1")}`,
+                      backgroundColor: active ? `${color}15` : "transparent",
+                      color: color,
                     }}
                   >
-                    {!active && (
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: color }} />
-                    )}
-                    {!active && (
-                      <span
-                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none capitalize"
-                        style={{ color: isDark ? "#000" : "#fff" }}
-                      >
-                        {t(cat)}
-                      </span>
-                    )}
-                    <span className={`relative z-10 block capitalize ${!active ? "group-hover:opacity-0 transition-opacity duration-200" : ""}`}>
-                      {t(cat)}
-                    </span>
+                    {t(cat)}
                   </button>
                 );
               })}
             </div>
+
+            {/* Divider */}
+            <div className="w-full h-px mt-6 mb-4" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }} />
+
+            {/* Schedule section */}
+            <p className="text-xs font-bold tracking-wider uppercase mb-3 self-start" style={{ color: subText }}>
+              {t("frequency") || "Frequency"}
+            </p>
+
+            <div className="flex gap-2 mb-3">
+              {["daily", "custom"].map((freq) => (
+                <button
+                  key={freq}
+                  type="button"
+                  onClick={() => setEditFrequency(freq)}
+                  className="px-4 py-1 rounded-full text-xs font-bold capitalize transition"
+                  style={{
+                    border: `1px solid ${editFrequency === freq ? accent : (isDark ? "#444" : "#cbd5e1")}`,
+                    backgroundColor: editFrequency === freq ? `${accent}15` : "transparent",
+                    color: editFrequency === freq ? accent : subText,
+                  }}
+                >
+                  {t(freq) || freq}
+                </button>
+              ))}
+            </div>
+
+            {editFrequency === "custom" && (
+              <div className="flex gap-1 mb-3">
+                {DAY_KEYS.map((day) => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => toggleEditDay(day)}
+                    className="w-8 h-8 rounded-full text-[11px] font-bold transition"
+                    style={{
+                      border: `1px solid ${editDays.includes(day) ? accent : (isDark ? "#444" : "#cbd5e1")}`,
+                      backgroundColor: editDays.includes(day) ? accent : "transparent",
+                      color: editDays.includes(day) ? (isDark ? "#000" : "#fff") : subText,
+                    }}
+                  >
+                    {DAY_LABELS[day]}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button
+              className="relative group w-full py-2.5 mt-6 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95"
+              style={{ backgroundColor: "transparent", color: accent, border: `1px solid ${accent}` }}
+              onClick={() => {
+                const safeDays = (editFrequency === "custom" && editDays.length === 0) ? [] : editDays;
+                updateHabit(habitToEdit.id, { category: editCategory, frequency: editFrequency, days: safeDays });
+                setHabitToEdit(null);
+              }}
+            >
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: accent }} />
+              <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none" style={{ color: isDark ? "#000" : "#fff" }}>
+                {t("save")}
+              </span>
+              <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
+                {t("save")}
+              </span>
+            </button>
 
             <button
               className="mt-8 text-sm font-medium opacity-50 hover:opacity-100 transition"

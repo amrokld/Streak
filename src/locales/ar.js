@@ -47,7 +47,7 @@ export const ar = {
   clickForDetails: "اضغط لمزيد من التفاصيل",
   rightClickOptions: "كليك يمين للخيارات",
   options: "الخيارات",
-  changeCategory: "تغيير التصنيف",
+  changeCategory: "تغيير التصنيف و الأيام",
   deleteHabit: "حذف العادة",
   rightClickClose: "كليك يمين للإغلاق",
 
@@ -67,6 +67,11 @@ export const ar = {
   resetStreakQ: "إعادة تعيين السلسلة؟",
   resetStreakMsg: "سيتم إعادة سلسلتك الحالية إلى صفر. سيتم الاحتفاظ بإجمالي الأيام.",
   reset: "إعادة تعيين",
+  frequency: "التكرار",
+  daily: "يومي",
+  custom: "مخصص",
+
+
 
   // Tasks
   clearCompleted: "مسح المكتمل",
@@ -85,6 +90,8 @@ export const ar = {
   todayBadge: "اليوم",
   tomorrow: "غداً",
   yesterday: "أمس",
+  editingTask: "تعديل المهمة",
+
 
   // Calendar Page
   allHabits: "جميع العادات",

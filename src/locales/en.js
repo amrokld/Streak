@@ -47,9 +47,12 @@ export const en = {
   clickForDetails: "click for more details",
   rightClickOptions: "Right-click for options",
   options: "OPTIONS",
-  changeCategory: "Change category",
+  changeCategory: "Change category and days",
   deleteHabit: "Delete habit",
   rightClickClose: "Right-click to close",
+  frequency: "Frequency",
+  daily: "Daily",
+  custom: "Custom",
 
   // Home
   deleteHabitQ: "Delete habit?",
@@ -88,6 +91,8 @@ export const en = {
   todayBadge: "Today",
   tomorrow: "Tomorrow",
   yesterday: "Yesterday",
+  editingTask: "Edit Task",
+
 
   // Calendar Page
   allHabits: "All Habits",

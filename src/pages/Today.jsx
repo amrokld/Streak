@@ -9,7 +9,7 @@ import { useHabits } from "../Context/HabitContext";
 import { useTasks } from "../Context/TaskContext";
 import { getToday, getYesterday } from "../utils/dateHelpers";
 import { useLanguage } from "../Context/LanguageContext";
-
+import { isHabitScheduledForToday } from "../utils/habitSchedule";
 
 import HabitCard from "../components/HabitCard";
 import ConfirmModal from "../components/ConfirmModel";
@@ -82,8 +82,8 @@ export default function Today() {
 
 
     // Filtering
-    const pendingHabits = habits.filter((h) => h.lastCheck !== today);
-    const doneHabits = habits.filter((h) => h.lastCheck === today);
+    const pendingHabits = habits.filter((h) => isHabitScheduledForToday(h) && h.lastCheck !== today);
+    const doneHabits = habits.filter((h) => isHabitScheduledForToday(h) && h.lastCheck === today);
 
     const overdueTasks = tasks.filter((t) => !t.done && t.dueDate && t.dueDate < today);
     const todayTasks = tasks.filter((t) => !t.done && t.dueDate === today);

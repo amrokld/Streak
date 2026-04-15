@@ -7,6 +7,25 @@ import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
     {
+        version: "v4.0",
+        date: "April 2026",
+        notes: [
+            " Fixed a critical streak bug where rapid clicks would fire confetti multiple times — now blocked instantly using a session ref.",
+            " Added clickable streak number on the Today page: tap to check in directly from the habit card.",
+            " Check-in on Today page now triggers a toast notification matching the app's existing style.",
+            " 'Clear All' now cleanly removes completed tasks and hides done habits without breaking streaks or re-adding them to the pending list.",
+            " 'Show Completed' section now auto-hides when there is nothing left to display.",
+            " Added a Habit Scheduling System: create habits as Daily or Custom (specific weekdays).",
+            " Today page now only shows habits scheduled for the current day — smarter and less cluttered.",
+            " Habit cards now display the schedule label (e.g. 'Mon, Wed') below the category badge.",
+            " Added a 'Category & Schedule' edit modal accessible from the habit card back — change both category and schedule in one place.",
+            " Category picker in the edit modal now matches the pill-style used in the New Habit window.",
+            " Edit Task modal redesigned to match all other modal windows — consistent typography, glow shadow, animated Save button, and Cancel link.",
+            " Dual-label system (Priority + Time) applied consistently across both Tasks and Today pages.",
+            " Overdue tasks shown in blue across all views for immediate visual clarity."
+        ]
+    },
+    {
         version: "v3.0",
         date: "April 2026",
         notes: [

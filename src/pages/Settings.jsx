@@ -366,7 +366,7 @@ export default function Settings() {
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-end gap-2">
                                     <h4 className="text-xl font-bold tracking-widest" style={{ color: accent }}>STREAK</h4>
-                                    <span className="text-xs font-medium mb-1" style={{ color: subText }}>v3.0</span>
+                                    <span className="text-xs font-medium mb-1" style={{ color: subText }}>v4.0</span>
                                 </div>
                                 <p className="text-sm">{t("appDescription")}</p>
                                 <p className="text-xs mt-1" style={{ color: subText }}>{t("privacyNote")}</p>
