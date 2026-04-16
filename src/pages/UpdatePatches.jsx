@@ -7,6 +7,15 @@ import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
     {
+        version: "v4.1",
+        date: "April 2026",
+        notes: [
+            " Added a starting introduction for new users to get familiar with the apps functionalities.",
+            " Fixed the bugs that related to the localstorage and habits triggering.",
+            " Fixed the bugs of scheduling habits."
+        ]
+    },
+    {
         version: "v4.0",
         date: "April 2026",
         notes: [
