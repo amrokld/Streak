@@ -10,6 +10,7 @@ import ConfirmModal from "../components/ConfirmModel";
 import { STORAGE_KEYS } from "../constants/storageKeys";
 import { getTokens } from "../theme/tokens";
 import { useLanguage } from "../Context/LanguageContext";
+import { isCustomHabitUnscheduled } from "../utils/habitSchedule";
 
 export default function Home() {
   const { habits, deleteHabit, updateHabit } = useHabits();
@@ -147,13 +148,22 @@ export default function Home() {
                 : activeCategories.includes(h.category)
             )
             .map((habit) => (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                onDeleteRequest={setHabitToDelete}
-                onEditCategory={setHabitToEdit}
-                forceClose={forceCloseCards}
-              />
+              <div key={habit.id} className="relative">
+                <HabitCard
+                  habit={habit}
+                  onDeleteRequest={setHabitToDelete}
+                  onEditCategory={setHabitToEdit}
+                  forceClose={forceCloseCards}
+                />
+                {isCustomHabitUnscheduled(habit) && (
+                  <div
+                    className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: "#f59e0b22", color: "#f59e0b" }}
+                  >
+                    No days set
+                  </div>
+                )}
+              </div>
             ))}
         </div>
       </div>

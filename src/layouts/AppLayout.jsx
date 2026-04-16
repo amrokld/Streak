@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import Header from "../components/Header";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
 import { STORAGE_KEYS } from "../constants/storageKeys";
 import { getTokens } from "../theme/tokens";
 import { useLanguage } from "../Context/LanguageContext";
-
+import { useReminderScheduler } from "../hooks/useReminderScheduler";
 
 export default function AppLayout() {
   const { isDark } = useTheme();
@@ -23,6 +23,38 @@ export default function AppLayout() {
   );
 
   const { accent, subText } = getTokens(isDark);
+
+  const [remindersEnabled, setRemindersEnabled] = useState(
+    localStorage.getItem(STORAGE_KEYS.reminders) === "true"
+  );
+  const [reminderTime, setReminderTime] = useState(
+    localStorage.getItem(STORAGE_KEYS.reminderTime) || "20:00"
+  );
+
+  useReminderScheduler(habits, remindersEnabled, reminderTime);
+
+  const buildReminderMessage = (pendingHabits) => {
+    const priorityOrder = { urgent: 0, important: 1, optional: 2 };
+    const sorted = [...pendingHabits].sort(
+      (a, b) => (priorityOrder[a.category] ?? 1) - (priorityOrder[b.category] ?? 1)
+    );
+    const count = sorted.length;
+    if (count === 1) return `"${sorted[0].name}" is still pending today. Keep your streak alive!`;
+    const topName = sorted[0].name;
+    return `${count} habits pending — starting with "${topName}". Don't break your streak!`;
+  };
+
+  // Add this useEffect inside AppLayout(), replacing the single useReminderScheduler(habits) line:
+  useEffect(() => {
+    const onStorage = () => {
+      setRemindersEnabled(localStorage.getItem(STORAGE_KEYS.reminders) === "true");
+      setReminderTime(localStorage.getItem(STORAGE_KEYS.reminderTime) || "20:00");
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+
 
   if (!username) {
     return (

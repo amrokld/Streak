@@ -7,8 +7,18 @@ const HabitContext = createContext();
 
 export function HabitProvider({ children }) {
   const [habits, setHabits] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.habits);
-    return stored ? JSON.parse(stored) : [];
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.habits);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      // Validate it's a non-null array of objects
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(
+        (h) => h && typeof h === "object" && typeof h.id !== "undefined"
+      );
+    } catch {
+      return [];
+    }
   });
 
   const MAX_HABITS = 12;
@@ -94,9 +104,15 @@ export function HabitProvider({ children }) {
 
   // ---- PERSIST TO LOCAL STORAGE (ONE PLACE ONLY) ----
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.habits, JSON.stringify(habits));
-    syncHabits();
+    if (!Array.isArray(habits)) return; // guard: never write invalid state
+    try {
+      localStorage.setItem(STORAGE_KEYS.habits, JSON.stringify(habits));
+      syncHabits();
+    } catch (err) {
+      console.error("Failed to persist habits:", err);
+    }
   }, [habits]);
+
 
   return (
     <HabitContext.Provider

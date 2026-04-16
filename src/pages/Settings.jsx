@@ -103,6 +103,7 @@ export default function Settings() {
         const newState = !reminders;
         setReminders(newState);
         localStorage.setItem(STORAGE_KEYS.reminders, newState);
+        window.dispatchEvent(new Event("storage"));
         showToast(newState ? t("remindersEnabled") : t("remindersDisabled"));
     };
 
@@ -274,6 +275,30 @@ export default function Settings() {
                                     />
                                 </button>
                             </div>
+
+                            {reminders && (
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="font-medium">{t("reminderTime") || "Reminder Time"}</p>
+                                        <p className="text-xs mt-1" style={{ color: subText }}>{t("reminderTimeDesc") || "Choose when to receive your daily reminder"}</p>
+                                    </div>
+                                    <input
+                                        type="time"
+                                        defaultValue={localStorage.getItem(STORAGE_KEYS.reminderTime) || "20:00"}
+                                        onChange={(e) => {
+                                            localStorage.setItem(STORAGE_KEYS.reminderTime, e.target.value);
+                                            window.dispatchEvent(new Event("storage"));
+                                        }}
+
+                                        className="px-3 py-2 rounded-xl outline-none text-sm"
+                                        style={{
+                                            backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6",
+                                            color: isDark ? "#fff" : "#1a1a1a",
+                                            border: `1px solid ${borderColor}`
+                                        }}
+                                    />
+                                </div>
+                            )}
 
                         </div>
                     </section>

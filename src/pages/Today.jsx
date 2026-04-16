@@ -191,7 +191,7 @@ export default function Today() {
 
                     {/* LEFT: HABITS */}
                     <section>
-                        {(completedTasks.length > 0 || visibleCompletedHabits.length > 0) && (
+                        {totalHabits > 0 && (
                             <div style={{ marginBottom: "12px" }}>
 
                                 <p style={{
@@ -221,8 +221,6 @@ export default function Today() {
                                         )}
                                     </p>
                                 )}
-
-
                             </div>
                         )}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

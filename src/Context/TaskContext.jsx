@@ -7,7 +7,12 @@ export function TaskProvider({ children }) {
     const [tasks, setTasks] = useState(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.tasks);
-            return saved ? JSON.parse(saved) : [];
+            if (!saved) return [];
+            const parsed = JSON.parse(saved);
+            if (!Array.isArray(parsed)) return [];
+            return parsed.filter(
+                (t) => t && typeof t === "object" && typeof t.id !== "undefined"
+            );
         } catch {
             return [];
         }
@@ -15,8 +20,14 @@ export function TaskProvider({ children }) {
 
     // ---- PERSIST ----
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(tasks));
+        if (!Array.isArray(tasks)) return;
+        try {
+            localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(tasks));
+        } catch (err) {
+            console.error("Failed to persist tasks:", err);
+        }
     }, [tasks]);
+
 
     // ---- ADD ----
     const addTask = (text, priority, dueDate) => {
