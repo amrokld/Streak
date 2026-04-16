@@ -65,3 +65,58 @@ html[dir="rtl"] header span[style*="Space Grotesk"] {
   direction: ltr;
   unicode-bidi: bidi-override;
 }
+
+/* ============ Global Background Fix ============ */
+html {
+  /* Set explicit background on HTML so the viewport scroll area immediately gets the color */
+  background-color: #f2f4f8; 
+}
+
+html[data-theme='dark'] {
+  background-color: #1f1f1f;
+}
+
+/* ============ Custom Premium Scrollbar ============ */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* The explicitly colored track fixes the "stuck previous theme" area */
+html[data-theme='light'] ::-webkit-scrollbar-track {
+  background: #f2f4f8;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #1f1f1f;
+}
+
+/* Scrollbar handle colors based on theme */
+html[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+  border: 3px solid #f2f4f8;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 20px;
+  border: 3px solid #1f1f1f;
+}
+
+/* Hover effects for the scrollbar handle */
+html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Firefox support */
+html[data-theme='light'] {
+  scrollbar-color: #cbd5e1 #f2f4f8;
+}
+
+html[data-theme='dark'] {
+  scrollbar-color: #3f3f46 #1f1f1f;
+}

@@ -224,4 +224,27 @@ export const en = {
   taskLeftFinishStrong: "task left — finish strong",
   earnedBreak: "Take a break. You earned it.",
   clearAll: "Clear All",
+
+  // Onboarding Intro Flow
+  introWelcomeMsg: "Welcome to the start of your journey.",
+  setupEnvMsg: "Let's set up your environment",
+  languageLabel: "LANGUAGE",
+  themeLabel: "THEME",
+  lightTheme: "Light",
+  darkTheme: "Dark",
+  quickTourTitle: "Quick Tour?",
+  quickTourDesc: "Learn how to use the app and track your daily habits easily.",
+  startTourBtn: "Start Tour",
+  skipBtn: "Skip",
+  backBtn: "Back",
+  tourTodayDesc: "For today's habits and tasks. Stay focused!",
+  tourCalendarDesc: "View your history and activity overview.",
+  tourTasksDesc: "Manage one-time tasks and important dates.",
+  tourStatsDesc: "Analyze your consistency and progress.",
+  finishTourBtn: "Got it!",
+  readyTitle: "You're all set!",
+  readyDesc: "Your journey to consistency starts now.",
+  startAppBtn: "Start using STREAK",
+
 };
+

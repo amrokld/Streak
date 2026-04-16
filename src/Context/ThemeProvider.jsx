@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { ThemeContext } from "./ThemeContext";
 
 export default function ThemeProvider({ children }) {
@@ -8,7 +8,7 @@ export default function ThemeProvider({ children }) {
 
   const isDark = theme === "dark";
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);

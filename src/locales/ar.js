@@ -223,4 +223,26 @@ export const ar = {
   taskLeftFinishStrong: "مهمة واحدة متبقية — اقتربت من النهاية",
   earnedBreak: "خذ استراحة ، لقد استحققتها.",
   clearAll: "حذف الجميع",
+
+  // Onboarding Intro Flow
+  introWelcomeMsg: "مرحباً بك في بداية رحلتك.",
+  setupEnvMsg: "دعنا نخصص بيئة العمل",
+  languageLabel: "اللغة",
+  themeLabel: "المظهر",
+  lightTheme: "فاتح",
+  darkTheme: "داكن",
+  quickTourTitle: "جولة سريعة؟",
+  quickTourDesc: "تعرف على كيفية استخدام التطبيق ومتابعة عاداتك اليومية بكل سهولة.",
+  startTourBtn: "ابدأ الجولة",
+  skipBtn: "تخطي",
+  backBtn: "رجوع",
+  tourTodayDesc: "لعاداتك ومهامك اليوم. حافظ على تركيزك!",
+  tourCalendarDesc: "عرض تاريخك ونظرة عامة على نشاطك.",
+  tourTasksDesc: "إدارة المهام الجانبية والتواريخ المهمة.",
+  tourStatsDesc: "تحليل مدى التزامك وتقدمك.",
+  finishTourBtn: "فهمت",
+  readyTitle: "أنت جاهز تماماً!",
+  readyDesc: "رحلتك لبناء عادات أفضل تبدأ الآن.",
+  startAppBtn: "ابدأ استخدام STREAK",
+
 };

@@ -152,9 +152,12 @@ export default function Settings() {
         if (window.confirm(t("confirmFactoryReset"))) {
             localStorage.clear();
             showToast(t("factoryResetDone"));
-            setTimeout(() => window.location.reload(), 1500);
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 1500);
         }
     };
+
 
     const handleFeedbackSubmit = async () => {
         if (!feedbackText.trim()) return;
