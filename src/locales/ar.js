@@ -123,6 +123,13 @@ export const ar = {
   noActivityWeek: "لا نشاط هذا الأسبوع",
   activityCalendar: "تقويم النشاط",
   underConstruction: "قيد الإنشاء",
+  heatmap: "الخريطة الحرارية",
+  total: "الإجمالي",
+  checkIns: "تسجيلات",
+  last16Weeks: "آخر 16 أسبوع",
+  activityLevel: "مستوى النشاط",
+  less: "أقل",
+  more: "أكثر",
 
   // Settings
   general: "عام",

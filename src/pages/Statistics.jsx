@@ -1,5 +1,5 @@
 import { useTheme } from "../Context/ThemeContext";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 import { formatDate } from "../utils/dateHelpers";
@@ -13,152 +13,18 @@ export default function Statistics() {
   const { t, lang } = useLanguage();
 
   const habits = JSON.parse(localStorage.getItem(STORAGE_KEYS.habits)) || [];
+  const [activeTab, setActiveTab] = useState("overview");
 
-  // ==================== STATS CALCULATIONS ====================
-
-  const totalHabits = habits.length;
-
-  const totalActiveStreaks = habits.reduce(
-    (sum, h) => sum + (h.streak || 0),
-    0
-  );
-
-  const longestStreak = Math.max(
-    0,
-    ...habits.map(h => h.longestStreak || 0)
-  );
-
-  const totalCheckIns = habits.reduce(
-    (sum, h) => sum + (h.completedDays?.length || 0),
-    0
-  );
-
-  // Weekly Consistency & Activity Row
-  const today = new Date();
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - (6 - i));
-    return formatDate(d);
-  });
-
-  const weeklyActivity = last7Days.map((dateStr) => {
-    return habits.some((h) =>
-      h.completedDays?.includes(dateStr)
-    );
-  });
-
-  const consistencyCount = weeklyActivity.filter(Boolean).length;
-  const consistencyPercentage = Math.round((consistencyCount / 7) * 100);
-
-  // Best and Weakest Habit
-  let bestHabit = null;
-  let weakestHabit = null;
-
-  if (habits.length > 0) {
-    const sortedHabits = [...habits].sort((a, b) => (b.streak || 0) - (a.streak || 0));
-    bestHabit = sortedHabits[0];
-
-    const weakestSorted = [...habits].sort((a, b) => {
-      if ((a.streak || 0) !== (b.streak || 0)) {
-        return (a.streak || 0) - (b.streak || 0);
-      }
-      return (a.completedDays?.length || 0) - (b.completedDays?.length || 0);
-    });
-    weakestHabit = weakestSorted[0];
-  }
-
-  // Active Days This Month
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
-
-  const uniqueActiveDaysThisMonth = new Set();
-  habits.forEach((h) => {
-    h.completedDays?.forEach((dateStr) => {
-      if (dateStr.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`)) {
-        uniqueActiveDaysThisMonth.add(dateStr);
-      }
-    });
-  });
-  const activeDaysMonthCount = uniqueActiveDaysThisMonth.size;
-
-  let weakestHabitMessage = "";
-  if (weakestHabit) {
-    const hasActivityThisWeek = last7Days.some(dateStr =>
-      weakestHabit.completedDays?.some(d => d.startsWith(dateStr))
-    );
-    weakestHabitMessage = hasActivityThisWeek ? t("needsLove") : t("noActivityWeek");
-  }
-
-  const isTodayCompleted = weeklyActivity[6];
-
-  // ==================== CALENDAR STATE ====================
-
-  const [calDate, setCalDate] = useState(new Date());
-  const [selectedHabitId, setSelectedHabitId] = useState("all");
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const filterRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (filterRef.current && !filterRef.current.contains(e.target)) {
-        setShowFilterMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Calendar derived state
-  const calYear = calDate.getFullYear();
-  const calMonth = calDate.getMonth();
-  const monthKeys = ["monthJanuary", "monthFebruary", "monthMarch", "monthApril", "monthMay", "monthJune", "monthJuly", "monthAugust", "monthSeptember", "monthOctober", "monthNovember", "monthDecember"];
-  const dayKeys = ["daySu", "dayMo", "dayTu", "dayWe", "dayTh", "dayFr", "daySa"];
-
-  const prevMonth = () => setCalDate(new Date(calYear, calMonth - 1, 1));
-  const nextMonth = () => setCalDate(new Date(calYear, calMonth + 1, 1));
-  const goToToday = () => setCalDate(new Date());
-
-  // Calendar filter
-  const filteredHabits = selectedHabitId === "all"
-    ? habits
-    : habits.filter((h) => h.id === Number(selectedHabitId));
-
-  // Activity map
-  const activityMap = {};
-  const dayHabitNames = {};
-
-  filteredHabits.forEach((h) => {
-    h.completedDays?.forEach((day) => {
-      activityMap[day] = (activityMap[day] || 0) + 1;
-      if (!dayHabitNames[day]) dayHabitNames[day] = [];
-      dayHabitNames[day].push(h.name);
-    });
-  });
-
-  // Calendar grid
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  const firstDayOfMonth = new Date(calYear, calMonth, 1).getDay();
-  const blanks = Array.from({ length: firstDayOfMonth }, (_, i) => `blank-${i}`);
-  const calDays = Array.from({ length: daysInMonth }, (_, i) =>
-    formatDate(new Date(calYear, calMonth, i + 1))
-  );
-
-  const getOpacity = (count) => {
-    if (count === 1) return 0.5;
-    if (count === 2) return 0.75;
-    if (count >= 3) return 1;
-    return 1;
-  };
-
-  const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  // ==================== RENDER ====================
+  // Header Today calculation
+  const isTodayCompleted = useMemo(() => {
+    const today = new Date();
+    const todayStr = formatDate(today);
+    return habits.some(h => h.completedDays?.includes(todayStr));
+  }, [habits]);
 
   return (
-    <div className="max-w-xl mx-auto mt-20 flex flex-col gap-8 pb-10 animate-fade-in">
-
-      {/* HEADER WITH TODAY STATUS */}
+    <div className="w-full max-w-4xl px-4 mx-auto mt-20 flex flex-col gap-6 pb-10 animate-fade-in">
+      {/* HEADER */}
       <div id="tour-nav-stats" className="flex justify-between items-center">
         <h1 className="text-3xl font-bold" style={{ color: accent }}>
           {t("statistics")}
@@ -176,35 +42,144 @@ export default function Statistics() {
         </div>
       </div>
 
+      {/* TABS NAVIGATION */}
+      <StatsTabs activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} accent={accent} t={t} />
 
-      {/* OVERVIEW */}
+      {/* TAB CONTENT */}
+      {activeTab === "overview" && <OverviewTab habits={habits} isDark={isDark} accent={accent} t={t} />}
+      {activeTab === "calendar" && <CalendarTab habits={habits} isDark={isDark} accent={accent} t={t} lang={lang} />}
+      {activeTab === "heatmap" && <HeatmapTab habits={habits} isDark={isDark} accent={accent} t={t} lang={lang} />}
+    </div>
+  );
+}
+
+// ==================== TABS NAVIGATION COMPONENT ====================
+function StatsTabs({ activeTab, setActiveTab, isDark, accent, t }) {
+  const tabs = [
+    { id: "overview", label: t("overview") || "Overview" },
+    { id: "calendar", label: t("activityCalendar") || "Calendar" },
+    { id: "heatmap", label: t("heatmap") || "Heatmap" }
+  ];
+
+  return (
+    <div
+      className="flex gap-2 p-1.5 rounded-2xl mb-2 shadow-sm"
+      style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
+    >
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="relative flex-1 py-2.5 text-sm font-bold rounded-xl transition-colors outline-none"
+            style={{
+              color: isActive ? (isDark ? "#1a1a1a" : "#ffffff") : (isDark ? "#ffffff" : "#1a1a1a"),
+              opacity: isActive ? 1 : 0.6
+            }}
+          >
+            {isActive && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute inset-0 rounded-xl"
+                style={{ backgroundColor: accent }}
+                initial={false}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            <span className="relative z-10">{tab.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ==================== OVERVIEW TAB ====================
+function OverviewTab({ habits, isDark, accent, t }) {
+  const stats = useMemo(() => {
+    const totalHabits = habits.length;
+    const totalActiveStreaks = habits.reduce((sum, h) => sum + (h.streak || 0), 0);
+    const longestStreak = Math.max(0, ...habits.map(h => h.longestStreak || 0));
+    const totalCheckIns = habits.reduce((sum, h) => sum + (h.completedDays?.length || 0), 0);
+
+    const today = new Date();
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - i));
+      return formatDate(d);
+    });
+
+    const weeklyActivity = last7Days.map((dateStr) => {
+      return habits.some((h) => h.completedDays?.includes(dateStr));
+    });
+
+    const consistencyCount = weeklyActivity.filter(Boolean).length;
+    const consistencyPercentage = Math.round((consistencyCount / 7) * 100);
+
+    let bestHabit = null;
+    let weakestHabit = null;
+
+    if (habits.length > 0) {
+      const sortedHabits = [...habits].sort((a, b) => (b.streak || 0) - (a.streak || 0));
+      bestHabit = sortedHabits[0];
+
+      const weakestSorted = [...habits].sort((a, b) => {
+        if ((a.streak || 0) !== (b.streak || 0)) {
+          return (a.streak || 0) - (b.streak || 0);
+        }
+        return (a.completedDays?.length || 0) - (b.completedDays?.length || 0);
+      });
+      weakestHabit = weakestSorted[0];
+    }
+
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const uniqueActiveDaysThisMonth = new Set();
+
+    habits.forEach((h) => {
+      h.completedDays?.forEach((dateStr) => {
+        if (dateStr.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`)) {
+          uniqueActiveDaysThisMonth.add(dateStr);
+        }
+      });
+    });
+    const activeDaysMonthCount = uniqueActiveDaysThisMonth.size;
+
+    return {
+      totalHabits, totalActiveStreaks, longestStreak, totalCheckIns, activeDaysMonthCount,
+      consistencyPercentage, consistencyCount, weeklyActivity, bestHabit, weakestHabit
+    };
+  }, [habits]);
+
+  return (
+    <div className="flex flex-col gap-8 animate-fade-in">
       <section className="flex flex-col gap-4">
         <h2 className="text-xl font-semibold opacity-80">{t("overview")}</h2>
         <div className="grid grid-cols-2 gap-4">
-          <StatCard label={t("totalHabits")} value={totalHabits} accent={accent} />
-          <StatCard label={t("activeStreaks")} value={totalActiveStreaks} accent={accent} />
-          <StatCard label={t("longestStreak")} value={longestStreak} accent={accent} />
-          <StatCard label={t("totalCheckIns")} value={totalCheckIns} accent={accent} />
-          <StatCard label={t("activeDaysMonth")} value={activeDaysMonthCount} accent={accent} />
+          <StatCard label={t("totalHabits")} value={stats.totalHabits} accent={accent} isDark={isDark} />
+          <StatCard label={t("activeStreaks")} value={stats.totalActiveStreaks} accent={accent} isDark={isDark} />
+          <StatCard label={t("longestStreak")} value={stats.longestStreak} accent={accent} isDark={isDark} />
+          <StatCard label={t("totalCheckIns")} value={stats.totalCheckIns} accent={accent} isDark={isDark} />
+          <StatCard label={t("activeDaysMonth")} value={stats.activeDaysMonthCount} accent={accent} isDark={isDark} />
         </div>
       </section>
 
-      {/* CONSISTENCY */}
       <section className="flex flex-col gap-4">
         <h2 className="text-xl font-semibold opacity-80">{t("consistency")}</h2>
         <div
-          className="rounded-xl p-5 flex flex-col gap-4"
+          className="rounded-xl p-5 flex flex-col gap-4 shadow-sm"
           style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", color: isDark ? "#ffffff" : "#1a1a1a" }}
         >
           <div className="flex flex-col gap-1">
             <span className="font-medium text-sm">
-              {t("consistency")}: <span style={{ color: accent, fontSize: "1.25rem", fontWeight: "bold", marginLeft: "4px" }}>{consistencyPercentage}%</span>
+              {t("consistency")}: <span style={{ color: accent, fontSize: "1.25rem", fontWeight: "bold", marginLeft: "4px" }}>{stats.consistencyPercentage || 0}%</span>
             </span>
-            <p className="text-sm opacity-60">{t("showedUp").replace("{count}", consistencyCount)}</p>
+            <p className="text-sm opacity-60">{t("showedUp").replace("{count}", stats.consistencyCount)}</p>
           </div>
 
           <div className="flex justify-between mt-3">
-            {weeklyActivity.map((isActive, index) => (
+            {stats.weeklyActivity.map((isActive, index) => (
               <div
                 key={index}
                 className="w-8 h-8 rounded-full transition-all"
@@ -218,19 +193,17 @@ export default function Statistics() {
         </div>
       </section>
 
-
-      {/* INSIGHTS */}
       <section className="flex flex-col gap-4">
         <h2 className="text-xl font-semibold opacity-80">{t("insights")}</h2>
         <div className="grid grid-cols-1 gap-4">
           <div
-            className="rounded-xl p-5 flex flex-col gap-1 border-l-4"
+            className="rounded-xl p-5 flex flex-col gap-1 border-l-4 shadow-sm"
             style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", color: isDark ? "#ffffff" : "#1a1a1a", borderColor: "#4ade80" }}
           >
             <span className="text-sm opacity-60">{t("bestHabit")}</span>
-            {bestHabit ? (
+            {stats.bestHabit ? (
               <span className="font-medium text-lg">
-                {bestHabit.name} <span className="opacity-60 text-sm">({bestHabit.streak || 0} {t("days")})</span>
+                {stats.bestHabit.name} <span className="opacity-60 text-sm">({stats.bestHabit.streak || 0} {t("days")})</span>
               </span>
             ) : (
               <span className="opacity-50 italic">{t("noDataYet")}</span>
@@ -238,167 +211,203 @@ export default function Statistics() {
           </div>
 
           <div
-            className="rounded-xl p-5 flex flex-col gap-1 border-l-4"
+            className="rounded-xl p-5 flex flex-col gap-1 border-l-4 shadow-sm"
             style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", color: isDark ? "#ffffff" : "#1a1a1a", borderColor: "#f87171" }}
           >
             <span className="text-sm opacity-60">{t("needsAttention")}</span>
-            {weakestHabit ? (
-              <span className="font-medium text-lg">{weakestHabit.name}</span>
+            {stats.weakestHabit ? (
+              <span className="font-medium text-lg">{stats.weakestHabit.name}</span>
             ) : (
               <span className="opacity-50 italic">{t("noDataYet")}</span>
             )}
           </div>
         </div>
       </section>
+    </div>
+  );
+}
 
+// ==================== CALENDAR TAB ====================
+function CalendarTab({ habits, isDark, accent, t, lang }) {
+  const [calDate, setCalDate] = useState(new Date());
+  const [selectedHabitId, setSelectedHabitId] = useState("all");
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const filterRef = useRef(null);
 
-      {/* ==================== ACTIVITY CALENDAR ==================== */}
-      <section className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold opacity-80">{t("activityCalendar")}</h2>
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (filterRef.current && !filterRef.current.contains(e.target)) setShowFilterMenu(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-          {/* Habit filter dropdown */}
-          {habits.length > 0 && (
-            <div className="relative" ref={filterRef}>
-              <div
-                onClick={() => setShowFilterMenu(!showFilterMenu)}
-                className="flex items-center justify-between gap-3 px-4 py-2 rounded-xl text-sm font-medium outline-none cursor-pointer border transition-colors select-none"
-                style={{
-                  backgroundColor: showFilterMenu ? (isDark ? "#444" : "#e2e8f0") : (isDark ? "#2a2a2a" : "#ffffff"),
-                  borderColor: showFilterMenu ? accent : (isDark ? "#3f3f3f" : "#e5e7eb"),
-                  color: isDark ? "#ffffff" : "#1a1a1a",
-                }}
-              >
-                <span className="truncate max-w-[140px]">
-                  {selectedHabitId === "all" ? t("allHabits") : habits.find(h => String(h.id) === String(selectedHabitId))?.name || t("unknown")}
-                </span>
-                <motion.svg animate={{ rotate: showFilterMenu ? 180 : 0 }} className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                </motion.svg>
-              </div>
+  const today = useMemo(() => new Date(), []);
+  const calYear = calDate.getFullYear();
+  const calMonth = calDate.getMonth();
+  const monthKeys = ["monthJanuary", "monthFebruary", "monthMarch", "monthApril", "monthMay", "monthJune", "monthJuly", "monthAugust", "monthSeptember", "monthOctober", "monthNovember", "monthDecember"];
+  const dayKeys = ["daySu", "dayMo", "dayTu", "dayWe", "dayTh", "dayFr", "daySa"];
 
-              <AnimatePresence>
-                {showFilterMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute top-12 right-0 w-56 p-2 rounded-3xl border shadow-2xl z-50 overflow-hidden flex flex-col gap-1 max-h-64 overflow-y-auto"
-                    style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}
+  const prevMonth = () => setCalDate(new Date(calYear, calMonth - 1, 1));
+  const nextMonth = () => setCalDate(new Date(calYear, calMonth + 1, 1));
+  const goToToday = () => setCalDate(new Date());
+
+  const filteredHabits = selectedHabitId === "all"
+    ? habits
+    : habits.filter((h) => h.id === Number(selectedHabitId));
+
+  const { activityMap, dayHabitNames } = useMemo(() => {
+    const map = {};
+    const names = {};
+    filteredHabits.forEach((h) => {
+      h.completedDays?.forEach((day) => {
+        map[day] = (map[day] || 0) + 1;
+        if (!names[day]) names[day] = [];
+        names[day].push(h.name);
+      });
+    });
+    return { activityMap: map, dayHabitNames: names };
+  }, [filteredHabits]);
+
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const firstDayOfMonth = new Date(calYear, calMonth, 1).getDay();
+  const blanks = Array.from({ length: firstDayOfMonth }, (_, i) => `blank-${i}`);
+  const calDays = Array.from({ length: daysInMonth }, (_, i) => formatDate(new Date(calYear, calMonth, i + 1)));
+
+  const getOpacity = (count) => {
+    if (count === 1) return 0.5;
+    if (count === 2) return 0.75;
+    return 1;
+  };
+
+  const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  return (
+    <div className="flex flex-col gap-4 animate-fade-in">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold opacity-80">{t("activityCalendar")}</h2>
+
+        {habits.length > 0 && (
+          <div className="relative" ref={filterRef}>
+            <div
+              onClick={() => setShowFilterMenu(!showFilterMenu)}
+              className="flex items-center justify-between gap-3 px-4 py-2 rounded-xl text-sm font-medium outline-none cursor-pointer border transition-colors select-none"
+              style={{
+                backgroundColor: showFilterMenu ? (isDark ? "#444" : "#e2e8f0") : (isDark ? "#2a2a2a" : "#ffffff"),
+                borderColor: showFilterMenu ? accent : (isDark ? "#3f3f3f" : "#e5e7eb"),
+                color: isDark ? "#ffffff" : "#1a1a1a",
+              }}
+            >
+              <span className="truncate max-w-[140px]">
+                {selectedHabitId === "all" ? t("allHabits") : habits.find(h => String(h.id) === String(selectedHabitId))?.name || t("unknown")}
+              </span>
+              <motion.svg animate={{ rotate: showFilterMenu ? 180 : 0 }} className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+              </motion.svg>
+            </div>
+
+            <AnimatePresence>
+              {showFilterMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-12 right-0 w-56 p-2 rounded-3xl border shadow-2xl z-50 overflow-hidden flex flex-col gap-1 max-h-64 overflow-y-auto"
+                  style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}
+                >
+                  <div
+                    onClick={() => { setSelectedHabitId("all"); setShowFilterMenu(false); }}
+                    className="px-4 py-2 text-sm font-bold cursor-pointer transition rounded-xl hover:brightness-110"
+                    style={{
+                      backgroundColor: selectedHabitId === "all" ? (isDark ? "#333" : "#f1f5f9") : "transparent",
+                      color: selectedHabitId === "all" ? accent : (isDark ? "#aaa" : "#6b7280")
+                    }}
                   >
+                    {t("allHabits")}
+                  </div>
+                  {habits.map(h => (
                     <div
-                      onClick={() => { setSelectedHabitId("all"); setShowFilterMenu(false); }}
-                      className="px-4 py-2 text-sm font-bold cursor-pointer transition rounded-xl hover:brightness-110"
+                      key={h.id}
+                      onClick={() => { setSelectedHabitId(String(h.id)); setShowFilterMenu(false); }}
+                      className="px-4 py-2 text-sm font-medium cursor-pointer transition rounded-xl hover:brightness-110 truncate"
                       style={{
-                        backgroundColor: selectedHabitId === "all" ? (isDark ? "#333" : "#f1f5f9") : "transparent",
-                        color: selectedHabitId === "all" ? accent : (isDark ? "#aaa" : "#6b7280")
+                        backgroundColor: String(selectedHabitId) === String(h.id) ? (isDark ? "#333" : "#f1f5f9") : "transparent",
+                        color: String(selectedHabitId) === String(h.id) ? accent : (isDark ? "#fff" : "#000")
                       }}
                     >
-                      {t("allHabits")}
+                      {h.name}
                     </div>
-                    {habits.map(h => (
-                      <div
-                        key={h.id}
-                        onClick={() => { setSelectedHabitId(String(h.id)); setShowFilterMenu(false); }}
-                        className="px-4 py-2 text-sm font-medium cursor-pointer transition rounded-xl hover:brightness-110 truncate"
-                        style={{
-                          backgroundColor: String(selectedHabitId) === String(h.id) ? (isDark ? "#333" : "#f1f5f9") : "transparent",
-                          color: String(selectedHabitId) === String(h.id) ? accent : (isDark ? "#fff" : "#000")
-                        }}
-                      >
-                        {h.name}
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
 
-        {/* Calendar Card */}
-        <div
-          className="rounded-xl p-5 md:p-7 shadow-sm w-full"
-          style={{
-            backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
-            color: isDark ? "#ffffff" : "#1a1a1a"
-          }}
-        >
-          {/* Month Navigation */}
-          <div className="flex justify-between items-center mb-6 px-2">
-            <button
-              onClick={prevMonth}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:backdrop-brightness-75 transition-all text-xl"
-              style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
-            >
-              ‹
-            </button>
+      <div
+        className="rounded-xl p-5 md:p-7 shadow-sm w-full"
+        style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", color: isDark ? "#ffffff" : "#1a1a1a" }}
+      >
+        <div className="flex justify-between items-center mb-6 px-2">
+          <button
+            onClick={prevMonth}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:backdrop-brightness-75 transition-all text-xl"
+            style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
+          >‹</button>
 
-            <div
-              className="flex flex-col items-center cursor-pointer hover:opacity-70 transition-opacity"
-              onClick={goToToday}
-            >
-              <span className="font-bold text-lg tracking-wide uppercase">{t(monthKeys[calMonth])}</span>
-              <span className="text-xs opacity-50">{calYear}</span>
-            </div>
-
-            <button
-              onClick={nextMonth}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:backdrop-brightness-75 transition-all text-xl"
-              style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
-            >
-              ›
-            </button>
+          <div className="flex flex-col items-center cursor-pointer hover:opacity-70 transition-opacity" onClick={goToToday}>
+            <span className="font-bold text-lg tracking-wide uppercase">{t(monthKeys[calMonth])}</span>
+            <span className="text-xs opacity-50">{calYear}</span>
           </div>
 
-          {/* Weekday Labels */}
-          <div className="grid grid-cols-7 gap-2 mb-4 text-center border-b pb-3" style={{ borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}>
-            {dayKeys.map((dk) => (
-              <div key={dk} className="text-[10px] md:text-xs font-semibold opacity-40 uppercase tracking-widest">
-                {t(dk)}
+          <button
+            onClick={nextMonth}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:backdrop-brightness-75 transition-all text-xl"
+            style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
+          >›</button>
+        </div>
+
+        <div className="grid grid-cols-7 gap-2 mb-4 text-center border-b pb-3" style={{ borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}>
+          {dayKeys.map((dk) => (
+            <div key={dk} className="text-[10px] md:text-xs font-semibold opacity-40 uppercase tracking-widest">{t(dk)}</div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-1.5 md:gap-3">
+          {blanks.map((b) => <div key={b} className="aspect-square w-full"></div>)}
+
+          {calDays.map((day) => {
+            const count = activityMap[day] || 0;
+            const isToday = day === formatDate(today);
+            const hasActivity = count > 0;
+            const cellDate = new Date(day);
+            const isMissed = cellDate < todayDateOnly && !hasActivity;
+
+            return (
+              <div
+                key={day}
+                onClick={() => setSelectedDay(day)}
+                className="aspect-square w-full max-w-[2.8rem] mx-auto flex items-center justify-center rounded-lg text-sm select-none transition-all duration-200 cursor-pointer hover:scale-105"
+                style={{
+                  backgroundColor: hasActivity ? accent : (isDark ? "#3f3f3f" : "#f3f4f6"),
+                  opacity: hasActivity ? getOpacity(count) : (isMissed ? 0.3 : 1),
+                  color: hasActivity ? (isDark ? "#1a1a1a" : "#ffffff") : "inherit",
+                  fontWeight: hasActivity || isToday ? "bold" : "normal",
+                  outline: isToday ? `2px solid ${accent}` : "none",
+                  outlineOffset: "3px",
+                  boxShadow: isToday ? `0 0 10px ${accent}40` : "none"
+                }}
+                title={hasActivity ? `${count} ${count === 1 ? t("habitCompleted") : t("habitsCompleted")}` : t("noActivity")}
+              >
+                {cellDate.getDate()}
               </div>
-            ))}
-          </div>
-
-          {/* Day Grid */}
-          <div className="grid grid-cols-7 gap-1.5 md:gap-3">
-            {blanks.map((b) => (
-              <div key={b} className="aspect-square w-full"></div>
-            ))}
-
-            {calDays.map((day) => {
-              const count = activityMap[day] || 0;
-              const isToday = day === formatDate(today);
-              const hasActivity = count > 0;
-
-              const cellDate = new Date(day);
-              const isPast = cellDate < todayDateOnly;
-              const isMissed = isPast && !hasActivity;
-
-              return (
-                <div
-                  key={day}
-                  onClick={() => setSelectedDay(day)}
-                  className="aspect-square w-full max-w-[2.8rem] mx-auto flex items-center justify-center rounded-lg text-sm select-none transition-all duration-200 cursor-pointer hover:scale-105"
-                  style={{
-                    backgroundColor: hasActivity ? accent : (isDark ? "#3f3f3f" : "#f3f4f6"),
-                    opacity: hasActivity ? getOpacity(count) : (isMissed ? 0.3 : 1),
-                    color: hasActivity ? (isDark ? "#1a1a1a" : "#ffffff") : "inherit",
-                    fontWeight: hasActivity || isToday ? "bold" : "normal",
-                    outline: isToday ? `2px solid ${accent}` : "none",
-                    outlineOffset: "3px",
-                    boxShadow: isToday ? `0 0 10px ${accent}40` : "none"
-                  }}
-                  title={hasActivity ? `${count} ${count === 1 ? t("habitCompleted") : t("habitsCompleted")}` : t("noActivity")}
-                >
-                  {cellDate.getDate()}
-                </div>
-              );
-            })}
-          </div>
+            );
+          })}
         </div>
-      </section>
+      </div>
 
       {/* DAY DETAILS MODAL */}
       {selectedDay && createPortal(
@@ -419,25 +428,15 @@ export default function Statistics() {
             }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Modal Header */}
             <div className="flex justify-between items-start border-b pb-3" style={{ borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}>
               <h3 className="text-xl font-bold">
                 {new Date(selectedDay).toLocaleDateString(lang === "ar" ? "ar-SA" : undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
               </h3>
-              <div
-                onClick={() => setSelectedDay(null)}
-                className="p-1 cursor-pointer opacity-50 hover:opacity-100 transition-opacity bg-black/5 rounded-full"
-              >
-                ✕
-              </div>
+              <div onClick={() => setSelectedDay(null)} className="p-1 cursor-pointer opacity-50 hover:opacity-100 transition-opacity bg-black/5 rounded-full">✕</div>
             </div>
 
-            {/* Modal Content */}
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-semibold uppercase opacity-40 tracking-wider mb-1">
-                {t("activity")}
-              </span>
-
+              <span className="text-xs font-semibold uppercase opacity-40 tracking-wider mb-1">{t("activity")}</span>
               {dayHabitNames[selectedDay]?.length > 0 ? (
                 dayHabitNames[selectedDay].map(name => (
                   <div
@@ -461,23 +460,222 @@ export default function Statistics() {
   );
 }
 
+// ==================== HEATMAP TAB ====================
+function HeatmapTab({ habits, isDark, accent, t, lang }) {
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, content: "" });
 
-function StatCard({ label, value, accent }) {
-  const { isDark } = useTheme();
+  const { days, activityMap, todayRef, totalCompleted } = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // reset time for exact comparison
+
+    const endDayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
+
+    // Show 16 weeks (approx 4 months). This safely fits mobile screens horizontally!
+    const weeksToShow = 16;
+    const daysToShow = weeksToShow * 7;
+
+    const daysUntilNextSaturday = 6 - endDayOfWeek;
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() + daysUntilNextSaturday);
+
+    const startD = new Date(endDate);
+    startD.setDate(endDate.getDate() - daysToShow + 1);
+
+    const generatedDays = [];
+    for (let i = 0; i < daysToShow; i++) {
+      const d = new Date(startD);
+      d.setDate(startD.getDate() + i);
+      generatedDays.push(d);
+    }
+
+    const map = {};
+    habits.forEach((h) => {
+      h.completedDays?.forEach((dayStr) => {
+        map[dayStr] = (map[dayStr] || 0) + 1;
+      });
+    });
+
+    let total = 0;
+    generatedDays.forEach(d => {
+      const str = formatDate(d);
+      if (map[str]) total += map[str];
+    });
+
+    return { days: generatedDays, activityMap: map, todayRef: today, totalCompleted: total };
+  }, [habits]);
+
+  const getIntensityStyle = (count, isFuture) => {
+    if (isFuture) return { backgroundColor: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", opacity: 0.5 };
+    if (count === 0) return { backgroundColor: isDark ? "#3f3f3f" : "#f3f4f6" };
+    if (count === 1) return { backgroundColor: accent, opacity: 0.4 };
+    if (count === 2) return { backgroundColor: accent, opacity: 0.6 };
+    if (count === 3) return { backgroundColor: accent, opacity: 0.8 };
+    return { backgroundColor: accent, opacity: 1 };
+  };
+
+  const handleMouseEnter = (e, content) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({
+      visible: true,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 8, // 8px clearance above the cell
+      content
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip(prev => ({ ...prev, visible: false }));
+  };
 
   return (
+    <div className="flex flex-col gap-4 animate-fade-in">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold opacity-80">{t("heatmap") || "Activity Heatmap"}</h2>
+
+        {/* Cool small stat badge */}
+        <div
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm text-xs font-bold"
+          style={{
+            backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+            borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
+            color: accent
+          }}
+        >
+          <span className="opacity-80 text-[10px] uppercase tracking-wider" style={{ color: isDark ? '#fff' : '#000' }}>
+            {t("total") || "Total"}:
+          </span>
+          {totalCompleted} {t("checkIns") || "Check-ins"}
+        </div>
+      </div>
+
+      <div
+        className="rounded-xl p-5 md:p-7 shadow-sm w-full flex flex-col items-center relative"
+        style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", color: isDark ? "#ffffff" : "#1a1a1a" }}
+      >
+        <div className="w-full flex justify-between items-center mb-6">
+          <h3 className="font-bold text-[10px] md:text-xs tracking-wide uppercase opacity-50">{t("last16Weeks") || "Past 16 Weeks"}</h3>
+          <h3 className="font-bold text-[10px] md:text-xs tracking-wide uppercase opacity-50">
+            {days[0].toLocaleDateString(lang === "ar" ? "ar-SA" : undefined, { month: 'short', year: 'numeric' })} - {todayRef.toLocaleDateString(lang === "ar" ? "ar-SA" : undefined, { month: 'short', year: 'numeric' })}
+          </h3>
+        </div>
+
+        {/* Horizontal Heatmap Grid Container */}
+        <div className="flex gap-2 md:gap-3 justify-center w-full">
+          {/* Heatmap Row Labels (Mon, Wed, Fri) */}
+          <div className={`grid gap-1 md:gap-1.5 ${lang === "ar" ? 'pl-1 md:pl-2' : 'pr-1 md:pr-2'}`} style={{ gridTemplateRows: 'repeat(7, 1fr)' }}>
+            <div className="text-[8px] md:text-[10px] opacity-40 font-semibold flex items-center justify-end"></div>
+            <div className="text-[8px] md:text-[10px] opacity-40 font-semibold flex items-center justify-end">{t("dayMo")?.substring(0, 3) || "Mon"}</div>
+            <div className="text-[8px] md:text-[10px] opacity-40 font-semibold flex items-center justify-end"></div>
+            <div className="text-[8px] md:text-[10px] opacity-40 font-semibold flex items-center justify-end">{t("dayWe")?.substring(0, 3) || "Wed"}</div>
+            <div className="text-[8px] md:text-[10px] opacity-40 font-semibold flex items-center justify-end"></div>
+            <div className="text-[8px] md:text-[10px] opacity-40 font-semibold flex items-center justify-end">{t("dayFr")?.substring(0, 3) || "Fri"}</div>
+            <div className="text-[8px] md:text-[10px] opacity-40 font-semibold flex items-center justify-end"></div>
+          </div>
+
+          {/* Classic GitHub-style Horizontal Grid - fully responsive! */}
+          <div
+            className="grid w-full gap-1 md:gap-1.5"
+            style={{
+              gridTemplateRows: 'repeat(7, 1fr)',
+              gridAutoFlow: 'column',
+              gridAutoColumns: '1fr'
+            }}
+          >
+            {days.map((date, i) => {
+              const dateStr = formatDate(date);
+              const count = activityMap[dateStr] || 0;
+              const displayDate = date.toLocaleDateString(lang === "ar" ? "ar-SA" : undefined, { month: 'short', day: 'numeric' });
+
+              const isFuture = date > todayRef;
+              const isToday = date.getTime() === todayRef.getTime();
+
+              const tooltipText = isFuture ? "" : `${displayDate}: ${count} ${count === 1 ? (t("habitCompleted") || "habit") : (t("habitsCompleted") || "habits")}`;
+
+              return (
+                <motion.div
+                  key={dateStr}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.003 }} // Cascading animation
+                  onMouseEnter={(e) => !isFuture && handleMouseEnter(e, tooltipText)}
+                  onMouseLeave={handleMouseLeave}
+                  className={`w-full aspect-square rounded-sm transition-all duration-300 ${!isFuture && 'hover:scale-110'}`}
+                  style={{
+                    ...getIntensityStyle(count, isFuture),
+                    outline: isToday ? `1.5px solid ${accent}` : "none",
+                    outlineOffset: "2px",
+                    boxShadow: isToday ? `0 0 8px ${accent}40` : "none"
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="w-full flex justify-between items-center mt-8 pt-4 border-t" style={{ borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}>
+          <span className="text-[10px] md:text-xs opacity-40 font-bold tracking-widest uppercase">{t("activityLevel") || "Activity Level"}</span>
+          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-medium">
+            <span className="opacity-40">{t("less") || "Less"}</span>
+            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: isDark ? "#3f3f3f" : "#f3f4f6" }} />
+            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: accent, opacity: 0.4 }} />
+            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: accent, opacity: 0.6 }} />
+            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: accent, opacity: 0.8 }} />
+            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: accent, opacity: 1 }} />
+            <span className="opacity-40">{t("more") || "More"}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* CUSTOM TOOLTIP PORTAL */}
+      {tooltip.visible && createPortal(
+        <motion.div
+          initial={{ opacity: 0, y: 5, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          className="fixed z-[200] pointer-events-none px-3 py-1.5 rounded-lg text-xs font-bold shadow-xl whitespace-nowrap"
+          style={{
+            backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
+            color: isDark ? "#ffffff" : "#1a1a1a",
+            border: `1px solid ${isDark ? "#333" : "#e5e7eb"}`,
+            left: tooltip.x,
+            top: tooltip.y,
+            transform: "translate(-50%, -100%)",
+            boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.5)" : "0 4px 20px rgba(0,0,0,0.1)"
+          }}
+        >
+          {tooltip.content}
+          {/* Tooltip arrow */}
+          <div
+            className="absolute left-1/2 bottom-0 w-2 h-2"
+            style={{
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
+              borderBottom: `1px solid ${isDark ? "#333" : "#e5e7eb"}`,
+              borderRight: `1px solid ${isDark ? "#333" : "#e5e7eb"}`,
+              transform: "translate(-50%, 50%) rotate(45deg)"
+            }}
+          />
+        </motion.div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+
+
+
+// ==================== SHARED STAT CARD COMPONENT ====================
+function StatCard({ label, value, accent, isDark }) {
+  return (
     <div
-      className="rounded-xl p-5 flex flex-col gap-2"
+      className="rounded-xl p-5 flex flex-col gap-2 shadow-sm"
       style={{
         backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
         color: isDark ? "#ffffff" : "#1a1a1a"
       }}
     >
       <span className="text-sm opacity-60">{label}</span>
-      <span
-        className="text-3xl font-bold"
-        style={{ color: accent }}
-      >
+      <span className="text-3xl font-bold" style={{ color: accent }}>
         {value}
       </span>
     </div>

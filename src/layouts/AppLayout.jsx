@@ -57,7 +57,7 @@ export default function AppLayout() {
 
   return (
     <div
-      className="min-h-screen transition-colors duration-300"
+      className="min-h-screen min-w-[800px] transition-colors duration-300 flex flex-col"
       style={{
         backgroundColor: isDark ? "#1f1f1f" : "#f2f4f8",
         color: isDark ? "#ffffff" : "#1a1a1a"
@@ -68,12 +68,13 @@ export default function AppLayout() {
         onNewHabit={() => setShowNewHabit(true)}
       />
 
-      <main className="px-6">
+      <main className="px-6 flex-1 flex flex-col">
         <motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
+          className="flex-1 flex flex-col"
         >
           <Outlet context={{ showNewHabit, setShowNewHabit }} />
         </motion.div>
@@ -92,3 +93,4 @@ export default function AppLayout() {
     </div>
   );
 }
+

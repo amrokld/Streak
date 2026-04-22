@@ -1,5 +1,75 @@
 [
   {
+    "id": 1776859760732,
+    "title": "Animate HabitCards",
+    "desc": "animate the habit cards to glow the same as the DevNotes do",
+    "status": "under developing",
+    "date": "Wed, Apr 22, 2026, 03:09 PM"
+  },
+  {
+    "id": 1776859683442,
+    "title": "Restructure Today Page",
+    "desc": "Right now the tasks and habits sections look empty and broken without any assign tasks or habits for the day, so i need to add a statement that appears on each sections saying no task or habits for today",
+    "status": "under developing",
+    "date": "Wed, Apr 22, 2026, 03:08 PM"
+  },
+  {
+    "id": 1776859596068,
+    "title": "Restructuring Statistics Page",
+    "desc": "i will restructure the statistics page to have some tab at the top for (Overview | Calendar | Heatmap) to look more organized and better.",
+    "status": "done",
+    "date": "Wed, Apr 22, 2026, 03:06 PM"
+  },
+  {
+    "id": 1776859338578,
+    "title": "Empty States",
+    "desc": "this is actually what i was thinking to do, fixing the sentences and make it more about the current moment instead of hardcoded phrases that look dead.",
+    "status": "under developing",
+    "date": "Wed, Apr 22, 2026, 03:02 PM"
+  },
+  {
+    "id": 1776859260912,
+    "title": "Mood Tracker",
+    "desc": "mood tracker is a good idea honestly but i will put it on hold for now, maybe instead of mood tracker, we do mood per day, per habit, asking \"how was it for today\"",
+    "status": "on hold",
+    "date": "Wed, Apr 22, 2026, 03:01 PM"
+  },
+  {
+    "id": 1776859088735,
+    "title": "Overall Animation",
+    "desc": "i really need to add amination to make the app looks better and alive, i will find a way to do that, maybe with just using \"Framer Motions\"",
+    "status": "thinking",
+    "date": "Wed, Apr 22, 2026, 02:58 PM"
+  },
+  {
+    "id": 1776858233191,
+    "title": "Heatmap",
+    "desc": "heatmap is so nice and cool looking, but iam still not sure if iam implementing it or not.",
+    "status": "done",
+    "date": "Wed, Apr 22, 2026, 02:43 PM"
+  },
+  {
+    "id": 1776857885743,
+    "title": "Missed days insight",
+    "desc": "a motivation or phrases that makes the app active when the user stops a current habit.",
+    "status": "thinking",
+    "date": "Wed, Apr 22, 2026, 02:38 PM"
+  },
+  {
+    "id": 1776857431060,
+    "title": "Habit Notes",
+    "desc": "i think its a good idea adding habit notes as a small thing to reflect on why the streak still going daily or what did someone do that specific day.",
+    "status": "thinking",
+    "date": "Wed, Apr 22, 2026, 02:30 PM"
+  },
+  {
+    "id": 1776857342001,
+    "title": "Reminders",
+    "desc": "reminders is a great adding feature for the desktop app.",
+    "status": "thinking",
+    "date": "Wed, Apr 22, 2026, 02:29 PM"
+  },
+  {
     "id": 1776816235538,
     "title": "Disktop app resizing",
     "desc": "there is a problem with the disktop app when i use the minimize window the size of the habits or the app overall is getting ruined.",

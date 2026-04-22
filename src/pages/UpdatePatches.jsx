@@ -7,6 +7,15 @@ import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
     {
+        version: "v4.3",
+        date: "April 2026",
+        notes: [
+            " Added a new Heatmap view to the Statistics page for tracking consistency over 16 weeks.",
+            " Fixed scrollbar theme synchronization to instantly update colors.",
+            " Stabilized global layout to prevent UI crushing on small windows.",
+        ]
+    },
+    {
         version: "v4.2",
         date: "April 2026",
         notes: [

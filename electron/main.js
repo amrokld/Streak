@@ -15,6 +15,8 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1100,
     height: 750,
+    minWidth: 800,
+    minHeight: 600,
     backgroundColor: "#1f1f1f",
     icon: path.join(__dirname, "../public/Streak.ico"),
     autoHideMenuBar: true,
