@@ -85,6 +85,8 @@ export default function AppLayout() {
             localStorage.setItem("onboarding_done", "true");
             setShowIntro(false);
           }}
+          onOpenNewHabit={() => setShowNewHabit(true)}
+          isModalOpen={showNewHabit}
         />
       )}
     </div>

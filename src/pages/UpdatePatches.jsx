@@ -7,12 +7,21 @@ import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
     {
+        version: "v4.2",
+        date: "April 2026",
+        notes: [
+            " Added an interactive 'Dev Notes' system for internal developer tracking, complete with auto-saving to local JSON.",
+            " Refined the onboarding sequence: seamless transitions into the habit creation modal without breaking the tour flow.",
+            " Enhanced UI/UX for internal note popups including glowing border states, organized pill labels, and timestamps."
+        ]
+    },
+    {
         version: "v4.1",
         date: "April 2026",
         notes: [
-            " Added a starting introduction for new users to get familiar with the apps functionalities.",
-            " Fixed the bugs that related to the localstorage and habits triggering.",
-            " Fixed the bugs of scheduling habits."
+            " Introduced a beautiful interactive onboarding tour for new users to discover the app's features.",
+            " Resolved data persistence issues related to localStorage and habit tracking.",
+            " Hardened the habit scheduling system for improved reliability."
         ]
     },
     {

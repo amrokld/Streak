@@ -197,7 +197,7 @@ export default function Settings() {
 
 
     return (
-        <div className="flex justify-center mt-12 pb-24 relative ">
+        <div id="tour-nav-settings" className="flex justify-center mt-12 pb-24 relative " >
             <div className="w-full max-w-2xl px-6">
                 <h2 className="text-3xl font-bold mb-8" style={{ color: accent }}> {t("settings")}</h2>
 
@@ -394,7 +394,7 @@ export default function Settings() {
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-end gap-2">
                                     <h4 className="text-xl font-bold tracking-widest" style={{ color: accent }}>STREAK</h4>
-                                    <span className="text-xs font-medium mb-1" style={{ color: subText }}>v4.1</span>
+                                    <span className="text-xs font-medium mb-1" style={{ color: subText }}>v4.2</span>
                                 </div>
                                 <p className="text-sm">{t("appDescription")}</p>
                                 <p className="text-xs mt-1" style={{ color: subText }}>{t("privacyNote")}</p>
@@ -402,13 +402,23 @@ export default function Settings() {
 
                             <div className="w-full h-px" style={{ backgroundColor: borderColor }} />
 
-                            <div className="flex gap-4">
-                                <AliveBtn onClick={() => setShowFeedback(!showFeedback)} outline>
-                                    {t("reportBug")}
-                                </AliveBtn>
-                                <AliveBtn onClick={() => window.location.href = "mailto:streakapp.feedback@gmail.com"} outline>
-                                    {t("contact")}
-                                </AliveBtn>
+                            <div className="flex justify-between items-center">
+                                <div className="flex gap-4">
+                                    <AliveBtn onClick={() => setShowFeedback(!showFeedback)} outline>
+                                        {t("reportBug")}
+                                    </AliveBtn>
+
+                                    <AliveBtn onClick={() => window.location.href = "mailto:streakapp.feedback@gmail.com"} outline>
+                                        {t("contact")}
+                                    </AliveBtn>
+                                </div>
+                                {import.meta.env.DEV && (
+                                    <div>
+                                        <AliveBtn onClick={() => navigate("/devnotes")} outline>
+                                            Dev Notes
+                                        </AliveBtn>
+                                    </div>
+                                )}
 
                             </div>
 

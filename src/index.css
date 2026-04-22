@@ -70,6 +70,7 @@ html[dir="rtl"] header span[style*="Space Grotesk"] {
 html {
   /* Set explicit background on HTML so the viewport scroll area immediately gets the color */
   background-color: #f2f4f8; 
+  transition: background-color 0.3s ease;
 }
 
 html[data-theme='dark'] {
@@ -77,39 +78,34 @@ html[data-theme='dark'] {
 }
 
 /* ============ Custom Premium Scrollbar ============ */
+:root {
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+  --scrollbar-border: #f2f4f8;
+}
+
+:root[data-theme='dark'] {
+  --scrollbar-thumb: #3f3f46;
+  --scrollbar-thumb-hover: #52525b;
+  --scrollbar-border: #1f1f1f;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }
 
-/* The explicitly colored track fixes the "stuck previous theme" area */
-html[data-theme='light'] ::-webkit-scrollbar-track {
-  background: #f2f4f8;
+::-webkit-scrollbar-track {
+  background: transparent; /* Allows html background to show through */
 }
 
-html[data-theme='dark'] ::-webkit-scrollbar-track {
-  background: #1f1f1f;
-}
-
-/* Scrollbar handle colors based on theme */
-html[data-theme='light'] ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
   border-radius: 20px;
-  border: 3px solid #f2f4f8;
+  border: 3px solid var(--scrollbar-border);
 }
 
-html[data-theme='dark'] ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
-  border-radius: 20px;
-  border: 3px solid #1f1f1f;
-}
-
-/* Hover effects for the scrollbar handle */
-html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Firefox support */

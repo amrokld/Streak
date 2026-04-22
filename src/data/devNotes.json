@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1776816235538,
+    "title": "Disktop app resizing",
+    "desc": "there is a problem with the disktop app when i use the minimize window the size of the habits or the app overall is getting ruined.",
+    "status": "under developing",
+    "date": "Wed, Apr 22, 2026, 03:03 AM"
+  },
+  {
+    "id": 1776815598940,
+    "title": "Note page",
+    "desc": "iam thinking to add the note page, like daily notes and whatever but still not sure yet.",
+    "status": "on hold",
+    "date": "Wed, Apr 22, 2026, 02:53 AM"
+  },
+  {
+    "id": 1776815121368,
+    "title": "Introduction Flow",
+    "desc": "the introduction was a hard step but its done beatifically and iam so happy about the outcome, with the tooltips and sequences slides",
+    "status": "done",
+    "date": "Wed, Apr 22, 2026, 02:45 AM"
+  },
+  {
+    "id": 1776815039547,
+    "title": "Streaks freezing",
+    "desc": "now the streak logic isnt at its fullest version, i need to add the streak freezing logic after a day gone without checking. ",
+    "status": "under developing",
+    "date": "Wed, Apr 22, 2026, 02:43 AM"
+  }
+]

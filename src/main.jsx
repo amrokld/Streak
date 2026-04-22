@@ -4,8 +4,12 @@ import App from "./App.jsx";
 import ThemeProvider from "./Context/ThemeProvider.jsx";
 import "./index.css";
 
+import { TourProvider } from "./tour/TourProvider";
+
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <ThemeProvider>
-    <App />
-  </ThemeProvider>
+  <TourProvider>
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  </TourProvider>
 );

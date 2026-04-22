@@ -159,7 +159,7 @@ export default function Statistics() {
     <div className="max-w-xl mx-auto mt-20 flex flex-col gap-8 pb-10 animate-fade-in">
 
       {/* HEADER WITH TODAY STATUS */}
-      <div className="flex justify-between items-center">
+      <div id="tour-nav-stats" className="flex justify-between items-center">
         <h1 className="text-3xl font-bold" style={{ color: accent }}>
           {t("statistics")}
         </h1>

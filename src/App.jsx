@@ -12,6 +12,8 @@ import Settings from "./pages/Settings";
 import Tasks from "./pages/Tasks";
 import UpdatePatches from "./pages/UpdatePatches";
 import Today from "./pages/Today";
+import TourOverlay from "./tour/TourOverlay";
+import DevNotes from "./pages/DevNotes";
 
 import { HabitProvider } from "./Context/HabitContext";
 import { TaskProvider } from "./Context/TaskContext";
@@ -28,19 +30,24 @@ export default function App() {
             {showSplash && <Splash onFinish={() => setShowSplash(false)} />}
 
             {!showSplash && (
-              <Routes>
-                <Route element={<AppLayout />}>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/onboarding" element={<Onboarding />} />
-                  <Route path="/streak/:habit" element={<StreakPage />} />
-                  <Route path="/statistics" element={<Statistics />} />
-                  <Route path="/other" element={<Other />} />
-                  <Route path="/tasks" element={<Tasks />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/updates" element={<UpdatePatches />} />
-                  <Route path="/today" element={<Today />} />
-                </Route>
-              </Routes>
+              <>
+                <Routes>
+                  <Route element={<AppLayout />}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/streak/:habit" element={<StreakPage />} />
+                    <Route path="/statistics" element={<Statistics />} />
+                    <Route path="/other" element={<Other />} />
+                    <Route path="/tasks" element={<Tasks />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/devnotes" element={<DevNotes />} />
+                    <Route path="/updates" element={<UpdatePatches />} />
+                    <Route path="/today" element={<Today />} />
+                  </Route>
+                </Routes>
+
+                <TourOverlay />
+              </>
             )}
           </HashRouter>
         </TaskProvider>

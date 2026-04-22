@@ -67,6 +67,7 @@ export default function Header({ habits, onNewHabit }) {
 
       {/* Logo */}
       <motion.div
+        id="tour-nav-home"
         whileTap={{ scale: 0.95 }}
         whileHover={{ y: -3 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -96,6 +97,7 @@ export default function Header({ habits, onNewHabit }) {
           return (
             <span
               key={link.path}
+              id={`tour-nav-${link.path.substring(1)}`}
               onClick={() => navigate(link.path)}
               style={{
                 color: isActive ? accent : muted,
@@ -138,7 +140,7 @@ export default function Header({ habits, onNewHabit }) {
 
       {/* Right actions */}
       <div className="flex items-center gap-8 text-lg relative justify-self-end">
-        <div className="relative">
+        <div id="tour-add-button" className="relative">
           <button
             onClick={goToNewHabit}
             style={{ color: accent }}
@@ -168,6 +170,7 @@ export default function Header({ habits, onNewHabit }) {
 
         {/* Settings Far Right */}
         <button
+          id="tour-nav-settings"
           onClick={() => navigate("/settings")}
           className="transition relative"
           style={{ color: location.pathname === "/settings" ? accent : muted }}

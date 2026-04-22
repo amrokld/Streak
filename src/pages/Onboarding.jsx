@@ -25,7 +25,6 @@ export default function Onboarding({
     );
   };
 
-
   const { isDark } = useTheme();
   const { addHabit } = useHabits();
   const { t } = useLanguage();

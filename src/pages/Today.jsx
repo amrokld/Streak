@@ -130,7 +130,7 @@ export default function Today() {
         <div style={{ backgroundColor: bg, color: text, minHeight: "100vh", padding: "40px 60px" }}>
 
             {/* 1. HEADER */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "40px" }}>
+            <div id="tour-today-section" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "40px" }}>
                 <div>
                     <h1 style={{ fontSize: "52px", fontWeight: 900, letterSpacing: "0.08em", color: accent, lineHeight: 1, textShadow: `0 0 15px ${accent}44` }}>
                         {t("todayTitle")}

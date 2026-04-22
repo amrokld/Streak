@@ -2,7 +2,7 @@
   <h1>⚡ STREAK</h1>
   <p><strong>A minimal, elegant habit tracking app focused on sheer consistency.</strong></p>
   <p>One habit. One streak. Every day.</p>
-  <p><code>v3.1</code> &nbsp;•&nbsp; React + Electron &nbsp;•&nbsp; Fully Offline &nbsp;•&nbsp; EN / AR</p>
+  <p><code>v4.2</code> &nbsp;•&nbsp; React + Electron &nbsp;•&nbsp; Fully Offline &nbsp;•&nbsp; EN / AR</p>
 </div>
 
 <br />
@@ -42,6 +42,11 @@
 - Today page automatically filters — only relevant habits appear
 - Schedule label displayed on each habit card (e.g. "Mon, Wed")
 - Edit schedule at any time via the "Category & Schedule" modal
+
+### 🧭 Interactive Onboarding Tour *(new in v4.1)*
+- Multi-step guided tour introducing key app features to new users
+- Seamless transitions into the first habit creation
+- Dynamic UI spotlighting that highlights interactive elements
 
 ### 🎯 Streak Tracking
 - Satisfying counter interactions with confetti celebrations

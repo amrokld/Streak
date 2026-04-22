@@ -4,10 +4,11 @@ import { useLanguage } from "../Context/LanguageContext";
 import { useTheme } from "../Context/ThemeContext";
 import { getTokens } from "../theme/tokens";
 import { useHabits } from "../Context/HabitContext";
+import { useTour } from "../tour/TourProvider";
+import { useNavigate } from "react-router-dom";
 
-export default function IntroFlow({ onFinish }) {
+export default function IntroFlow({ onFinish, onOpenNewHabit, isModalOpen }) {
   const [step, setStep] = useState(0);
-  const [tourActive, setTourActive] = useState(false);
 
   const toggleEditDay = (day) => {
     setEditDays(prev =>
@@ -19,32 +20,13 @@ export default function IntroFlow({ onFinish }) {
   const { isDark } = useTheme();
   const { cardBg, text } = getTokens(isDark);
   const { t } = useLanguage();
+  const { isActive } = useTour();
 
   const next = () => setStep((s) => s + 1);
   const back = () => setStep((s) => Math.max(0, s - 1));
 
-  const handleStartTour = () => {
-    setTourActive(true);
-    // TODO: Put your actual "small instructions" logic here! 
-    // You can trigger your driver.js or custom tooltips here.
-    // Once the user finishes the tour, run:
-    // setTourActive(false); 
-    // setStep(3); 
-
-    // For demonstration, simulating tour completing after 4 seconds:
-    setTimeout(() => {
-      setTourActive(false);
-      setStep(3);
-    }, 4000);
-  };
-
-  // If tour is active, hide the intro window!
-  if (tourActive) {
-    return null;
-  }
-
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-md">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-md" style={{ display: (isActive || isModalOpen) ? 'none' : 'flex' }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -59,14 +41,15 @@ export default function IntroFlow({ onFinish }) {
           {step === 0 && <Welcome key="0" next={next} />}
           {step === 1 && <ThemeAndLanguage key="1" next={next} back={back} />}
           {step === 2 && <Username key="2" next={next} back={back} />}
-          {step === 3 && <AppIntroOptions key="3" next={next} back={back} onStartTour={handleStartTour} />}
-          {step === 4 && <CreateFirstHabit key="4" next={next} />}
-          {step === 5 && <Finish key="5" onFinish={onFinish} />}
+          {step === 3 && <AppIntroOptions key="3" next={next} back={back} onFinish={onFinish} />}
+          {step === 4 && <FinishedTour key="4" next={next} />}
+          {step === 5 && <ReadyToCreate key="5" next={next} onFinish={onFinish} onOpenNewHabit={onOpenNewHabit} />}
+          {step === 6 && <Finish key="6" onFinish={onFinish} />}
         </AnimatePresence>
 
         {/* Progress Display */}
         <div className="flex justify-center gap-2 mt-8">
-          {[0, 1, 2, 3, 4, 5].map(i => (
+          {[0, 1, 2, 3, 4, 5, 6].map(i => (
             <div
               key={i}
               className={`h-1.5 rounded-full transition-all duration-300 ${step === i ? "w-6 opacity-100" : "w-1.5 opacity-30"}`}
@@ -279,10 +262,13 @@ function Username({ next, back }) {
 
 
 {/* 3. App Intro (Triggers the global tour) */ }
-function AppIntroOptions({ next, back, onStartTour }) {
+function AppIntroOptions({ next, back, onFinish }) {
   const { t } = useLanguage();
   const { isDark } = useTheme();
   const { accent, text, subText, cardBg } = getTokens(isDark);
+
+  const { startTour } = useTour();
+  const navigate = useNavigate();
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center">
@@ -295,7 +281,10 @@ function AppIntroOptions({ next, back, onStartTour }) {
 
       <div className="flex flex-col gap-4">
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-          onClick={onStartTour}
+          onClick={() => {
+            startTour();
+            next();
+          }}
           className="w-full py-3.5 rounded-xl font-bold transition-colors shadow-md"
           style={{ backgroundColor: accent, color: isDark ? '#000' : '#fff' }}
         >
@@ -314,179 +303,70 @@ function AppIntroOptions({ next, back, onStartTour }) {
   );
 }
 
-{/* 4. Create First Habit */ }
-function CreateFirstHabit({ next }) {
+{/* 4. Finished Tour Guide */ }
+function FinishedTour({ next }) {
+  const { t } = useLanguage();
   const { isDark } = useTheme();
-  const { lang, t } = useLanguage();
-  const { text, subText, accent, inputBg } = getTokens(isDark);
-  const { addHabit } = useHabits(); // Access the habit creation tool
-
-  // 1. Move the State & Constants HERE (Inside the component)
-  const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState("urgent");
-  const [frequency, setFrequency] = useState("daily");
-  const [editDays, setEditDays] = useState([]);
-
-  const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-  const DAY_LABELS = { mon: "M", tue: "T", wed: "W", thu: "T", fri: "F", sat: "S", sun: "S" };
-
-  const toggleEditDay = (day) => {
-    setEditDays(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
-    );
-  };
-
-  const categories = [
-    { id: "important", label: t("important"), color: "#f59e0b" },
-    { id: "urgent", label: t("urgent"), color: "#ef4444" },
-    { id: "optional", label: t("optional"), color: "#10b981" }
-  ];
-
-  // 2. Updated handleCreate to actually save the habit
-  const handleCreate = () => {
-    if (!title.trim()) return;
-
-    addHabit({
-      id: Date.now(),
-      name: title.trim(),
-      category: priority,
-      streak: 0,
-      longestStreak: 0,
-      completedDays: [],
-      lastCheck: null,
-      frequency: frequency,
-      days: frequency === "custom" ? editDays : []
-    });
-
-    next();
-  };
+  const { accent, subText } = getTokens(isDark);
+  const { startTour } = useTour();
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-1.5 text-center mt-2" style={{ color: accent }}>
-        {t("whatToTrack")}
-      </h2>
-      <p className="text-xs mb-6 text-center" style={{ color: subText }}>
-        {t("oneHabit")}
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center text-center">
+      <h2 className="text-2xl font-bold mb-4" style={{ color: accent }}>{t("tourFinishedTitle")}</h2>
+      <p className="text-sm mb-10" style={{ color: subText }}>
+        {t("tourFinishedDesc")}
       </p>
 
-      <input
-        type="text"
-        value={title}
-        autoFocus
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder={t("habitPlaceholder")}
-        className="w-full text-center px-4 py-4 rounded-xl mb-4 focus:outline-none transition-colors border"
-        style={{
-          backgroundColor: inputBg,
-          color: text,
-          borderColor: title.trim() ? accent : 'transparent'
-        }}
-      />
-
-      {/* Priority Chips */}
-      <div className="flex justify-center gap-2 mb-6 w-full">
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setPriority(cat.id)}
-            onMouseEnter={(e) => {
-              if (priority !== cat.id) {
-                e.currentTarget.style.backgroundColor = `${cat.color}25`;
-                e.currentTarget.style.color = cat.color;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (priority !== cat.id) {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color = subText;
-              }
-            }}
-            className="flex-1 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200"
-            style={{
-              backgroundColor: priority === cat.id ? `${cat.color}25` : 'transparent',
-              color: priority === cat.id ? cat.color : subText,
-              border: `1.5px solid ${priority === cat.id ? cat.color : (isDark ? '#444' : '#e5e7eb')}`
-            }}
-          >
-            {cat.label}
-          </button>
-        ))}
+      <div className="flex flex-col gap-4 w-full">
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+          onClick={startTour}
+          className="w-full py-3.5 rounded-xl font-bold transition-colors shadow-md"
+          style={{ backgroundColor: accent, color: isDark ? '#000' : '#fff' }}
+        >
+          {t("watchAgainBtn")}
+        </motion.button>
       </div>
 
-      {/* Frequency Toggle */}
-      <div className="text-[10px] font-bold tracking-[0.2em] mb-2.5 text-center" style={{ color: subText }}>
-        {lang === 'ar' ? 'التكرار' : 'FREQUENCY'}
-      </div>
-      <div className="flex flex-col items-center gap-2 mb-8 w-full">
-        <div className="flex justify-center gap-3 w-full max-w-[200px]">
-          {['daily', 'custom'].map((freq) => (
-            <button
-              key={freq}
-              onClick={() => setFrequency(freq)}
-              onMouseEnter={(e) => {
-                if (frequency !== freq) e.currentTarget.style.backgroundColor = `${accent}20`;
-              }}
-              onMouseLeave={(e) => {
-                if (frequency !== freq) e.currentTarget.style.backgroundColor = "transparent";
-              }}
-              className="flex-1 py-1.5 rounded-full text-xs font-semibold transition-all"
-              style={{
-                backgroundColor: frequency === freq ? `${accent}20` : 'transparent',
-                color: frequency === freq ? accent : subText,
-                border: `1.5px solid ${frequency === freq ? accent : (isDark ? '#444' : '#e5e7eb')}`
-              }}
-            >
-              {t(freq) || freq}
-            </button>
-          ))}
-        </div>
-
-        {/* Custom Days - Shows under Buttons */}
-        {frequency === "custom" && (
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex gap-1 mt-2">
-            {DAY_KEYS.map((day) => (
-              <button
-                key={day}
-                type="button"
-                onClick={() => toggleEditDay(day)}
-                className="w-8 h-8 rounded-full text-[11px] font-bold transition-all duration-200"
-                style={{
-                  border: `1.5px solid ${editDays.includes(day) ? accent : (isDark ? "#444" : "#cbd5e1")}`,
-                  backgroundColor: editDays.includes(day) ? accent : "transparent",
-                  color: editDays.includes(day) ? (isDark ? "#000" : "#fff") : subText,
-                }}
-              >
-                {DAY_LABELS[day]}
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </div>
-
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={handleCreate}
-        className="w-full py-3.5 rounded-xl font-bold transition-all"
-        style={{
-          border: `1.5px solid ${title.trim() ? accent : (isDark ? "#444" : "#cbd5e1")}`,
-          color: title.trim() ? (isDark ? '#000' : '#fff') : text,
-          backgroundColor: title.trim() ? accent : "transparent"
-        }}
-      >
-        {t("create")}
-      </motion.button>
-
-      <button
-        onClick={next}
-        className="mt-5 mx-auto block text-xs font-medium opacity-50 hover:opacity-100 transition-opacity"
-      >
+      <button onClick={next} className="mt-6 mx-auto block text-xs font-medium opacity-50 hover:opacity-100 transition-opacity">
         {t("skipBtn")}
       </button>
     </motion.div>
   );
 }
+
+{/* 5. Ready To Create First Habit */ }
+function ReadyToCreate({ next, onFinish, onOpenNewHabit }) {
+  const { t } = useLanguage();
+  const { isDark } = useTheme();
+  const { accent, subText } = getTokens(isDark);
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center text-center">
+      <h2 className="text-2xl font-bold mb-4" style={{ color: accent }}>{t("readyToCreateTitle")}</h2>
+      <p className="text-sm mb-10" style={{ color: subText }}>
+        {t("readyToCreateDesc")}
+      </p>
+
+      <div className="flex flex-col gap-4 w-full">
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+          onClick={() => {
+            next();
+            if (onOpenNewHabit) onOpenNewHabit();
+          }}
+          className="w-full py-3.5 rounded-xl font-bold transition-colors shadow-md"
+          style={{ backgroundColor: accent, color: isDark ? '#000' : '#fff' }}
+        >
+          {t("create")}
+        </motion.button>
+      </div>
+
+      <button onClick={next} className="mt-6 mx-auto block text-xs font-medium opacity-50 hover:opacity-100 transition-opacity">
+        {t("skipBtn")}
+      </button>
+    </motion.div>
+  );
+}
+
 
 
 {/* 5. Finish Slide */ }

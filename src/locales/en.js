@@ -237,14 +237,23 @@ export const en = {
   startTourBtn: "Start Tour",
   skipBtn: "Skip",
   backBtn: "Back",
-  tourTodayDesc: "For today's habits and tasks. Stay focused!",
-  tourCalendarDesc: "View your history and activity overview.",
-  tourTasksDesc: "Manage one-time tasks and important dates.",
-  tourStatsDesc: "Analyze your consistency and progress.",
   finishTourBtn: "Got it!",
   readyTitle: "You're all set!",
   readyDesc: "Your journey to consistency starts now.",
   startAppBtn: "Start using STREAK",
 
+  tourHomeDesc: "Tap the logo at any time to return to your Habit Dashboard.",
+  tourNewHabitDesc: "Create and schedule up to 12 habits to track daily.",
+  tourTodayDesc: "Your daily execution layer. Focus only on what's due today.",
+  tourCalendarDesc: "Visualize your progress with an interactive activity heatmap.",
+  tourTasksDesc: "Manage one-time tasks, due dates, and priorities.",
+  tourStatsDesc: "Analyze your consistency and discover behavioral insights.",
+  tourSettingsDesc: "Customize your theme, language, and backup your data.",
+
+  tourFinishedTitle: "Tour Finished!",
+  tourFinishedDesc: "Did you catch all of that, or do you want to see it again?",
+  watchAgainBtn: "Watch Again",
+  readyToCreateTitle: "Ready to start?",
+  readyToCreateDesc: "Let's create your very first habit to track!",
 };
 

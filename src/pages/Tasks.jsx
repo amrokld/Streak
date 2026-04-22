@@ -151,7 +151,7 @@ export default function Tasks() {
       <div className="w-full max-w-4xl">
 
         {/* Header */}
-        <div className="flex items-end justify-between mb-16">
+        <div id="tour-nav-tasks" className="flex items-end justify-between mb-16">
           <h1 className="text-3xl font-bold" style={{ color: accent }}>{t("tasks")}</h1>
           {tasks.some(tk => tk.done) && (
             <button
@@ -743,7 +743,7 @@ export default function Tasks() {
               >
                 {t("cancel")}
               </button>
-              
+
             </form>
           </motion.div>
         </div>,
