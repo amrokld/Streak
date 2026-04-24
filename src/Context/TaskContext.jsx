@@ -30,14 +30,15 @@ export function TaskProvider({ children }) {
 
 
     // ---- ADD ----
-    const addTask = (text, priority, dueDate, notes) => {
+    const addTask = (text, priority, dueDate, notes, subtasks = []) => {
         const newTask = {
             id: Date.now().toString(),
             text: text.trim(),
             done: false,
             priority,
             dueDate: dueDate || null,
-            notes: notes ? notes.trim() : ""
+            notes: notes ? notes.trim() : "",
+            subtasks
         };
         setTasks((prev) => [newTask, ...prev]);
     };

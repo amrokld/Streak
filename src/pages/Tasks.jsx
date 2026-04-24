@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "../Context/ThemeContext";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,15 +15,29 @@ export default function Tasks() {
   const { tasks, addTask, restoreTask, toggleDone, deleteTask, clearCompleted, updateTask } = useTasks();
 
   const [filter, setFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+
+  const [showNotesField, setShowNotesField] = useState(false);
+  const [showEditNotesField, setShowEditNotesField] = useState(false);
 
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskNotes, setNewTaskNotes] = useState("");
+  const [newTaskSubtasks, setNewTaskSubtasks] = useState([]);
   const [newTaskPriority, setNewTaskPriority] = useState("important");
   const [newTaskDate, setNewTaskDate] = useState(new Date().toISOString().split('T')[0]);
 
   const [taskToEdit, setTaskToEdit] = useState(null);
-  
+
+  useEffect(() => {
+    if (!showNewTaskModal) setShowNotesField(false);
+  }, [showNewTaskModal]);
+
+  useEffect(() => {
+    if (!taskToEdit) setShowEditNotesField(false);
+  }, [taskToEdit]);
+
+
   const [deletedTaskInfo, setDeletedTaskInfo] = useState(null);
   const toastTimer = useRef(null);
 
@@ -35,6 +49,8 @@ export default function Tasks() {
 
   const newFormRef = useRef(null);
   const editFormRef = useRef(null);
+  const dateFilterMenuRef = useRef(null);
+  const [showDateFilterMenu, setShowDateFilterMenu] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -45,6 +61,9 @@ export default function Tasks() {
       if (editFormRef.current && !editFormRef.current.contains(e.target)) {
         setShowEditPriorityMenu(false);
         setShowEditDateMenu(false);
+      }
+      if (dateFilterMenuRef.current && !dateFilterMenuRef.current.contains(e.target)) {
+        setShowDateFilterMenu(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -57,10 +76,11 @@ export default function Tasks() {
     e.preventDefault();
     if (!newTaskText.trim()) return;
 
-    addTask(newTaskText, newTaskPriority, newTaskDate, newTaskNotes);
+    addTask(newTaskText, newTaskPriority, newTaskDate, newTaskNotes, newTaskSubtasks.filter(st => st.text.trim() !== ""));
 
     setNewTaskText("");
     setNewTaskNotes("");
+    setNewTaskSubtasks([]);
     setNewTaskPriority("important");
     setNewTaskDate(todayStr);
     setShowDateMenu(false);
@@ -81,8 +101,9 @@ export default function Tasks() {
   });
 
   const filteredTasks = sortedTasks.filter(t => {
-    if (filter === "all") return true;
-    return t.priority === filter;
+    const passPriority = filter === "all" || t.priority === filter;
+    const passDate = dateFilter === "all" || t.dueDate === dateFilter;
+    return passPriority && passDate;
   });
 
   const getPriorityColor = (p) => {
@@ -169,6 +190,20 @@ export default function Tasks() {
     }
   };
 
+  const [selectedTask, setSelectedTask] = useState(null); // The new expanded task view
+
+  // Interactive real subtasks logic
+  const handleToggleRealSubtask = (taskId, subtaskId) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.subtasks) return;
+    const newSubtasks = task.subtasks.map(st => st.id === subtaskId ? { ...st, done: !st.done } : st);
+    updateTask(taskId, { subtasks: newSubtasks });
+    if (selectedTask && selectedTask.id === taskId) {
+      setSelectedTask(prev => ({ ...prev, subtasks: newSubtasks }));
+    }
+  };
+
+
   return (
     <div className="flex flex-col items-center mt-12 pb-24 animate-fade-in w-full px-4">
       <div className="w-full max-w-4xl">
@@ -188,7 +223,7 @@ export default function Tasks() {
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercent}%` }}
                     className="h-full rounded-full transition-all duration-500 relative z-10"
-                    style={{ 
+                    style={{
                       backgroundColor: accent,
                       boxShadow: progressPercent === 100 ? `0 0 12px ${accent}` : "none"
                     }}
@@ -223,18 +258,18 @@ export default function Tasks() {
                           <motion.div
                             key={`particle-${i}`}
                             initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
-                            animate={{ 
-                              x: lang === 'ar' ? -particle.x : particle.x, 
-                              y: particle.y, 
+                            animate={{
+                              x: lang === 'ar' ? -particle.x : particle.x,
+                              y: particle.y,
                               opacity: [1, 1, 0],
                               scale: [0, particle.scale, 0]
                             }}
                             transition={{ duration: 0.7, delay: 0.5 + particle.delay, ease: "easeOut" }}
                             className={`absolute top-1/2 pointer-events-none z-50 w-1.5 h-1.5 rounded-full ${lang === 'ar' ? 'left-0' : 'right-0'}`}
-                            style={{ 
-                              backgroundColor: accent, 
-                              marginTop: "-3px", 
-                              [lang === 'ar' ? 'marginLeft' : 'marginRight']: "-3px" 
+                            style={{
+                              backgroundColor: accent,
+                              marginTop: "-3px",
+                              [lang === 'ar' ? 'marginLeft' : 'marginRight']: "-3px"
                             }}
                           />
                         ))}
@@ -262,7 +297,7 @@ export default function Tasks() {
 
         {/* Filters and Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div className="flex flex-wrap gap-2 ">
+          <div className="flex items-center gap-2 w-full">
             {["all", "urgent", "important", "optional"].map((cat) => {
               const activeLabelsCount = new Set(tasks.map(t => t.priority)).size;
               if (cat === "all" && activeLabelsCount < 2) return null;
@@ -292,6 +327,55 @@ export default function Tasks() {
                 </button>
               );
             })}
+
+            {/* Date Filter Dropdown */}
+            <div className="relative ml-auto" ref={dateFilterMenuRef}>
+              <button
+                onClick={() => setShowDateFilterMenu(!showDateFilterMenu)}
+                className="px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 h-full"
+                style={{
+                  border: `1.5px solid ${dateFilter !== "all" ? accent : (isDark ? "#444" : "#cbd5e1")}`,
+                  backgroundColor: dateFilter !== "all" ? `${accent}15` : "transparent",
+                  color: dateFilter !== "all" ? accent : subText,
+                  transform: showDateFilterMenu ? "scale(1.05)" : "scale(1)"
+                }}
+              >
+                {dateFilter === "all" ? t("all") || "All Dates" : getDateLabel(dateFilter)?.toUpperCase() || dateFilter}
+                <svg className="w-3 h-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <AnimatePresence>
+                {showDateFilterMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    className="absolute top-full mt-2 left-0 w-36 rounded-xl shadow-xl border z-[100] overflow-hidden"
+                    style={{ backgroundColor: cardBg, borderColor: borderColor }}
+                  >
+                    <div className="py-1">
+                      {["all", ...[...new Set(tasks.map(t => t.dueDate).filter(Boolean))].sort()].map(date => (
+                        <button
+                          key={date}
+                          onClick={() => { setDateFilter(date); setShowDateFilterMenu(false); }}
+                          className="w-full text-left px-4 py-2 text-xs font-bold transition-colors hover:bg-gray-500/10 flex items-center justify-between"
+                          style={{ color: dateFilter === date ? accent : text }}
+                        >
+                          {date === "all" ? t("all") || "All Dates" : getDateLabel(date)}
+                          {dateFilter === date && (
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           <div className="flex items-center gap-4 shrink-0">
@@ -316,119 +400,232 @@ export default function Tasks() {
               </motion.div>
             )}
 
-            {filteredTasks.map(task => {
-              const isOverdue = task.dueDate && task.dueDate < todayStr && !task.done;
-
-              return (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                  animate={{ opacity: task.done ? 0.6 : 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  key={task.id}
-                  className="group flex flex-col md:flex-row md:items-center gap-4 p-5 rounded-3xl border transition-colors relative"
-                  style={{
-                    backgroundColor: cardBg,
-                    borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"
-                  }}
-                >
-                  <div className="flex items-center justify-center cursor-pointer" onClick={() => toggleDone(task.id)}>
-                    <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all group-hover:scale-110 shadow-sm"
-                      style={{
-                        borderColor: task.done ? accent : borderColor,
-                        backgroundColor: task.done ? accent : "transparent"
-                      }}
-                    >
-                      <AnimatePresence>
-                        {task.done && (
-                          <motion.svg
-                            initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-                            className="w-3.5 h-3.5"
-                            style={{ color: isDark ? "#000" : "#ffffff" }}
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </motion.svg>
-                        )}
-                      </AnimatePresence>
+            {(() => {
+              const elements = [];
+              filteredTasks.forEach(task => {
+                const isOverdue = task.dueDate && task.dueDate < todayStr && !task.done;
+                elements.push(
+                  <motion.div
+                    key={task.id}
+                    layout
+                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                    animate={{ opacity: task.done ? 0.6 : 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    whileHover={{ // <--- GLOWING EFFECT ADDED HERE
+                      boxShadow: `0 0 25px ${getPriorityColor(task.priority)}40`,
+                      borderColor: getPriorityColor(task.priority)
+                    }}
+                    className="group flex flex-col md:flex-row md:items-center gap-4 p-5 rounded-3xl border transition-colors relative"
+                    style={{
+                      backgroundColor: cardBg,
+                      borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)"
+                    }}
+                  >
+                    <div className="flex items-center justify-center cursor-pointer" onClick={() => toggleDone(task.id)}>
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all group-hover:scale-110 shadow-sm"
+                        style={{
+                          borderColor: task.done ? accent : borderColor,
+                          backgroundColor: task.done ? accent : "transparent"
+                        }}
+                      >
+                        <AnimatePresence>
+                          {task.done && (
+                            <motion.svg
+                              initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                              className="w-3.5 h-3.5"
+                              style={{ color: isDark ? "#000" : "#ffffff" }}
+                              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </motion.svg>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex-1 overflow-hidden ml-2 cursor-pointer" onClick={() => setTaskToEdit(task)}>
-                    <span
-                      className={`text-xl font-medium block truncate transition-colors ${task.done ? "line-through" : ""}`}
-                      style={{ color: task.done ? subText : text }}
-                    >
-                      {task.text}
-                    </span>
-                    {task.notes && (
-                      <span className="block text-sm mt-1 whitespace-pre-wrap" style={{ color: subText, opacity: 0.8 }}>
-                        {task.notes}
+                    {/* UPDATE: Clicking this now opens the View Task window */}
+                    <div className="flex-1 overflow-hidden ml-2 cursor-pointer" onClick={() => setSelectedTask(task)}>
+                      <span
+                        className={`text-xl font-medium block truncate transition-colors ${task.done ? "line-through" : ""}`}
+                        style={{ color: task.done ? subText : text }}
+                      >
+                        {task.text}
                       </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between md:justify-end gap-3 ml-10 md:ml-0 shrink-0">
-                    {!task.done && (
-                      <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                        <span
-                          className="text-[10px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full"
-                          style={{
-                            color: getPriorityColor(task.priority),
-                            backgroundColor: getPriorityBg(task.priority),
-                            border: `1px solid ${getPriorityColor(task.priority)}35`,
-                          }}
-                        >
-                          {t(task.priority)}
+                      {task.notes && (
+                        <span className="block text-sm mt-1 whitespace-pre-wrap" style={{ color: subText, opacity: 0.8 }}>
+                          {task.notes}
                         </span>
+                      )}
+                      {task.subtasks?.length > 0 && (
+                        <span className="block text-[11px] font-bold mt-1.5" style={{ color: accent, opacity: 0.9 }}>
+                          {task.subtasks.filter(s => s.done).length}/{task.subtasks.length} Subtasks
+                        </span>
+                      )}
+                    </div>
 
-                        {task.dueDate && (
+                    <div className="flex items-center justify-between md:justify-end gap-3 ml-10 md:ml-0 shrink-0">
+                      {!task.done && (
+                        <div className="flex items-center gap-1.5 flex-wrap justify-end">
                           <span
-                            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            className="text-[10px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full"
                             style={{
-                              color: isOverdue ? "#3b82f6" : subText,
-                              backgroundColor: isOverdue ? "rgba(59,130,246,0.12)" : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"),
-                              border: isOverdue ? "1px solid rgba(59,130,246,0.35)" : "1px solid transparent",
-                              boxShadow: isOverdue ? "0 0 6px rgba(59,130,246,0.25)" : "none",
+                              color: getPriorityColor(task.priority),
+                              backgroundColor: getPriorityBg(task.priority),
+                              border: `1px solid ${getPriorityColor(task.priority)}35`,
                             }}
                           >
-                            {isOverdue ? t("overdue") : getDateLabel(task.dueDate)}
+                            {t(task.priority)}
                           </span>
-                        )}
+
+                          {task.dueDate && (
+                            <span
+                              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                              style={{
+                                color: isOverdue ? "#3b82f6" : subText,
+                                backgroundColor: isOverdue ? "rgba(59,130,246,0.12)" : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"),
+                                border: isOverdue ? "1px solid rgba(59,130,246,0.35)" : "1px solid transparent",
+                                boxShadow: isOverdue ? "0 0 6px rgba(59,130,246,0.25)" : "none",
+                              }}
+                            >
+                              {isOverdue ? t("overdue") : getDateLabel(task.dueDate)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all ml-2">
+                        <button
+                          className="hover:scale-110 transition-transform"
+                          style={{ color: subText }}
+                          onClick={() => setTaskToEdit(task)}
+                        >
+                          <svg className="w-5 h-5 hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+
+                        <button
+                          className="hover:scale-110 transition-transform"
+                          style={{ color: subText }}
+                          onClick={() => handleDeleteTask(task)}
+                        >
+                          <svg className="w-5 h-5 hover:text-red-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
                       </div>
-                    )}
 
-                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all ml-2">
-                      <button
-                        className="hover:scale-110 transition-transform"
-                        style={{ color: subText }}
-                        onClick={() => setTaskToEdit(task)}
-                      >
-                        <svg className="w-5 h-5 hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-
-                      <button
-                        className="hover:scale-110 transition-transform"
-                        style={{ color: subText }}
-                        onClick={() => handleDeleteTask(task)}
-                      >
-                        <svg className="w-5 h-5 hover:text-red-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
                     </div>
+                  </motion.div>
+                );
+              });
 
-                  </div>
-                </motion.div>
-              );
-            })}
+              return elements;
+            })()}
           </AnimatePresence>
         </div>
       </div>
+
+      {/* VIEW TASK MODAL */}
+      {selectedTask && createPortal(
+        <div
+          className="fixed inset-0 z-[150] flex items-center justify-center backdrop-blur-md animate-fade-in"
+          style={{ backgroundColor: isDark ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.4)" }}
+          onClick={() => setSelectedTask(null)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="rounded-3xl p-8 w-[500px] max-w-[90vw] border flex flex-col relative max-h-[85vh]"
+            style={{
+              backgroundColor: cardBg,
+              borderColor: borderColor,
+              boxShadow: `0 20px 50px rgba(0,0,0,0.3), 0 0 40px ${getPriorityColor(selectedTask.priority)}20`
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="text-2xl font-bold pr-4" style={{ color: accent }}>{selectedTask.text}</h3>
+                {selectedTask.dueDate && <p className="text-xs mt-1.5 font-medium" style={{ color: subText }}>{getDateLabel(selectedTask.dueDate)}</p>}
+              </div>
+              <span
+                className="px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-wider whitespace-nowrap"
+                style={{
+                  backgroundColor: getPriorityBg(selectedTask.priority),
+                  color: getPriorityColor(selectedTask.priority),
+                  border: `1px solid ${getPriorityColor(selectedTask.priority)}50`
+                }}
+              >
+                {t(selectedTask.priority)}
+              </span>
+            </div>
+
+            <div className="overflow-y-auto pr-2 mb-6" style={{ maxHeight: "calc(85vh - 180px)", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+              <style>{`
+                .overflow-y-auto::-webkit-scrollbar { display: none; }
+              `}</style>
+              {selectedTask.notes && (
+                <p className="text-[15px] leading-relaxed mb-4 whitespace-pre-wrap" style={{ color: text }}>{selectedTask.notes}</p>
+              )}
+
+              {selectedTask.subtasks?.length > 0 && (
+                <div className="flex flex-col gap-2 mt-4">
+                  {selectedTask.subtasks.map((st, i) => (
+                    <div key={st.id} className="flex items-start gap-3 my-1" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center border-2 cursor-pointer transition-all shrink-0"
+                        style={{
+                          borderColor: st.done ? accent : borderColor,
+                          backgroundColor: st.done ? accent : "transparent"
+                        }}
+                        onClick={() => handleToggleRealSubtask(selectedTask.id, st.id)}
+                      >
+                        <AnimatePresence>
+                          {st.done && (
+                            <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="w-3.5 h-3.5" style={{ color: isDark ? "#000" : "#ffffff" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </motion.svg>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                      <span className={`text-[15px] transition-all leading-relaxed ${st.done ? "line-through opacity-50" : ""}`} style={{ color: text }}>{st.text}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!selectedTask.notes && (!selectedTask.subtasks || selectedTask.subtasks.length === 0) && (
+                <p className="text-sm italic opacity-50" style={{ color: subText }}>{t("noNotesOrSubtasks") || "No notes or subtasks for this task."}</p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t shrink-0" style={{ borderColor: isDark ? "#444" : "#e2e8f0" }}>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => { handleDeleteTask(selectedTask); setSelectedTask(null); }}
+                className="px-4 py-2 text-sm font-bold rounded-xl transition-colors hover:bg-red-500/10 text-red-500"
+              >
+                {t("delete") || "Delete"}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: `0 0 15px ${accent}40` }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => { setTaskToEdit(selectedTask); setSelectedTask(null); }}
+                className="px-5 py-2 text-sm font-bold rounded-xl shadow-sm transition-colors"
+                style={{ backgroundColor: accent, color: isDark ? "#000" : "#fff" }}
+              >
+                {t("edit") || "Edit Task"}
+              </motion.button>
+            </div>
+          </motion.div>
+        </div>,
+        document.body
+      )}
+
 
       {/* NEW TASK MODAL */}
       {showNewTaskModal && createPortal(
@@ -461,18 +658,96 @@ export default function Tasks() {
                 value={newTaskText}
                 onChange={e => setNewTaskText(e.target.value)}
                 placeholder={t("forExample") || "E.g., Finish report..."}
-                className="w-full px-4 py-2 rounded outline-none text-center"
-                style={{ backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb", color: text }}
+                className="w-full px-4 py-3 rounded-xl mb-2 text-sm font-medium outline-none transition-colors border"
+                style={{
+                  backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6",
+                  color: text,
+                  borderColor: newTaskText.trim() ? accent : "transparent"
+                }}
               />
 
-              <textarea
-                value={newTaskNotes}
-                onChange={e => setNewTaskNotes(e.target.value)}
-                placeholder={t("optionalNote") || "Notes (optional)..."}
-                className="w-full px-4 py-2 rounded outline-none text-center text-sm resize-none"
-                rows={2}
-                style={{ backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb", color: text }}
-              />
+              <div className="flex gap-4 w-full mb-3 justify-center">
+                {(!showNotesField && !newTaskNotes) && (
+                  <button
+                    type="button"
+                    onClick={() => setShowNotesField(true)}
+                    className="text-[11px] font-bold flex items-center gap-1 opacity-80 hover:opacity-100 transition-all"
+                    style={{ color: accent }}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    {t("addNote") || "Add Note"}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setNewTaskSubtasks([...newTaskSubtasks, { id: Date.now().toString() + Math.random(), text: "", done: false }])}
+                  className="text-[11px] font-bold flex items-center gap-1 opacity-80 hover:opacity-100 transition-all"
+                  style={{ color: accent }}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                  {t("addSubtask") || "Add Subtask"}
+                </button>
+              </div>
+
+              {/* NOTES UI */}
+              <AnimatePresence>
+                {(showNotesField || newTaskNotes) && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="w-full flex flex-col mb-3 overflow-hidden relative">
+                    <button type="button" onClick={() => { setShowNotesField(false); setNewTaskNotes(""); }} className="absolute top-2.5 right-2.5 text-red-500 opacity-40 hover:opacity-100 transition-all p-1.5 z-10 hover:bg-red-500/10 rounded-full" title="Remove Note">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                    </button>
+                    <textarea
+                      value={newTaskNotes}
+                      onChange={e => setNewTaskNotes(e.target.value)}
+                      placeholder={t("optionalNote") || "Optional note"}
+                      className="w-full h-20 px-4 py-3 pr-10 rounded-xl text-sm outline-none resize-none transition-colors border"
+                      style={{
+                        backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6",
+                        color: text,
+                        borderColor: newTaskNotes.trim() ? accent : "transparent"
+                      }}
+                      autoFocus={showNotesField && !newTaskNotes}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* REAL SUBTASKS UI */}
+              <AnimatePresence>
+                {newTaskSubtasks.length > 0 && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="w-full flex flex-col gap-2 mb-4 overflow-hidden">
+                    {newTaskSubtasks.map((st, i) => (
+                      <div key={st.id} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full border-2 shrink-0" style={{ borderColor: accent }} />
+                        <input
+                          value={st.text}
+                          onChange={e => {
+                            const newSt = [...newTaskSubtasks];
+                            newSt[i].text = e.target.value;
+                            setNewTaskSubtasks(newSt);
+                          }}
+                          className="flex-1 px-3 py-1.5 rounded-lg text-sm outline-none border transition-colors"
+                          style={{
+                            backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6",
+                            color: text,
+                            borderColor: st.text.trim() ? accent : "transparent"
+                          }}
+                          placeholder="Subtask text..."
+                          autoFocus
+                        />
+                        <button type="button" onClick={() => {
+                          const newSt = newTaskSubtasks.filter((_, idx) => idx !== i);
+                          setNewTaskSubtasks(newSt);
+                        }} className="text-red-500 opacity-50 hover:opacity-100 hover:scale-110 transition-all p-1">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
 
               {/* Priority Selection */}
               <div className="flex justify-center gap-2">
@@ -504,7 +779,7 @@ export default function Tasks() {
               </div>
 
               {/* Date Selection */}
-              <div className="flex justify-center mt-2 relative z-50">
+              <div className="flex justify-center mt-1 relative z-50">
                 <div onClick={() => { setShowDateMenu(!showDateMenu); setShowPriorityMenu(false); }} className="flex items-center justify-center px-4 py-2 rounded-xl transition cursor-pointer border select-none w-1/2" style={{ backgroundColor: showDateMenu ? (isDark ? "#444" : "#e2e8f0") : "transparent", borderColor: showDateMenu ? accent : (isDark ? "#444" : "#cbd5e1") }}>
                   {newTaskDate ? (
                     <span className="text-sm font-bold tracking-wider" style={{ color: text }}>{newTaskDate}</span>
@@ -553,7 +828,7 @@ export default function Tasks() {
 
               <button
                 type="submit"
-                className="relative group w-full py-2.5 mt-4 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95"
+                className="relative group w-full py-2 mt-2 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95"
                 style={{
                   backgroundColor: "transparent",
                   color: accent,
@@ -575,7 +850,7 @@ export default function Tasks() {
 
             <button
               onClick={() => { setShowNewTaskModal(false); setShowDateMenu(false); setShowPriorityMenu(false); }}
-              className="relative group text-sm font-medium transition-all duration-300 mt-2"
+              className="relative group text-sm font-medium transition-all duration-300 mt-0"
               style={{ color: subText }}
             >
               <span
@@ -603,7 +878,7 @@ export default function Tasks() {
           }}
         >
           <div
-            className="flex flex-col items-center gap-6 px-10 py-12 rounded-3xl border relative"
+            className="flex flex-col items-center gap-4 px-8 py-8 rounded-3xl border relative"
             style={{
               backgroundColor: cardBg,
               color: text,
@@ -626,28 +901,104 @@ export default function Tasks() {
                 updateTask(taskToEdit.id, taskToEdit);
                 setTaskToEdit(null);
               }}
-              className="flex flex-col gap-4 w-72"
+              className="flex flex-col gap-3 w-72"
             >
               <input
                 autoFocus
                 value={taskToEdit.text}
                 onChange={(e) => setTaskToEdit({ ...taskToEdit, text: e.target.value })}
                 placeholder={t("whatToCall")}
-                className="w-full px-4 py-2 rounded outline-none text-center"
-                style={{ backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb", color: text }}
+                className="w-full px-4 py-3 rounded-xl mb-2 text-sm font-medium outline-none transition-colors border"
+                style={{
+                  backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6",
+                  color: text,
+                  borderColor: newTaskText.trim() ? accent : "transparent"
+                }}
               />
 
-              <textarea
-                value={taskToEdit.notes || ""}
-                onChange={(e) => setTaskToEdit({ ...taskToEdit, notes: e.target.value })}
-                placeholder={t("notesOptional") || "Notes (optional)..."}
-                className="w-full px-4 py-2 rounded outline-none text-center text-sm resize-none"
-                rows={2}
-                style={{ backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb", color: text }}
-              />
+              <div className="flex gap-4 w-full mb-2 justify-center">
+                {(!showEditNotesField && !taskToEdit.notes) && (
+                  <button
+                    type="button"
+                    onClick={() => setShowEditNotesField(true)}
+                    className="text-[11px] font-bold flex items-center gap-1 opacity-80 hover:opacity-100 transition-all"
+                    style={{ color: accent }}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    {t("addNote") || "Add Note"}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setTaskToEdit({ ...taskToEdit, subtasks: [...(taskToEdit.subtasks || []), { id: Date.now().toString() + Math.random(), text: "", done: false }] })}
+                  className="text-[11px] font-bold flex items-center gap-1 opacity-80 hover:opacity-100 transition-all"
+                  style={{ color: accent }}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                  {t("addSubtask") || "Add Subtask"}
+                </button>
+              </div>
+
+              {/* NOTES UI */}
+              <AnimatePresence>
+                {(showEditNotesField || taskToEdit.notes) && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="w-full flex flex-col mb-2 overflow-hidden relative">
+                    <button type="button" onClick={() => { setShowEditNotesField(false); setTaskToEdit({ ...taskToEdit, notes: "" }); }} className="absolute top-2.5 right-2.5 text-red-500 opacity-40 hover:opacity-100 transition-all p-1.5 z-10 hover:bg-red-500/10 rounded-full" title="Remove Note">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+                    </button>
+                    <textarea
+                      value={taskToEdit.notes || ""}
+                      onChange={e => setTaskToEdit({ ...taskToEdit, notes: e.target.value })}
+                      placeholder={t("optionalNote") || "Optional note"}
+                      className="w-full h-24 px-4 py-3 pr-10 rounded-xl text-sm outline-none resize-none transition-colors border"
+                      style={{
+                        backgroundColor: isDark ? "#3a3a3a" : "#f3f4f6",
+                        color: text,
+                        borderColor: (taskToEdit.notes || "").trim() ? accent : "transparent"
+                      }}
+                      autoFocus={showEditNotesField && !taskToEdit.notes}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* REAL SUBTASKS UI */}
+              <AnimatePresence>
+                {(taskToEdit.subtasks?.length > 0) && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="w-full flex flex-col gap-2 mb-4 overflow-hidden">
+                    {taskToEdit.subtasks.map((st, i) => (
+                      <div key={st.id} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full border-2 shrink-0" style={{ borderColor: accent }} />
+                        <input
+                          value={st.text}
+                          onChange={e => {
+                            const newSt = [...taskToEdit.subtasks];
+                            newSt[i].text = e.target.value;
+                            setTaskToEdit({ ...taskToEdit, subtasks: newSt });
+                          }}
+                          className="flex-1 px-3 py-1.5 rounded-lg text-sm outline-none border transition-colors"
+                          style={{
+                            backgroundColor: isDark ? "#3a3a3a" : "transparent",
+                            color: text,
+                            borderColor: st.text.trim() ? accent : "transparent"
+                          }}
+                          placeholder="Subtask text..."
+                        />
+                        <button type="button" onClick={() => {
+                          const newSt = taskToEdit.subtasks.filter((_, idx) => idx !== i);
+                          setTaskToEdit({ ...taskToEdit, subtasks: newSt });
+                        }} className="text-red-500 opacity-50 hover:opacity-100 hover:scale-110 transition-all p-1">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Priority Selection */}
-              <div className="flex justify-center gap-2">
+              <div className="flex justify-center gap-1">
                 {["important", "urgent", "optional"].map((cat) => {
                   const active = taskToEdit.priority === cat;
                   const colors = {
@@ -676,7 +1027,7 @@ export default function Tasks() {
               </div>
 
               {/* Date Selection */}
-              <div className="flex justify-center mt-2 relative z-50">
+              <div className="flex justify-center mt-1 relative z-50">
                 <div onClick={() => { setShowEditDateMenu(!showEditDateMenu); setShowEditPriorityMenu(false); }} className="flex items-center justify-center px-4 py-2 rounded-xl transition cursor-pointer border select-none w-1/2" style={{ backgroundColor: showEditDateMenu ? (isDark ? "#444" : "#e2e8f0") : "transparent", borderColor: showEditDateMenu ? accent : (isDark ? "#444" : "#cbd5e1") }}>
                   {taskToEdit.dueDate ? (
                     <span className="text-sm font-bold tracking-wider" style={{ color: text }}>{taskToEdit.dueDate}</span>
@@ -725,7 +1076,7 @@ export default function Tasks() {
 
               <button
                 type="submit"
-                className="relative group w-full py-2.5 mt-4 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95"
+                className="relative group w-full py-2.5 mt-2 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95"
                 style={{
                   backgroundColor: "transparent",
                   color: accent,
@@ -751,7 +1102,7 @@ export default function Tasks() {
                 setShowEditPriorityMenu(false);
                 setShowEditDateMenu(false);
               }}
-              className="relative group text-sm font-medium transition-all duration-300 mt-2"
+              className="relative group text-sm font-medium transition-all duration-300 mt-0"
               style={{ color: subText }}
             >
               <span

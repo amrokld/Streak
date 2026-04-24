@@ -14,7 +14,11 @@ const patches = [
             " Introduced a 5-second Undo Notification Toast for accidentally deleted tasks.",
             " Overhauled New Task and Edit Task modals with inline priority buttons and centered layouts.",
             " Added a satisfying fireworks burst animation that triggers when all daily tasks are completed.",
-            " Fixed Arabic/English text fallbacks for all new task features and progress indicators."
+            " Fixed Arabic/English text fallbacks for all new task features and progress indicators.",
+            " Applied all the changes to the task section in Today's page.",
+            " Added Days labeling in tasks.",
+            " Added subTasks that can be added to the single main tasks.",
+            " Added glowing effect to the tasks based on their category labeling.",
         ]
     },
     {

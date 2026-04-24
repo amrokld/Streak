@@ -101,6 +101,9 @@ export const ar = {
   tomorrow: "غداً",
   yesterday: "أمس",
   editingTask: "تعديل المهمة",
+  addNote: "أضف ملاحضة",
+  addSubtask: "أضف مهمة فرعية",
+  noNotesOrSubtasks: "لا توجد ملاحظات أو مهام فرعية لهذه المهمة.",
 
 
   // Calendar Page

@@ -110,6 +110,9 @@ export const en = {
   tomorrow: "Tomorrow",
   yesterday: "Yesterday",
   editingTask: "Edit Task",
+  addNote: "Add Note",
+  addSubtask: "Add Subtask",
+  noNotesOrSubtasks: "No notes or subtasks for this task.",
 
 
   // Calendar Page

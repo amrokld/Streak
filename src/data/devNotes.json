@@ -2,7 +2,7 @@
   {
     "id": 1776990296034,
     "title": "Restructure Tasks Page",
-    "desc": "fully restructure the task page to have labels and search by it, change the new task and editing tasks windows to make it the same design as other windows, adding undo function for deleted tasks for the ability to undo in 5s.",
+    "desc": "fully restructure the task page to have labels and search by it, change the new task and editing tasks windows to make it the same design as other windows, adding undo function for deleted tasks for the ability to undo in 5s, added days labeling.",
     "status": "done",
     "date": "Fri, Apr 24, 2026, 03:24 AM"
   },
