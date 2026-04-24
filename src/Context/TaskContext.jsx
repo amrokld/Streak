@@ -30,15 +30,21 @@ export function TaskProvider({ children }) {
 
 
     // ---- ADD ----
-    const addTask = (text, priority, dueDate) => {
+    const addTask = (text, priority, dueDate, notes) => {
         const newTask = {
             id: Date.now().toString(),
             text: text.trim(),
             done: false,
             priority,
-            dueDate: dueDate || null
+            dueDate: dueDate || null,
+            notes: notes ? notes.trim() : ""
         };
         setTasks((prev) => [newTask, ...prev]);
+    };
+
+    // ---- RESTORE ----
+    const restoreTask = (task) => {
+        setTasks((prev) => [task, ...prev]);
     };
 
     // ---- TOGGLE DONE ----
@@ -72,7 +78,7 @@ export function TaskProvider({ children }) {
         setTasks((prev) => prev.filter((t) => !t.done));
 
     return (
-        <TaskContext.Provider value={{ tasks, addTask, toggleDone, deleteTask, editTask, clearCompleted, updateTask }}>
+        <TaskContext.Provider value={{ tasks, addTask, restoreTask, toggleDone, deleteTask, editTask, clearCompleted, updateTask }}>
             {children}
         </TaskContext.Provider>
     );

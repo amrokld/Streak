@@ -7,6 +7,17 @@ import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
     {
+        version: "v4.4",
+        date: "April 2026",
+        notes: [
+            " Completely redesigned the Tasks page UI to match the premium New Habit aesthetic.",
+            " Introduced a 5-second Undo Notification Toast for accidentally deleted tasks.",
+            " Overhauled New Task and Edit Task modals with inline priority buttons and centered layouts.",
+            " Added a satisfying fireworks burst animation that triggers when all daily tasks are completed.",
+            " Fixed Arabic/English text fallbacks for all new task features and progress indicators."
+        ]
+    },
+    {
         version: "v4.3",
         date: "April 2026",
         notes: [
