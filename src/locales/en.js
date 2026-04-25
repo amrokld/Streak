@@ -34,6 +34,7 @@ export const en = {
   settings: "Settings",
   newHabit: "New Habit",
   todayPage: "TODAY",
+  notes: "Notes",
 
   // Limit messages
   limitMsg1: "That's enough for now. 12 habits max.",
@@ -276,5 +277,22 @@ export const en = {
   watchAgainBtn: "Watch Again",
   readyToCreateTitle: "Ready to start?",
   readyToCreateDesc: "Let's create your very first habit to track!",
+
+  // Notes
+  notes: "Notes",
+  newNote: "New Note",
+  noNotesFound: "No notes found.",
+  all: "all",
+  delete: "Delete",
+  editNote: "Edit Note",
+  saveNote: "Save Note",
+  noteTitle: "Note Title",
+  noteDescPlaceholder: "What's on your mind?",
+  label: "Label",
+  general: "general",
+  ideas: "ideas",
+  important: "important",
+  tasks: "tasks",
+  pressEnterToAdd: "Press Enter to add ...",
 };
 

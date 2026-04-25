@@ -7,6 +7,15 @@ import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
     {
+        version: "v5.0",
+        date: "April 2026",
+        notes: [
+            " Introduced a new Notes page with full create, edit, and delete functionality, with all data saved locally.",
+            " Added a custom label system that allows creating labels inline with Enter and assigning colors.",
+            " Refined the UI for a cleaner layout and smoother interactions.",
+        ]
+    },
+    {
         version: "v4.4",
         date: "April 2026",
         notes: [

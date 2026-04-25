@@ -34,6 +34,7 @@ export const ar = {
   settings: "الإعدادات",
   newHabit: "عادة جديدة",
   todayPage: "اليوم",
+  notes: "الملاحضات",
 
   // Limit messages
   limitMsg1: "كفاية الآن. الحد الأقصى 12 عادة.",
@@ -274,4 +275,21 @@ export const ar = {
   watchAgainBtn: "مشاهدة مرة أخرى",
   readyToCreateTitle: "مستعد للبدء؟",
   readyToCreateDesc: "دعنا ننشئ أول عادة لك لتتبعها!",
+
+  // Notes
+  notes: "الملاحظات",
+  newNote: "ملاحظة جديدة",
+  noNotesFound: "لم يتم العثور على ملاحظات.",
+  all: "الكل",
+  delete: "حذف",
+  editNote: "تعديل الملاحظة",
+  saveNote: "حفظ الملاحظة",
+  noteTitle: "عنوان الملاحظة",
+  noteDescPlaceholder: "ما الذي يدور في ذهنك؟",
+  label: "التصنيف",
+  general: "عام",
+  ideas: "أفكار",
+  important: "مهم",
+  tasks: "مهام",
+  pressEnterToAdd: "اضغط Enter للإضافة...",
 };

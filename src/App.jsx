@@ -14,6 +14,7 @@ import UpdatePatches from "./pages/UpdatePatches";
 import Today from "./pages/Today";
 import TourOverlay from "./tour/TourOverlay";
 import DevNotes from "./pages/DevNotes";
+import Notes from "./pages/Notes";
 
 import { HabitProvider } from "./Context/HabitContext";
 import { TaskProvider } from "./Context/TaskContext";
@@ -37,6 +38,7 @@ export default function App() {
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/streak/:habit" element={<StreakPage />} />
                     <Route path="/statistics" element={<Statistics />} />
+                    <Route path="/notes" element={<Notes />} />
                     <Route path="/other" element={<Other />} />
                     <Route path="/tasks" element={<Tasks />} />
                     <Route path="/settings" element={<Settings />} />
