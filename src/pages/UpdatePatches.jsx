@@ -13,7 +13,7 @@ const patches = [
             " Introduced a new Notes page with full create, edit, and delete functionality, with all data saved locally.",
             " Added a custom label system that allows creating labels inline with Enter and assigning colors.",
             " Refined the UI for a cleaner layout and smoother interactions.",
-            " Applied the glow effect on the Habit cards for better styling.",
+            " Applied the glow effect on the Habit cards based on their category lebals for better styling.",
             " Fixed the today's status for better logic.",
             " Refurbished the Statistics page.",
         ]
