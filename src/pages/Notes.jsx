@@ -113,7 +113,14 @@ export default function Notes() {
           title: noteTitle,
           desc: noteDesc,
           label: noteLabel.trim().toLowerCase(),
-          date: new Date().toLocaleDateString()
+          date: new Date().toLocaleDateString('en-US', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
         },
         ...notes
       ];
@@ -198,14 +205,17 @@ export default function Notes() {
             >
               <div>
                 <div className="flex justify-between items-start mb-3 gap-4">
-                  <div className="flex flex-col">
-                    <h3 className="text-lg font-bold line-clamp-1" style={{ color: text }}>
+                  <div className="flex flex-col leading-tight">
+                    <h3
+                      className="text-lg font-bold"
+                      style={{ color: text }}
+                    >
                       {note.title}
                     </h3>
 
                     {note.date && (
                       <span
-                        className="text-[10px] mt-1 font-medium"
+                        className="text-[10px] font-medium"
                         style={{ color: subText }}
                       >
                         {note.date}

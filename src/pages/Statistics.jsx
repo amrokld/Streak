@@ -1,8 +1,10 @@
+// Statistics Page
 import { useTheme } from "../Context/ThemeContext";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
-import { formatDate } from "../utils/dateHelpers";
+import { formatDate, getToday } from "../utils/dateHelpers";
+import { isHabitScheduledForToday, isCompletedToday } from "../utils/habitSchedule";
 import { STORAGE_KEYS } from "../constants/storageKeys";
 import { getTokens } from "../theme/tokens";
 import { useLanguage } from "../Context/LanguageContext";
@@ -17,13 +19,14 @@ export default function Statistics() {
 
   // Header Today calculation
   const isTodayCompleted = useMemo(() => {
-    const today = new Date();
-    const todayStr = formatDate(today);
-    return habits.some(h => h.completedDays?.includes(todayStr));
+    const todayStr = getToday();
+    const todaysHabits = habits.filter(h => isHabitScheduledForToday(h));
+    if (todaysHabits.length === 0) return false;
+    return todaysHabits.every(h => isCompletedToday(h, todayStr));
   }, [habits]);
 
   return (
-    <div className="w-full max-w-4xl px-4 mx-auto mt-20 flex flex-col gap-6 pb-10 animate-fade-in">
+    <div className="w-full max-w-3xl px-3 mx-auto mt-14 flex flex-col gap-4 pb-6 animate-fade-in">
       {/* HEADER */}
       <div id="tour-nav-stats" className="flex justify-between items-center">
         <h1 className="text-3xl font-bold" style={{ color: accent }}>
@@ -63,7 +66,7 @@ function StatsTabs({ activeTab, setActiveTab, isDark, accent, t }) {
 
   return (
     <div
-      className="flex gap-2 p-1.5 rounded-2xl mb-2 shadow-sm"
+      className="flex gap-1 p-1 rounded-xl mb-1 shadow-sm"
       style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
     >
       {tabs.map((tab) => {
@@ -348,13 +351,13 @@ function CalendarTab({ habits, isDark, accent, t, lang }) {
       </div>
 
       <div
-        className="rounded-xl p-5 md:p-7 shadow-sm w-full"
+        className="rounded-xl p-4 md:p-5 shadow-sm w-full max-w-2xl mx-auto"
         style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", color: isDark ? "#ffffff" : "#1a1a1a" }}
       >
         <div className="flex justify-between items-center mb-6 px-2">
           <button
             onClick={prevMonth}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:backdrop-brightness-75 transition-all text-xl"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:backdrop-brightness-75 transition-all text-xl"
             style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
           >‹</button>
 
@@ -376,7 +379,7 @@ function CalendarTab({ habits, isDark, accent, t, lang }) {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1.5 md:gap-3">
+        <div className="grid grid-cols-7 gap-1 md:gap-2">
           {blanks.map((b) => <div key={b} className="aspect-square w-full"></div>)}
 
           {calDays.map((day) => {
@@ -505,20 +508,23 @@ function HeatmapTab({ habits, isDark, accent, t, lang }) {
   }, [habits]);
 
   const getIntensityStyle = (count, isFuture) => {
-    if (isFuture) return { backgroundColor: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", opacity: 0.5 };
+    if (isFuture) return { backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", opacity: 0.4 };
     if (count === 0) return { backgroundColor: isDark ? "#3f3f3f" : "#f3f4f6" };
-    if (count === 1) return { backgroundColor: accent, opacity: 0.4 };
-    if (count === 2) return { backgroundColor: accent, opacity: 0.6 };
-    if (count === 3) return { backgroundColor: accent, opacity: 0.8 };
-    return { backgroundColor: accent, opacity: 1 };
+    
+    // Use hex alpha to avoid conflicts with Framer Motion element opacity
+    if (count === 1) return { backgroundColor: `${accent}40` }; // 25%
+    if (count === 2) return { backgroundColor: `${accent}80` }; // 50%
+    if (count === 3) return { backgroundColor: `${accent}bf` }; // 75%
+    return { backgroundColor: accent }; // 100%
   };
 
   const handleMouseEnter = (e, content) => {
     const rect = e.currentTarget.getBoundingClientRect();
+
     setTooltip({
       visible: true,
-      x: rect.left + rect.width / 2,
-      y: rect.top - 8, // 8px clearance above the cell
+      x: rect.left + rect.width / 2 + window.scrollX,
+      y: rect.top + window.scrollY,
       content
     });
   };
@@ -549,7 +555,7 @@ function HeatmapTab({ habits, isDark, accent, t, lang }) {
       </div>
 
       <div
-        className="rounded-xl p-5 md:p-7 shadow-sm w-full flex flex-col items-center relative"
+        className="rounded-xl p-4 md:p-5 shadow-sm w-full max-w-2xl mx-auto flex flex-col items-center relative"
         style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", color: isDark ? "#ffffff" : "#1a1a1a" }}
       >
         <div className="w-full flex justify-between items-center mb-6">
@@ -560,7 +566,7 @@ function HeatmapTab({ habits, isDark, accent, t, lang }) {
         </div>
 
         {/* Horizontal Heatmap Grid Container */}
-        <div className="flex gap-2 md:gap-3 justify-center w-full">
+        <div className="flex gap-1.5 md:gap-2 justify-center w-full">
           {/* Heatmap Row Labels (Mon, Wed, Fri) */}
           <div className={`grid gap-1 md:gap-1.5 ${lang === "ar" ? 'pl-1 md:pl-2' : 'pr-1 md:pr-2'}`} style={{ gridTemplateRows: 'repeat(7, 1fr)' }}>
             <div className="text-[8px] md:text-[10px] opacity-40 font-semibold flex items-center justify-end"></div>
@@ -596,15 +602,28 @@ function HeatmapTab({ habits, isDark, accent, t, lang }) {
                   key={dateStr}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.003 }} // Cascading animation
+                  whileHover={!isFuture ? {
+                    scale: 1.12,
+                    y: -1
+                  } : {}}
+                  transition={{
+                    delay: i * 0.003,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 20
+                  }}
                   onMouseEnter={(e) => !isFuture && handleMouseEnter(e, tooltipText)}
                   onMouseLeave={handleMouseLeave}
-                  className={`w-full aspect-square rounded-sm transition-all duration-300 ${!isFuture && 'hover:scale-110'}`}
+                  className="w-full aspect-square rounded-sm cursor-pointer"
                   style={{
                     ...getIntensityStyle(count, isFuture),
                     outline: isToday ? `1.5px solid ${accent}` : "none",
                     outlineOffset: "2px",
-                    boxShadow: isToday ? `0 0 8px ${accent}40` : "none"
+                    boxShadow: isToday
+                      ? `0 0 8px ${accent}40`
+                      : (!isFuture && count > 0
+                        ? `0 0 6px ${accent}30`
+                        : "none")
                   }}
                 />
               );
@@ -617,47 +636,83 @@ function HeatmapTab({ habits, isDark, accent, t, lang }) {
           <span className="text-[10px] md:text-xs opacity-40 font-bold tracking-widest uppercase">{t("activityLevel") || "Activity Level"}</span>
           <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-medium">
             <span className="opacity-40">{t("less") || "Less"}</span>
-            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: isDark ? "#3f3f3f" : "#f3f4f6" }} />
-            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: accent, opacity: 0.4 }} />
-            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: accent, opacity: 0.6 }} />
-            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: accent, opacity: 0.8 }} />
-            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm" style={{ backgroundColor: accent, opacity: 1 }} />
+            <div
+              onMouseEnter={(e) => handleMouseEnter(e, "0 habits")}
+              onMouseLeave={handleMouseLeave}
+              className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
+              style={{ backgroundColor: isDark ? "#3f3f3f" : "#f3f4f6" }}
+            />
+
+            <div
+              onMouseEnter={(e) => handleMouseEnter(e, "1 habit")}
+              onMouseLeave={handleMouseLeave}
+              className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
+              style={{ backgroundColor: `${accent}40` }}
+            />
+
+            <div
+              onMouseEnter={(e) => handleMouseEnter(e, "2 habits")}
+              onMouseLeave={handleMouseLeave}
+              className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
+              style={{ backgroundColor: `${accent}80` }}
+            />
+
+            <div
+              onMouseEnter={(e) => handleMouseEnter(e, "3–4 habits")}
+              onMouseLeave={handleMouseLeave}
+              className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
+              style={{ backgroundColor: `${accent}bf` }}
+            />
+
+            <div
+              onMouseEnter={(e) => handleMouseEnter(e, "5+ habits")}
+              onMouseLeave={handleMouseLeave}
+              className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
+              style={{ backgroundColor: accent }}
+            />
             <span className="opacity-40">{t("more") || "More"}</span>
           </div>
         </div>
       </div>
 
       {/* CUSTOM TOOLTIP PORTAL */}
-      {tooltip.visible && createPortal(
-        <motion.div
-          initial={{ opacity: 0, y: 5, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          className="fixed z-[200] pointer-events-none px-3 py-1.5 rounded-lg text-xs font-bold shadow-xl whitespace-nowrap"
-          style={{
-            backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-            color: isDark ? "#ffffff" : "#1a1a1a",
-            border: `1px solid ${isDark ? "#333" : "#e5e7eb"}`,
-            left: tooltip.x,
-            top: tooltip.y,
-            transform: "translate(-50%, -100%)",
-            boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.5)" : "0 4px 20px rgba(0,0,0,0.1)"
-          }}
-        >
-          {tooltip.content}
-          {/* Tooltip arrow */}
-          <div
-            className="absolute left-1/2 bottom-0 w-2 h-2"
-            style={{
-              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-              borderBottom: `1px solid ${isDark ? "#333" : "#e5e7eb"}`,
-              borderRight: `1px solid ${isDark ? "#333" : "#e5e7eb"}`,
-              transform: "translate(-50%, 50%) rotate(45deg)"
-            }}
-          />
-        </motion.div>,
+      {createPortal(
+        <AnimatePresence>
+          {tooltip.visible && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, x: "-50%", y: -5 }}
+              animate={{ opacity: 1, scale: 1, x: "-50%", y: -12 }}
+              exit={{ opacity: 0, scale: 0.9, x: "-50%", y: -5 }}
+              className="absolute z-[200] pointer-events-none px-3 py-1.5 rounded-lg text-xs font-bold shadow-xl whitespace-nowrap"
+              style={{
+                backgroundColor: isDark ? "rgba(26,26,26,0.9)" : "rgba(255,255,255,0.9)",
+                color: isDark ? "#ffffff" : "#1a1a1a",
+                border: `1px solid ${isDark ? "#333" : "#e5e7eb"}`,
+                left: tooltip.x,
+                top: tooltip.y,
+                translateY: "-100%",
+                boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.5)" : "0 4px 20px rgba(0,0,0,0.1)",
+                backdropFilter: "blur(8px)"
+              }}
+            >
+              {tooltip.content}
+              {/* Tooltip arrow */}
+              <div
+                className="absolute left-1/2 bottom-0 w-2 h-2"
+                style={{
+                  backgroundColor: isDark ? "rgba(26,26,26,0.9)" : "rgba(255,255,255,0.9)",
+                  borderBottom: `1px solid ${isDark ? "#333" : "#e5e7eb"}`,
+                  borderRight: `1px solid ${isDark ? "#333" : "#e5e7eb"}`,
+                  transform: "translate(-50%, 50%) rotate(45deg)"
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>,
         document.body
       )}
     </div>
+
   );
 }
 

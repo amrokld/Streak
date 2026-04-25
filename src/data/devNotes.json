@@ -1,5 +1,12 @@
 [
   {
+    "id": 1777082078028,
+    "title": "Notes page",
+    "desc": "Dont forget to add the notes page to the tour guide.",
+    "status": "under developing",
+    "date": "Sat, Apr 25, 2026, 04:54 AM"
+  },
+  {
     "id": 1776990296034,
     "title": "Restructure Tasks Page",
     "desc": "fully restructure the task page to have labels and search by it, change the new task and editing tasks windows to make it the same design as other windows, adding undo function for deleted tasks for the ability to undo in 5s, added days labeling.",
@@ -10,7 +17,7 @@
     "id": 1776859760732,
     "title": "Animate HabitCards",
     "desc": "animate the habit cards to glow the same as the DevNotes do",
-    "status": "under developing",
+    "status": "done",
     "date": "Wed, Apr 22, 2026, 03:09 PM"
   },
   {

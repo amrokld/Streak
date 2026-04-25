@@ -35,6 +35,8 @@ export const en = {
   newHabit: "New Habit",
   todayPage: "TODAY",
   notes: "Notes",
+  others: "Others",
+  other: "other",
 
   // Limit messages
   limitMsg1: "That's enough for now. 12 habits max.",

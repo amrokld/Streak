@@ -62,8 +62,17 @@ export default function HabitCard({
   }, [habit?.lastCheck]);
 
   return (
-    <div
+    <motion.div
       className="relative rounded-3xl min-h-[220px]"
+      whileHover={!flipped ? {
+        boxShadow: `0 0 25px ${catColor}50`,
+        borderColor: catColor
+      } : {}}
+      style={{
+        border: `1px solid transparent`,
+        borderRadius: "1.5rem"
+      }}
+      transition={{ duration: 0.2 }}
     >
       <div className="card-perspective absolute inset-0">
         <motion.div
@@ -250,6 +259,6 @@ export default function HabitCard({
           </div>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

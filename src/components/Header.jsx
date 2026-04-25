@@ -57,7 +57,7 @@ export default function Header({ habits, onNewHabit }) {
   }, [limitHit]);
 
   const navLinks = [
-    { label: t("Others"), path: "/other" },
+    { label: t("others"), path: "/other" },
     { label: t("statistics"), path: "/statistics" },
     { label: t("todayPage"), path: "/today", isSpecial: true },
     { label: t("tasks"), path: "/tasks" },

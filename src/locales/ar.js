@@ -35,6 +35,9 @@ export const ar = {
   newHabit: "عادة جديدة",
   todayPage: "اليوم",
   notes: "الملاحضات",
+  others: "أخرى",
+
+  other: "أخرى",
 
   // Limit messages
   limitMsg1: "كفاية الآن. الحد الأقصى 12 عادة.",
