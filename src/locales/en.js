@@ -266,13 +266,15 @@ export const en = {
   readyDesc: "Your journey to consistency starts now.",
   startAppBtn: "Start using STREAK",
 
-  tourHomeDesc: "Tap the logo at any time to return to your Habit Dashboard.",
+  tourHomeDesc: "Tip: Click the logo anytime to return home.",
   tourNewHabitDesc: "Create and schedule up to 12 habits to track daily.",
   tourTodayDesc: "Your daily execution layer. Focus only on what's due today.",
   tourCalendarDesc: "Visualize your progress with an interactive activity heatmap.",
   tourTasksDesc: "Manage one-time tasks, due dates, and priorities.",
   tourStatsDesc: "Analyze your consistency and discover behavioral insights.",
   tourSettingsDesc: "Customize your theme, language, and backup your data.",
+  tourNotesDesc: "Here you can manage your notes.",
+  tourOtherDesc: "This page is reserved for future features.",
 
   tourFinishedTitle: "Tour Finished!",
   tourFinishedDesc: "Did you catch all of that, or do you want to see it again?",

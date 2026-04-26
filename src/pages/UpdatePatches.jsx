@@ -7,6 +7,13 @@ import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
     {
+        version: "v5.1",
+        date: "April 2026",
+        notes: [
+            " Added the notes page to the tour guide for starters.",
+        ]
+    },
+    {
         version: "v5.0",
         date: "April 2026",
         notes: [

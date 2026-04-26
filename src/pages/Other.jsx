@@ -9,7 +9,7 @@ export default function Other() {
 
   return (
     <div className="flex flex-col items-center justify-center mt-40 animate-fade-in gap-4">
-      <h1 className="text-3xl font-bold" style={{ color: accent }}>
+      <h1 id="tour-nav-other" className="text-3xl font-bold" style={{ color: accent }}>
         {t("other")}
       </h1>
       <p className="text-lg" style={{ color: subText }}>

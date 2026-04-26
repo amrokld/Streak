@@ -11,6 +11,12 @@ export const TOUR_STEPS = [
         textKey: "tourNewHabitDesc",
     },
     {
+        id: "notes",
+        targetId: "tour-nav-notes",
+        screen: "home",
+        textKey: "tourNotesDesc",
+    },
+    {
         id: "tasks",
         targetId: "tour-nav-tasks",
         screen: "home",
@@ -27,6 +33,12 @@ export const TOUR_STEPS = [
         targetId: "tour-nav-statistics",
         screen: "home",
         textKey: "tourStatsDesc",
+    },
+    {
+        id: "other",
+        targetId: "tour-nav-other",
+        screen: "home",
+        textKey: "tourOtherDesc",
     },
     {
         id: "home",

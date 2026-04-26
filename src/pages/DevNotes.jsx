@@ -23,7 +23,7 @@ export default function DevNotes() {
     const [noteStatus, setNoteStatus] = useState("thinking");
     const [selectedLabel, setSelectedLabel] = useState("all");
 
-    const statuses = ["done", "under developing", "canceled", "thinking", "on hold"];
+    const statuses = ["done", "under developing", "canceled", "thinking", "on hold", "working on"];
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -32,6 +32,7 @@ export default function DevNotes() {
             case "canceled": return "#ef4444"; // Red
             case "thinking": return "#f59e0b"; // Yellow
             case "on hold": return "#8b5cf6"; // Purple
+            case "working on": return "#000000" //black
             default: return accent;
         }
     };
@@ -77,10 +78,10 @@ export default function DevNotes() {
         if (editingId) {
             newNotes = notes.map(n => n.id === editingId ? { ...n, title: noteTitle, desc: noteDesc, status: noteStatus } : n);
         } else {
-            const dateStr = new Date().toLocaleDateString('en-US', { 
-                weekday: 'short', 
-                year: 'numeric', 
-                month: 'short', 
+            const dateStr = new Date().toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'

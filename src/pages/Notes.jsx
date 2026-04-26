@@ -141,7 +141,7 @@ export default function Notes() {
     <div className="flex justify-center mt-12 pb-24 animate-fade-in">
       <div className="w-full max-w-4xl px-6">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
+        <div id="tour-nav-notes" className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold" style={{ color: accent }}>
             {t("notes")}
           </h2>
