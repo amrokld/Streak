@@ -148,6 +148,12 @@ export const en = {
   noActivityWeek: "no activity this week",
   activityCalendar: "Activity Calendar",
   underConstruction: "Under construction",
+  habitCount0: "0 habits",
+  habitCount1: "1 habit",
+  habitCount2: "2 habits",
+  habitCount34: "3–4 habits",
+  habitCount5: "5+ habits",
+
 
   // Settings
   general: "General",
@@ -298,5 +304,13 @@ export const en = {
   important: "important",
   tasks: "tasks",
   pressEnterToAdd: "Press Enter to add ...",
+
+  // Freeze
+  streakSavedByFreeze: "❄️ Streak saved by freeze!",
+  freezeCount: "Freezes",
+  freezeEarned: "❄️ Freeze earned! Keep it up.",
+  currentStreak: "Current Streak",
+
+
 };
 

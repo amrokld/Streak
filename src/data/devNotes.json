@@ -1,9 +1,16 @@
 [
   {
+    "id": 1777234005548,
+    "title": "individual streaks statistics ",
+    "desc": "bcs we replaced the \"longest\" and \"total days\" that were on the streakPage, i need to implement them in the statistics page instead.",
+    "status": "under developing",
+    "date": "Sun, Apr 26, 2026, 11:06 PM"
+  },
+  {
     "id": 1777082078028,
     "title": "Notes page",
     "desc": "Dont forget to add the notes page to the tour guide.",
-    "status": "working on",
+    "status": "done",
     "date": "Sat, Apr 25, 2026, 04:54 AM"
   },
   {
@@ -108,7 +115,7 @@
     "id": 1776815039547,
     "title": "Streaks freezing",
     "desc": "now the streak logic isnt at its fullest version, i need to add the streak freezing logic after a day gone without checking. ",
-    "status": "working on",
+    "status": "done",
     "date": "Wed, Apr 22, 2026, 02:43 AM"
   }
 ]

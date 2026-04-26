@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { syncHabits } from "../services/habitSync";
-import { getToday, getYesterday } from "../utils/dateHelpers";
+import { getToday } from "../utils/dateHelpers";
 import { STORAGE_KEYS } from "../constants/storageKeys";
+import { applyCheckIn } from "../utils/streakEngine";
 
 const HabitContext = createContext();
 
@@ -48,59 +49,34 @@ export function HabitProvider({ children }) {
     setHabits((prev) => prev.filter((h) => h.id !== id));
   };
 
-  // ---- REGISTER TODAY (STREAK FIX) ----
-  const registerToday = (habitId) => {
-    const today = getToday();
-
-    updateHabit(habitId, (habit) => {
-      if (habit.lastCheck === today) return habit;
-
-      return {
-        ...habit,
-        streak: habit.streak + 1,
-        lastCheck: today,
-      };
-    });
-  };
-
   // ---- CHECK IN HABIT ----
-  const checkInHabit = (id) => {
-    const today = getToday();
-    updateHabit(id, (habit) => {
-      if (habit.lastCheck === today) return habit;
+  // ---- CHECK IN HABIT ----
+  const checkInHabit = (id, onResult) => {
+    const habit = habits.find(h => String(h.id) === String(id));
+    if (!habit) return;
+
+    const { habit: updated, freezeUsed, freezeEarned } = applyCheckIn(habit);
+
+    // Fire callback synchronously, outside the updater — Strict Mode safe
+    onResult?.({ freezeUsed, freezeEarned });
+
+    updateHabit(id, () => {
       const prevDays = habit.completedDays || [];
-      if (prevDays.includes(today)) return habit;
-      const newStreak = habit.streak + 1;
-      return {
-        ...habit,
-        streak: newStreak,
-        longestStreak: Math.max(habit.longestStreak || 0, newStreak),
-        lastCheck: today,
-        completedDays: [...prevDays, today]
-      };
+      const today = getToday();
+      if (prevDays.includes(today)) return updated;
+      return { ...updated, completedDays: [...prevDays, today] };
     });
   };
 
   // ---- RESET HABIT ----
-  const resetHabit = (id) => {
-    updateHabit(id, {
-      streak: 0,
-      lastCheck: null,
-      completedDays: []
-    });
-  };
+  const resetHabit = (id) => updateHabit(id, {
+    currentStreak: 0,
+    longestStreak: 0,
+    lastCompletedDate: null,
+    freezeCount: 0,
+    completedDays: []
+  });
 
-  // ---- HANDLE MISSED DAY ----
-  const handleMissedDay = (id) => {
-    const today = getToday();
-    const yesterday = getYesterday();
-    updateHabit(id, (habit) => {
-      if (habit.streak > 0 && habit.lastCheck !== yesterday && habit.lastCheck !== today) {
-        return { ...habit, streak: 0 };
-      }
-      return habit;
-    });
-  };
 
   // ---- PERSIST TO LOCAL STORAGE (ONE PLACE ONLY) ----
   useEffect(() => {
@@ -121,10 +97,8 @@ export function HabitProvider({ children }) {
         addHabit,
         updateHabit,
         deleteHabit,
-        registerToday,
         checkInHabit,
         resetHabit,
-        handleMissedDay,
       }}
 
     >

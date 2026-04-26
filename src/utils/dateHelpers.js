@@ -18,3 +18,10 @@ export const getTodayDayKey = () => {
     const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
     return days[new Date().getDay()];
 };
+
+export function daysBetween(dateStrA, dateStrB) {
+    const a = new Date(dateStrA + "T00:00:00");
+    const b = new Date(dateStrB + "T00:00:00");
+    const msPerDay = 1000 * 60 * 60 * 24;
+    return Math.round(Math.abs(b - a) / msPerDay);
+}

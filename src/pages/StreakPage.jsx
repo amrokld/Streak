@@ -18,76 +18,52 @@ export default function StreakPage() {
 
 
   const { habit: habitId } = useParams();
-  const { habits, checkInHabit, resetHabit, handleMissedDay } = useHabits();
+  const { habits, checkInHabit, resetHabit } = useHabits();
   const resolvedId = habits.find(h => String(h.id) === String(habitId))?.id ?? Number(habitId);
   const [habit, setHabit] = useState(null);
   const [message, setMessage] = useState("");
   const [showReset, setShowReset] = useState(false);
-  const missedDayChecked = useRef(null);
   const clickedTodayRef = useRef(false);
 
   const today = getToday();
 
-  useEffect(() => {
-    if (missedDayChecked.current !== habitId) {
-      const h = habits.find(h => String(h.id) === String(habitId));
-      if (h && h.streak > 0 && h.lastCheck) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        if (h.lastCheck !== yesterdayStr && h.lastCheck !== today) {
-          setMessage(t("streakBroken") || "Streak broken — start again!");
-        }
-      }
-      handleMissedDay(habits.find(h => String(h.id) === String(habitId))?.id ?? Number(habitId));
-      missedDayChecked.current = habitId;
-    }
-  }, [habitId]);
-
-  // Sync local state from habits context (safe — no state mutation here)
+  // Sync local state from habits context
   useEffect(() => {
     const found = habits.find(h => String(h.id) === String(habitId));
     if (!found) return;
-
-    const normalized = {
+    setHabit({
       ...found,
-      streak: found.streak ?? 0,
-      longestStreak: found.longestStreak ?? found.streak ?? 0,
+      currentStreak: found.currentStreak ?? 0,
+      longestStreak: found.longestStreak ?? 0,
+      freezeCount: found.freezeCount ?? 0,
       completedDays: Array.isArray(found.completedDays) ? found.completedDays : [],
-      lastCheck: found.lastCheck ?? null
-    };
-
-    setHabit(normalized);
+      lastCompletedDate: found.lastCompletedDate ?? null,
+    });
   }, [habitId, habits]);
 
   // Reset clickedTodayRef if habit already has today's check (page reload / return visit)
   useEffect(() => {
-    if (habit?.lastCheck === today) {
+    if (habit?.lastCompletedDate === today) {
       clickedTodayRef.current = true;
     }
-  }, [habit?.lastCheck]);
+  }, [habit?.lastCompletedDate]);
 
   if (!habit) return null;
 
   const handleClick = () => {
-    // Block if already checked in (either from context or this session)
-    if (habit.lastCheck === today || clickedTodayRef.current) {
+    if (habit.lastCompletedDate === today || clickedTodayRef.current) {
       setMessage(t("comeBackTomorrow"));
       return;
     }
-
-    // Lock immediately — synchronous, no async state involved
     clickedTodayRef.current = true;
 
-    checkInHabit(resolvedId);
-    setMessage("");
-
-    confetti({
-      particleCount: 50,
-      spread: 70,
-      origin: { y: 0.6 }
+    checkInHabit(resolvedId, ({ freezeEarned }) => {
+      if (freezeEarned) setMessage(t("freezeEarned"));
     });
+
+    confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
   };
+
 
 
   const confirmReset = () => {
@@ -107,8 +83,7 @@ export default function StreakPage() {
   })
 
   return (
-    <div className="relative h-[80vh] flex flex-col items-center justify-center p-4 animate-fade-in">
-
+    <div className="relative min-h-[80vh] flex flex-col items-center justify-start pt-10 p-4 animate-fade-in">
       {/* HIGHLIGHT: HABIT NAME */}
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
@@ -130,46 +105,132 @@ export default function StreakPage() {
           className="text-[10rem] md:text-[14rem] font-bold cursor-pointer select-none leading-none"
           style={{
             color: accent,
-            textShadow: habit.streak > 0 ? `0 0 60px ${accent}60` : 'none' // Adds a sick glowing aurora effect!
+            textShadow: habit.currentStreak > 0 ? `0 0 60px ${accent}60` : 'none' // Adds a sick glowing aurora effect!
           }}
         >
-          {habit.streak}
+          {habit.currentStreak}
         </motion.div>
 
-        {message ? (
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-8 text-sm font-medium px-6 py-2.5 rounded-full border shadow-sm"
-            style={{
-              backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
-              color: isDark ? "#fff" : "#000",
-              borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"
-            }}
-          >
-            {message}
-          </motion.p>
-        ) : (
-          <p className="mt-8 text-sm opacity-50">{t("tapToCheckIn")}</p>
-        )}
+        <div style={{ minHeight: "44px" }} className="flex items-center justify-center">
+          {message ? (
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm font-medium px-6 py-2.5 rounded-full border shadow-sm"
+              style={{
+                backgroundColor: isDark ? "#2a2a2a" : "#ffffff",
+                color: isDark ? "#fff" : "#000",
+                borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"
+              }}
+            >
+              {message}
+            </motion.p>
+          ) : (
+            <p className="text-sm opacity-50">{t("tapToCheckIn")}</p>
+          )}
+        </div>
       </div>
 
-      {/* MINI STATS & 7-DAY HISTORY FOR THIS HABIT */}
+      {/* MINI STATS: Streak (dominant) + Freezes */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="mt-12 w-full max-w-sm flex flex-col gap-6"
       >
-        <div className="flex justify-around text-sm" style={{ color: isDark ? "#ffffff" : "#1a1a1a" }}>
-          <div className="flex flex-col items-center">
-            <span className="opacity-50 mb-1">{t("longest")}</span>
-            <span className="font-bold text-xl">{habit.longestStreak || habit.streak}</span>
+        <div className="flex justify-around items-end">
+
+          {/* 🔥 Current Streak — dominant */}
+          <div className="flex flex-col items-center gap-2">
+            <motion.svg
+              animate={{ scale: [1, 1.15, 1], rotate: [-4, 4, -4, 0] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              width="28" height="28" viewBox="0 0 24 24" fill={accent}
+            >
+              <path d="M12 2C12 2 7 8 7 13a5 5 0 0010 0c0-5-5-11-5-11z" />
+              <path d="M10 15c0 1.1.9 2 2 2s2-.9 2-2c0-2-2-4-2-4s-2 2-2 4z" fill={isDark ? "#fff" : "#000"} opacity="0.3" />
+            </motion.svg>
+            <motion.span
+              key={habit.currentStreak}
+              initial={{ scale: 1.3, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="font-bold text-4xl"
+              style={{ color: accent }}
+            >
+              {habit.currentStreak}
+            </motion.span>
+            <span className="text-xs opacity-50">{t("currentStreak")}</span>
           </div>
-          <div className="flex flex-col items-center">
-            <span className="opacity-50 mb-1">{t("totalDays")}</span>
-            <span className="font-bold text-xl">{habit.completedDays?.length || 0}</span>
+
+          {/* ❄️ Freeze Count */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative w-10 h-10 flex items-center justify-center">
+
+              {/* Orbiting ice particles — only when freezes available */}
+              {habit.freezeCount > 0 && [0, 1, 2, 3].map((i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: "#93c5fd" }}
+                  animate={{
+                    x: [
+                      Math.cos((i * Math.PI) / 2) * 14,
+                      Math.cos((i * Math.PI) / 2 + Math.PI) * 14,
+                      Math.cos((i * Math.PI) / 2) * 14,
+                    ],
+                    y: [
+                      Math.sin((i * Math.PI) / 2) * 14,
+                      Math.sin((i * Math.PI) / 2 + Math.PI) * 14,
+                      Math.sin((i * Math.PI) / 2) * 14,
+                    ],
+                    opacity: [0.6, 1, 0.6],
+                    scale: [0.8, 1.2, 0.8],
+                  }}
+                  transition={{
+                    duration: 2.4 + i * 0.3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.4,
+                  }}
+                />
+              ))}
+
+              {/* Snowflake icon */}
+              <motion.svg
+                animate={habit.freezeCount > 0
+                  ? { rotate: [0, 360] }
+                  : {}}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                width="22" height="22" viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"
+                  stroke={habit.freezeCount > 0 ? "#60a5fa" : (isDark ? "#444" : "#d1d5db")}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                <circle
+                  cx="12" cy="12" r="2"
+                  fill={habit.freezeCount > 0 ? "#60a5fa" : (isDark ? "#444" : "#d1d5db")}
+                />
+              </motion.svg>
+            </div>
+
+            <motion.span
+              key={habit.freezeCount}
+              initial={{ scale: 1.2, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 350, damping: 18 }}
+              className="font-bold text-2xl"
+              style={{ color: habit.freezeCount > 0 ? "#60a5fa" : (isDark ? "#555" : "#ccc") }}
+            >
+              {habit.freezeCount}
+            </motion.span>
+            <span className="text-xs opacity-50">{t("freezeCount")}</span>
           </div>
+
         </div>
 
         {/* Mini 7-Day Dots */}
@@ -188,10 +249,11 @@ export default function StreakPage() {
         </div>
       </motion.div>
 
+
       {/* RESET BUTTON */}
       <button
         onClick={() => setShowReset(true)}
-        className="absolute bottom-6 text-xs font-medium transition-all duration-300 group"
+        className="absolute bottom-0 text-xs font-medium transition-all duration-300 group"
         style={{ color: isDark ? "#ffffff" : "#1a1a1a" }}
       >
         <span

@@ -102,7 +102,7 @@ function StatsTabs({ activeTab, setActiveTab, isDark, accent, t }) {
 function OverviewTab({ habits, isDark, accent, t }) {
   const stats = useMemo(() => {
     const totalHabits = habits.length;
-    const totalActiveStreaks = habits.reduce((sum, h) => sum + (h.streak || 0), 0);
+    const totalActiveStreaks = habits.reduce((sum, h) => sum + (h.currentStreak || 0), 0);
     const longestStreak = Math.max(0, ...habits.map(h => h.longestStreak || 0));
     const totalCheckIns = habits.reduce((sum, h) => sum + (h.completedDays?.length || 0), 0);
 
@@ -124,12 +124,12 @@ function OverviewTab({ habits, isDark, accent, t }) {
     let weakestHabit = null;
 
     if (habits.length > 0) {
-      const sortedHabits = [...habits].sort((a, b) => (b.streak || 0) - (a.streak || 0));
+      const sortedHabits = [...habits].sort((a, b) => (b.currentStreak || 0) - (a.currentStreak || 0));
       bestHabit = sortedHabits[0];
 
       const weakestSorted = [...habits].sort((a, b) => {
-        if ((a.streak || 0) !== (b.streak || 0)) {
-          return (a.streak || 0) - (b.streak || 0);
+        if ((a.currentStreak || 0) !== (b.currentStreak || 0)) {
+          return (a.currentStreak || 0) - (b.currentStreak || 0);
         }
         return (a.completedDays?.length || 0) - (b.completedDays?.length || 0);
       });
@@ -206,7 +206,7 @@ function OverviewTab({ habits, isDark, accent, t }) {
             <span className="text-sm opacity-60">{t("bestHabit")}</span>
             {stats.bestHabit ? (
               <span className="font-medium text-lg">
-                {stats.bestHabit.name} <span className="opacity-60 text-sm">({stats.bestHabit.streak || 0} {t("days")})</span>
+                {stats.bestHabit.name} <span className="opacity-60 text-sm">({stats.bestHabit.currentStreak || 0} {t("days")})</span>
               </span>
             ) : (
               <span className="opacity-50 italic">{t("noDataYet")}</span>
@@ -317,8 +317,7 @@ function CalendarTab({ habits, isDark, accent, t, lang }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute top-12 right-0 w-56 p-2 rounded-3xl border shadow-2xl z-50 overflow-hidden flex flex-col gap-1 max-h-64 overflow-y-auto"
-                  style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}
+                  className="absolute top-12 right-0 w-72 p-2 rounded-3xl border shadow-2xl z-50 overflow-hidden flex flex-col gap-1 max-h-64 overflow-y-auto" style={{ backgroundColor: isDark ? "#2a2a2a" : "#ffffff", borderColor: isDark ? "#3f3f3f" : "#e5e7eb" }}
                 >
                   <div
                     onClick={() => { setSelectedHabitId("all"); setShowFilterMenu(false); }}
@@ -334,8 +333,7 @@ function CalendarTab({ habits, isDark, accent, t, lang }) {
                     <div
                       key={h.id}
                       onClick={() => { setSelectedHabitId(String(h.id)); setShowFilterMenu(false); }}
-                      className="px-4 py-2 text-sm font-medium cursor-pointer transition rounded-xl hover:brightness-110 truncate"
-                      style={{
+                      className="px-4 py-2 text-sm font-medium cursor-pointer transition rounded-xl hover:brightness-110" style={{
                         backgroundColor: String(selectedHabitId) === String(h.id) ? (isDark ? "#333" : "#f1f5f9") : "transparent",
                         color: String(selectedHabitId) === String(h.id) ? accent : (isDark ? "#fff" : "#000")
                       }}
@@ -510,7 +508,7 @@ function HeatmapTab({ habits, isDark, accent, t, lang }) {
   const getIntensityStyle = (count, isFuture) => {
     if (isFuture) return { backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", opacity: 0.4 };
     if (count === 0) return { backgroundColor: isDark ? "#3f3f3f" : "#f3f4f6" };
-    
+
     // Use hex alpha to avoid conflicts with Framer Motion element opacity
     if (count === 1) return { backgroundColor: `${accent}40` }; // 25%
     if (count === 2) return { backgroundColor: `${accent}80` }; // 50%
@@ -637,35 +635,35 @@ function HeatmapTab({ habits, isDark, accent, t, lang }) {
           <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-medium">
             <span className="opacity-40">{t("less") || "Less"}</span>
             <div
-              onMouseEnter={(e) => handleMouseEnter(e, "0 habits")}
+              onMouseEnter={(e) => handleMouseEnter(e, t("habitCount0") || "0 habits")}
               onMouseLeave={handleMouseLeave}
               className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
               style={{ backgroundColor: isDark ? "#3f3f3f" : "#f3f4f6" }}
             />
 
             <div
-              onMouseEnter={(e) => handleMouseEnter(e, "1 habit")}
+              onMouseEnter={(e) => handleMouseEnter(e, t("habitCount1") || "1 habit")}
               onMouseLeave={handleMouseLeave}
               className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
               style={{ backgroundColor: `${accent}40` }}
             />
 
             <div
-              onMouseEnter={(e) => handleMouseEnter(e, "2 habits")}
+              onMouseEnter={(e) => handleMouseEnter(e, t("habitCount2") || "2 habits")}
               onMouseLeave={handleMouseLeave}
               className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
               style={{ backgroundColor: `${accent}80` }}
             />
 
             <div
-              onMouseEnter={(e) => handleMouseEnter(e, "3–4 habits")}
+              onMouseEnter={(e) => handleMouseEnter(e, t("habitCount34") || "3–4 habits")}
               onMouseLeave={handleMouseLeave}
               className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
               style={{ backgroundColor: `${accent}bf` }}
             />
 
             <div
-              onMouseEnter={(e) => handleMouseEnter(e, "5+ habits")}
+              onMouseEnter={(e) => handleMouseEnter(e, t("habitCount5") || "5+ habits")}
               onMouseLeave={handleMouseLeave}
               className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm cursor-pointer"
               style={{ backgroundColor: accent }}

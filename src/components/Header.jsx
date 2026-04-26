@@ -74,7 +74,7 @@ export default function Header({ habits, onNewHabit }) {
         whileHover={{ y: -3 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
         onClick={() => navigate("/")}
-        className="cursor-pointer select-none group"
+        className="cursor-pointer select-none group w-fit"
       >
         <span
           className="text-4xl md:text-5xl font-bold transition-all duration-300"

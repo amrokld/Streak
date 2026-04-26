@@ -147,6 +147,12 @@ export const ar = {
   activityLevel: "مستوى النشاط",
   less: "أقل",
   more: "أكثر",
+  habitCount0: "٠ عادات",
+  habitCount1: "عادة واحدة",
+  habitCount2: "عادتان",
+  habitCount34: "٣–٤ عادات",
+  habitCount5: "٥+ عادات",
+
 
   // Settings
   general: "عام",
@@ -297,4 +303,11 @@ export const ar = {
   important: "مهم",
   tasks: "مهام",
   pressEnterToAdd: "اضغط Enter للإضافة...",
+
+  // Freeze
+  streakSavedByFreeze: "❄️ تم حفظ السلسلة بالتجميد!",
+  freezeCount: "تجميدات",
+  freezeEarned: "❄️ تجميد مكتسب! واصل التقدم.",
+  currentStreak: "السلسلة الحالية",
+
 };

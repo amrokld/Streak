@@ -45,6 +45,9 @@ export default function Onboarding({
       completedDays: [],
       lastCheck: null,
       frequency,
+      lastCompletedDate: null,
+      currentStreak: 0,
+      freezeCount: 0,
       days: frequency === "custom" ? selectedDays : []
     });
 

@@ -11,6 +11,8 @@ const patches = [
         date: "April 2026",
         notes: [
             " Added the notes page to the tour guide for starters.",
+            " Introduced the freeze logic for habits.",
+            " Restructured the streakPage to display the current going streaks and the freezes.",
         ]
     },
     {

@@ -283,16 +283,19 @@ export default function Tasks() {
 
           <button
             onClick={() => setShowNewTaskModal(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black transition-all duration-300 active:scale-95 hover:scale-105 group"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-sm transition-all duration-300 active:scale-95 hover:scale-105 group"
             style={{
               backgroundColor: accent,
               color: isDark ? '#000' : '#fff',
               boxShadow: `0 4px 14px ${accent}40`
             }}
           >
-            <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+            <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
             {t("newTask") || "New Task"}
           </button>
+
         </div>
 
         {/* Filters and Actions */}

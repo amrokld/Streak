@@ -146,15 +146,22 @@ export default function Notes() {
             {t("notes")}
           </h2>
 
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: `0 0 15px ${accent}40` }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => handleOpenEdit()}
-            className="px-5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-colors"
-            style={{ backgroundColor: accent, color: isDark ? "#000" : "#fff" }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-sm transition-all duration-300 active:scale-95 hover:scale-105 group"
+            style={{
+              backgroundColor: accent,
+              color: isDark ? '#000' : '#fff',
+              boxShadow: `0 4px 14px ${accent}40`
+            }}
           >
-            + {t("newNote")}
-          </motion.button>
+            <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+            {t("newNote")}
+          </button>
+
+
         </div>
 
         {/* LABELS RAW (FILTERING) */}

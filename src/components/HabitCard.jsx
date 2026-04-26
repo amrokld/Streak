@@ -58,8 +58,8 @@ export default function HabitCard({
 
   // Sync ref with actual lastCheck state — handles resets and re-appears
   useEffect(() => {
-    clickedTodayRef.current = habit?.lastCheck === getToday();
-  }, [habit?.lastCheck]);
+    clickedTodayRef.current = habit?.lastCompletedDate === getToday();
+  }, [habit?.lastCompletedDate]);
 
   return (
     <motion.div
@@ -162,31 +162,56 @@ export default function HabitCard({
             )}
 
             {/* Streak number — clickable in today mode */}
-            <motion.div
-              className="absolute bottom-6 right-6 w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-2xl"
-              style={{
-                backgroundColor: badgeBg,
-                color: accent,
-                cursor: mode === "today" ? "pointer" : "default",
-                textShadow: mode === "today" ? `0 0 15px ${accent}50` : "none",
-              }}
-              whileHover={mode === "today" ? { scale: 1.1 } : {}}
-              whileTap={mode === "today" ? { scale: 0.9 } : {}}
-              onClick={(e) => {
-                if (mode !== "today") return;
-                e.stopPropagation();
+            {/* Streak badge + freeze indicator */}
+            <div className="absolute bottom-6 right-6 flex flex-col items-end gap-1.5">
 
-                if (habit.lastCheck === getToday() || clickedTodayRef.current) {
-                  setMessage(t("comeBackTomorrow") || "Come back tomorrow!");
-                  return;
-                }
+              {/* Freeze count badge */}
+              {habit.freezeCount > 0 && (
+                <motion.div
+                  key={habit.freezeCount}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  style={{
+                    backgroundColor: isDark ? "rgba(96,165,250,0.12)" : "rgba(59,130,246,0.08)",
+                    color: "#60a5fa",
+                    border: "1px solid rgba(96,165,250,0.25)"
+                  }}
+                >
+                  ❄️ {habit.freezeCount}
+                </motion.div>
+              )}
 
-                clickedTodayRef.current = true;
-                onCheckIn(habit.id);
-              }}
-            >
-              {habit.streak}
-            </motion.div>
+              {/* Streak number */}
+              <motion.div
+                key={habit.currentStreak}
+                initial={{ scale: 1.3, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-2xl"
+                style={{
+                  backgroundColor: badgeBg,
+                  color: accent,
+                  cursor: mode === "today" ? "pointer" : "default",
+                  textShadow: mode === "today" ? `0 0 15px ${accent}50` : "none",
+                }}
+                whileHover={mode === "today" ? { scale: 1.1 } : {}}
+                whileTap={mode === "today" ? { scale: 0.9 } : {}}
+                onClick={(e) => {
+                  if (mode !== "today") return;
+                  e.stopPropagation();
+                  if (habit.lastCompletedDate === getToday() || clickedTodayRef.current) {
+                    setMessage(t("comeBackTomorrow") || "Come back tomorrow!");
+                    return;
+                  }
+                  clickedTodayRef.current = true;
+                  onCheckIn(habit.id);
+                }}
+              >
+                {habit.currentStreak}
+              </motion.div>
+            </div>
           </div>
 
           {/* BACK */}
