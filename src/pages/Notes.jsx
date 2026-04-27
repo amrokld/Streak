@@ -1,3 +1,4 @@
+// Notes Page
 import { useState, useEffect } from "react";
 import { useTheme } from "../Context/ThemeContext";
 import { useLanguage } from "../Context/LanguageContext";
@@ -17,6 +18,13 @@ export default function Notes() {
     "#06b6d4", "#6366f1", "#000000"
   ];
 
+  const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  const [emptyStateText] = useState(() => ({
+    primary: getRandom(t("notesEmptyPrimary")),
+    secondary: getRandom(t("notesEmptySecondary")),
+    randomLine: getRandom(t("notesEmptyRandom")),
+  }));
   const STORAGE_KEY = "notes_app";
   const LABELS_KEY = "notes_labels";
 
@@ -194,9 +202,46 @@ export default function Notes() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filteredNotes.length === 0 && (
-            <div className="col-span-full text-center py-12" style={{ color: subText }}>
-              {t("noNotesFound")}
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="col-span-full flex flex-col items-center justify-center py-24 text-center"
+            >
+
+              {/* ICON */}
+              <div className="mb-6 opacity-70 ">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="1.8">
+                  <path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+                  <path d="M14 3v5h5" />
+                </svg>
+              </div>
+
+              {/* PRIMARY */}
+              <h2
+                className="text-2xl font-bold mb-2"
+                style={{ color: accent }}
+              >
+                {emptyStateText.primary}
+              </h2>
+
+              {/* SECONDARY */}
+              <p
+                className="text-sm mb-3"
+                style={{ color: subText }}
+              >
+                {emptyStateText.secondary}
+              </p>
+
+              {/* RANDOM LINE */}
+              <span
+                className="text-xs tracking-wide opacity-60"
+                style={{ color: subText }}
+              >
+                {emptyStateText.randomLine}
+              </span>
+
+            </motion.div>
           )}
 
           {filteredNotes.map((note) => (

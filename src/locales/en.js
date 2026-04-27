@@ -43,7 +43,7 @@ export const en = {
   limitMsg2: "Slow down, 12 habits is the limit.",
   limitMsg3: "Limit reached. Finish before adding more",
   limitMsg4: "No more habits. Finish the work.",
-  limitMsg5: "Are you insane? wanna have more than 12 habits.",
+  limitMsg5: "Are you crazy? wanna have more than 12 habits.",
   limitMsg6: "Bro, Chill! Don't lie to yourself, You ain't gonna do more than 12 habits at a time.",
 
   // HabitCard
@@ -116,6 +116,56 @@ export const en = {
   addNote: "Add Note",
   addSubtask: "Add Subtask",
   noNotesOrSubtasks: "No notes or subtasks for this task.",
+
+  tasksEmptyStates: {
+    noTasks: {
+      primary: [
+        "No tasks available.",
+        "Nothing is scheduled.",
+        "There are no tasks at the moment."
+      ],
+      secondary: [
+        "You may add a task when something needs to be completed.",
+        "Use this space to organize what requires attention."
+      ],
+      random: [
+        "Not every day requires a list.",
+        "An empty list can be a good sign."
+      ]
+    },
+
+    allDone: {
+      primary: [
+        "All tasks are completed.",
+        "Everything has been handled.",
+        "No remaining tasks."
+      ],
+      secondary: [
+        "You have completed everything for now.",
+        "No further action is required at the moment."
+      ],
+      random: [
+        "Consistency leads to results.",
+        "Progress is built on completion."
+      ]
+    },
+
+    filteredEmpty: {
+      primary: [
+        "No tasks match the current view.",
+        "Nothing fits the selected filters.",
+        "No results found for this selection."
+      ],
+      secondary: [
+        "Try adjusting your filters to see more tasks.",
+        "Modify the filters to access other tasks."
+      ],
+      random: [
+        "Filters can narrow things down too much.",
+        "You might be hiding what you are looking for."
+      ]
+    }
+  },
 
 
   // Calendar Page
@@ -305,12 +355,29 @@ export const en = {
   tasks: "tasks",
   pressEnterToAdd: "Press Enter to add ...",
 
+  notesEmptyPrimary: [
+    "No notes yet.",
+    "This section is empty.",
+    "Nothing has been added here."
+  ],
+  notesEmptySecondary: [
+    "Use this space to document information worth retaining.",
+    "Add a note when there is something that requires reference.",
+    "This section can be used to record ideas, reminders, or important details."
+  ],
+  notesEmptyRandom: [
+    "Written records often improve clarity.",
+    "Not all information requires documentation.",
+    "Maintain only what is necessary.",
+    "Clarity benefits from structure.",
+    "Records are useful when they serve a purpose."
+  ],
+
   // Freeze
   streakSavedByFreeze: "❄️ Streak saved by freeze!",
   freezeCount: "Freezes",
   freezeEarned: "❄️ Freeze earned! Keep it up.",
   currentStreak: "Current Streak",
-
 
 };
 

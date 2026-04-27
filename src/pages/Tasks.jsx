@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+// Tasks Page
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../Context/ThemeContext";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -104,6 +105,29 @@ export default function Tasks() {
     const passPriority = filter === "all" || t.priority === filter;
     const passDate = dateFilter === "all" || t.dueDate === dateFilter;
     return passPriority && passDate;
+  });
+
+  const getRandom = (arr) => {
+    if (!Array.isArray(arr) || arr.length === 0) return "";
+    return arr[Math.floor(Math.random() * arr.length)];
+  };
+
+  let emptyType = "noTasks";
+
+  if (tasks.length > 0 && filteredTasks.length === 0) {
+    emptyType = "filteredEmpty";
+  } else if (tasks.length > 0 && tasks.every(t => t.done)) {
+    emptyType = "allDone";
+  }
+
+  const [emptyStateText] = useState(() => {
+    const state = t("tasksEmptyStates")[emptyType];
+
+    return {
+      primary: getRandom(state.primary),
+      secondary: getRandom(state.secondary),
+      random: getRandom(state.random)
+    };
   });
 
   const getPriorityColor = (p) => {
@@ -395,11 +419,32 @@ export default function Tasks() {
           <AnimatePresence mode="popLayout">
             {filteredTasks.length === 0 && (
               <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="text-center py-12 opacity-50"
-                style={{ color: subText }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center py-24 text-center"
               >
-                {t("no tasks yet")}
+                <motion.div
+                  className="mb-6 opacity-70"
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 2.5, repeat: Infinity }}
+                >
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="1.8">
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                  </svg>
+                </motion.div>
+
+                <h2 className="text-2xl font-bold mb-2" style={{ color: accent }}>
+                  {emptyStateText.primary}
+                </h2>
+
+                <p className="text-sm mb-3" style={{ color: subText }}>
+                  {emptyStateText.secondary}
+                </p>
+
+                <span className="text-xs opacity-60" style={{ color: subText }}>
+                  {emptyStateText.random}
+                </span>
               </motion.div>
             )}
 

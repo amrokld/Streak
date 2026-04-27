@@ -1,5 +1,12 @@
 [
   {
+    "id": 1777263285527,
+    "title": "Edit habits",
+    "desc": "adding editing habits, themselves, like titles.",
+    "status": "under developing",
+    "date": "Mon, Apr 27, 2026, 07:14 AM"
+  },
+  {
     "id": 1777234005548,
     "title": "individual streaks statistics ",
     "desc": "bcs we replaced the \"longest\" and \"total days\" that were on the streakPage, i need to implement them in the statistics page instead.",
@@ -45,7 +52,7 @@
     "id": 1776859338578,
     "title": "Empty States",
     "desc": "this is actually what i was thinking to do, fixing the sentences and make it more about the current moment instead of hardcoded phrases that look dead.",
-    "status": "under developing",
+    "status": "done",
     "date": "Wed, Apr 22, 2026, 03:02 PM"
   },
   {
