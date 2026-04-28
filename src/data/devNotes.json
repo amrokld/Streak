@@ -1,9 +1,16 @@
 [
   {
+    "id": 1777348170144,
+    "title": "Update the Motivation Phrases",
+    "desc": "Update the motivation phrases as the title says.",
+    "status": "done",
+    "date": "Tue, Apr 28, 2026, 06:49 AM"
+  },
+  {
     "id": 1777344794604,
     "title": "Same habit name",
     "desc": "A notification should appears if the user entered the same habit name, just as a reminder that this title is already being decleared in another habits, its totally their choice tho.",
-    "status": "imporvements",
+    "status": "done",
     "date": "Tue, Apr 28, 2026, 05:53 AM"
   },
   {

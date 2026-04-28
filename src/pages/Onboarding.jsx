@@ -1,3 +1,4 @@
+// OnBoarding Page
 import { useState } from "react";
 import { useTheme } from "../Context/ThemeContext";
 import { useHabits } from "../Context/HabitContext";
@@ -16,6 +17,10 @@ export default function Onboarding({
   const [frequency, setFrequency] = useState("daily");
   const [selectedDays, setSelectedDays] = useState([]);
 
+  const [nameExists, setNameExists] = useState(false);
+  const [allowDuplicate, setAllowDuplicate] = useState(false);
+  const [shake, setShake] = useState(false);
+
   const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const DAY_LABELS = { mon: "M", tue: "T", wed: "W", thu: "T", fri: "F", sat: "S", sun: "S" };
 
@@ -26,7 +31,7 @@ export default function Onboarding({
   };
 
   const { isDark } = useTheme();
-  const { addHabit } = useHabits();
+  const { addHabit, habits } = useHabits();
   const { t } = useLanguage();
 
   const navigate = useNavigate();
@@ -36,6 +41,17 @@ export default function Onboarding({
   const startTracking = () => {
     if (!habit.trim()) return;
 
+    // 🚫 First click → just warn
+    if (nameExists && !allowDuplicate) {
+      setAllowDuplicate(true);
+
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
+
+      return;
+    }
+
+    // ✅ Second click OR no duplicate → proceed
     addHabit({
       id: Date.now(),
       name: habit.trim(),
@@ -50,7 +66,6 @@ export default function Onboarding({
       freezeCount: 0,
       days: frequency === "custom" ? selectedDays : []
     });
-
 
     if (mode === "onboarding") {
       navigate("/");
@@ -107,17 +122,60 @@ export default function Onboarding({
           }}
           className="flex flex-col gap-4 w-64"
         >
-          <input
-            className="px-4 py-2 rounded outline-none text-center"
-            style={{
-              backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb",
-              color: text
-            }}
-            value={habit}
-            onChange={(e) => setHabit(e.target.value)}
-            placeholder={t("habitPlaceholder")}
-            autoFocus
-          />
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <input
+              className={`px-4 py-2 rounded outline-none text-center transition-all duration-200 ${shake ? "animate-shake" : ""
+                }`}
+              style={{
+                backgroundColor: isDark ? "#3a3a3a" : "#e5e7eb",
+                color: text,
+                border: nameExists
+                  ? `1px solid ${allowDuplicate ? "#f59e0b" : "#ef4444"}`
+                  : "1px solid transparent",
+                boxShadow: nameExists
+                  ? `0 0 8px ${allowDuplicate ? "#f59e0b40" : "#ef444440"}`
+                  : "none",
+                transition: "all 0.2s ease",
+                outline: "none",
+                caretColor: accent,
+              }}
+              value={habit}
+              onChange={(e) => {
+                const value = e.target.value;
+                setHabit(value);
+
+                const exists = habits.some(
+                  h => h.name.trim().toLowerCase() === value.trim().toLowerCase()
+                );
+
+                setNameExists(exists);
+                setAllowDuplicate(false); // reset when user edits
+              }}
+              placeholder={t("habitPlaceholder")}
+              autoFocus
+            />
+
+            <p
+              className="transition-all duration-200"
+              style={{
+                fontSize: "11px",
+                marginTop: nameExists ? "2px" : "0px",
+                marginBottom: nameExists ? "-4px" : "0px",
+                textAlign: "center",
+                color: allowDuplicate ? "#f59e0b" : "#ef4444",
+                fontWeight: 600,
+                opacity: nameExists ? 1 : 0,
+                transform: nameExists ? "translateY(0)" : "translateY(-6px)",
+                height: nameExists ? "auto" : "0px",
+                overflow: "hidden",
+                pointerEvents: "none",
+              }}
+            >
+              {allowDuplicate
+                ? t("duplicateNameAllowed")
+                : t("duplicateName")}
+            </p>
+          </div>
 
           {/* Categories */}
           <div className="flex justify-center gap-2">

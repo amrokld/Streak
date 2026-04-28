@@ -70,6 +70,20 @@ export default function Home() {
     return t("goodEvening");
   };
 
+  const getTimePeriod = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "morning";
+    if (hour < 17) return "afternoon";
+    if (hour < 21) return "evening";
+    return "night";
+  };
+
+  const getRandom = (arr) =>
+    arr[Math.floor(Math.random() * arr.length)];
+
+  const timePeriod = getTimePeriod();
+  const subtext = getRandom(t("homeSubtext")[timePeriod]);
+
   return (
     <div className="flex justify-center mt-16 pb-24 animate-fade-in">
       <div className="w-full max-w-6xl px-2">
@@ -99,7 +113,7 @@ export default function Home() {
           >
             {habits.length === 0
               ? t("welcomeMessage")
-              : t("welcomeBack")}
+              : subtext}
           </motion.p>
         </motion.div>
 

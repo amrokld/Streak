@@ -14,7 +14,9 @@ const patches = [
             " Introduced the freeze logic for habits.",
             " Restructured the streakPage to display the current going streaks and the freezes.",
             " Updated the Empty states of all Notes and Tasks and Today pages.",
-            " Updated the States of the reaching limit of habits."
+            " Updated the States of the reaching limit of habits.",
+            " Updated the motivation Phrases of the app.",
+            " Added a hint prevent creating the same title of an existing habit."
         ]
     },
     {

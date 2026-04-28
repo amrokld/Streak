@@ -164,13 +164,32 @@ export default function Today() {
     return msgs[Math.floor(Math.random() * msgs.length)];
   }
 
+  const getRandom = (arr) =>
+    arr[Math.floor(Math.random() * arr.length)];
+
+  const totalTodayList = [...overdueTasks, ...todayTasks];
+  const hasTasks = totalTodayList.length > 0;
+  const hasHabits = pendingHabits.length + doneHabits.length > 0;
+
+  let stateType = "active";
+
+  if (!hasTasks && !hasHabits) {
+    stateType = "empty";
+  } else if (
+    pendingHabits.length === 0 &&
+    totalTodayList.length > 0 &&
+    totalTodayList.every(t => t.done)
+  ) {
+    stateType = "completed";
+  }
+
+  const focusText = getRandom(t("todayFocusStates")[stateType]);
+
   const handleRemoveAllCompleted = () => {
     completedTasks.forEach(task => deleteTask(task.id));
     setHiddenDoneHabitIds(new Set(doneHabits.map(h => h.id)));
     setShowCompleted(false);
   };
-
-
 
   const sectionTitle = (label, color = subText) => (
     <p style={{ color, fontSize: "11px", fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
@@ -200,7 +219,7 @@ export default function Today() {
           <h1 style={{ fontSize: "52px", fontWeight: 900, letterSpacing: "0.08em", color: accent, lineHeight: 1, textShadow: `0 0 15px ${accent}44` }}>
             {t("todayTitle")}
           </h1>
-          <p style={{ color: subText, fontSize: "14px", marginTop: "14px", lineHeight: "1.6" }}>{t("focusSubtitle")}</p>
+          <p style={{ color: subText, fontSize: "14px", marginTop: "14px", lineHeight: "1.6" }}>{focusText}</p>
 
           {(totalHabitsToday > 0 || totalTasks > 0) && (
             <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "4px" }}></div>

@@ -10,6 +10,29 @@ export const en = {
   welcomeMessage: "Welcome! Ready to build some streaks?",
   welcomeBack: "It's nice to see you again",
 
+  homeSubtext: {
+    morning: [
+      "A new day is beginning.",
+      "The day is still open.",
+      "You have time to set things in motion."
+    ],
+    afternoon: [
+      "The day is in progress.",
+      "Keep things moving forward.",
+      "Maintain your pace."
+    ],
+    evening: [
+      "The day is nearing its end.",
+      "Consider what remains.",
+      "Wrap up what is still pending."
+    ],
+    night: [
+      "The day has come to a close.",
+      "Review what has been done.",
+      "Prepare for tomorrow."
+    ]
+  },
+
   // Onboarding / Username
   whatToCall: "What should I call you?",
   changeFromSettings: "You can change it from the settings",
@@ -21,6 +44,8 @@ export const en = {
   habitPlaceholder: "Gym, Study, Reading...",
   start: "Start",
   create: "Create",
+  duplicateName: "This name already exists.",
+  duplicateNameAllowed: "This name already exists. You may proceed.",
 
   // Categories
   urgent: "urgent",
@@ -308,6 +333,24 @@ export const en = {
   habitsOptionalLine: "Nothing requires tracking at this time.",
   noTasksToday: "No tasks for today.",
   tasksOptionalLine: "Nothing scheduled — you're clear.",
+
+  todayFocusStates: {
+    empty: [
+      "Nothing requires attention at this time.",
+      "No tasks or habits are scheduled.",
+      "There is nothing pending for now."
+    ],
+    completed: [
+      "All items have been completed.",
+      "No remaining actions for today.",
+      "Everything has been handled."
+    ],
+    active: [
+      "Focus on what is currently active.",
+      "Proceed with what requires attention.",
+      "Continue with your current priorities."
+    ]
+  },
 
   // Onboarding Intro Flow
   introWelcomeMsg: "Welcome to the start of your journey.",

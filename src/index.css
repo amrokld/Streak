@@ -70,7 +70,7 @@ html[dir="rtl"] header span[style*="Space Grotesk"] {
 /* ============ Global Background Fix ============ */
 html {
   /* Set explicit background on HTML so the viewport scroll area immediately gets the color */
-  background-color: #f2f4f8; 
+  background-color: #f2f4f8;
   transition: background-color 0.3s ease;
 }
 
@@ -122,4 +122,30 @@ html.light {
 html[data-theme='dark'],
 html.dark {
   scrollbar-color: #3f3f46 #1f1f1f;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  50% {
+    transform: translateX(4px);
+  }
+
+  75% {
+    transform: translateX(-3px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.35s ease;
 }
