@@ -23,7 +23,7 @@ export default function DevNotes() {
     const [noteStatus, setNoteStatus] = useState("thinking");
     const [selectedLabel, setSelectedLabel] = useState("all");
 
-    const statuses = ["done", "under developing", "canceled", "thinking", "on hold", "working on"];
+    const statuses = ["done", "under developing", "canceled", "thinking", "on hold", "working on", "imporvements"];
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -32,7 +32,8 @@ export default function DevNotes() {
             case "canceled": return "#ef4444"; // Red
             case "thinking": return "#f59e0b"; // Yellow
             case "on hold": return "#8b5cf6"; // Purple
-            case "working on": return "#000000" //black
+            case "working on": return "#6B6969" //black
+            case "imporvements": return "#009C9C" //Cyan
             default: return accent;
         }
     };

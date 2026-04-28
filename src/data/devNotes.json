@@ -1,9 +1,37 @@
 [
   {
+    "id": 1777344794604,
+    "title": "Same habit name",
+    "desc": "A notification should appears if the user entered the same habit name, just as a reminder that this title is already being decleared in another habits, its totally their choice tho.",
+    "status": "imporvements",
+    "date": "Tue, Apr 28, 2026, 05:53 AM"
+  },
+  {
+    "id": 1777315766671,
+    "title": "Refurbish Statistics page",
+    "desc": "i need to fix the statistics page to make it able to give information about the individual habit, instead of a hardcoded total overview calcuating.",
+    "status": "under developing",
+    "date": "Mon, Apr 27, 2026, 09:49 PM"
+  },
+  {
+    "id": 1777315509260,
+    "title": "Quick review",
+    "desc": "the idea comes up to me, which is a small survey that the user can do in the end of day, implemented in today's page, daily appears in the empty states section, viewed in the statistics page and it has the (Dont remained me again) toggle to switch it off whenever the user not wanna use this feature, then we can store it in the settings or in the home page with a button.",
+    "status": "imporvements",
+    "date": "Mon, Apr 27, 2026, 09:45 PM"
+  },
+  {
+    "id": 1777315396787,
+    "title": "Session / Focus Page",
+    "desc": "a page that have sessions timers, promo or anything like that at this point, i can add more things to it later.",
+    "status": "under developing",
+    "date": "Mon, Apr 27, 2026, 09:43 PM"
+  },
+  {
     "id": 1777263285527,
     "title": "Edit habits",
     "desc": "adding editing habits, themselves, like titles.",
-    "status": "under developing",
+    "status": "imporvements",
     "date": "Mon, Apr 27, 2026, 07:14 AM"
   },
   {
@@ -38,7 +66,7 @@
     "id": 1776859683442,
     "title": "Making Today Page Looks alive",
     "desc": "Right now the tasks and habits sections look empty and broken without any assign tasks or habits for the day, so i need to add a statement that appears on each sections saying no task or habits for today",
-    "status": "under developing",
+    "status": "done",
     "date": "Wed, Apr 22, 2026, 03:08 PM"
   },
   {
@@ -80,7 +108,7 @@
     "id": 1776857885743,
     "title": "Missed days insight",
     "desc": "a motivation or phrases that makes the app active when the user stops a current habit.",
-    "status": "thinking",
+    "status": "under developing",
     "date": "Wed, Apr 22, 2026, 02:38 PM"
   },
   {

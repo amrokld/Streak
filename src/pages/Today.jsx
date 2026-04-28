@@ -138,9 +138,9 @@ export default function Today() {
   const totalTasks = tasks.filter(t => !t.done || t.done).length;
   const completedTasksCount = tasks.filter(t => t.done).length;
 
-  const totalHabits = habits.length;
+  const totalHabitsToday = pendingHabits.length + doneHabits.length;
   const completedHabitsCount = doneHabits.length;
-  const remainingHabits = totalHabits - completedHabitsCount;
+  const remainingHabits = pendingHabits.length;
   const allDone = pendingHabits.length === 0 && overdueTasks.length === 0 && todayTasks.length === 0;
   const tasksLeftToday = overdueTasks.length + todayTasks.length;
   const totalTasksToday = tasksLeftToday + completedTasks.length;
@@ -149,6 +149,20 @@ export default function Today() {
   const hasCompleted = visibleCompletedHabits.length > 0 || completedTasks.length > 0;
 
 
+  const MAX_HABITS = 12;
+  const isLimitReached = habits.length >= MAX_HABITS;
+
+  const getRandomLimitMsg = () => {
+    const msgs = [
+      t("limitMsg1"),
+      t("limitMsg2"),
+      t("limitMsg3"),
+      t("limitMsg4"),
+      t("limitMsg5"),
+      t("limitMsg6"),
+    ];
+    return msgs[Math.floor(Math.random() * msgs.length)];
+  }
 
   const handleRemoveAllCompleted = () => {
     completedTasks.forEach(task => deleteTask(task.id));
@@ -188,7 +202,7 @@ export default function Today() {
           </h1>
           <p style={{ color: subText, fontSize: "14px", marginTop: "14px", lineHeight: "1.6" }}>{t("focusSubtitle")}</p>
 
-          {(totalHabits > 0 || totalTasks > 0) && (
+          {(totalHabitsToday > 0 || totalTasks > 0) && (
             <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "4px" }}></div>
           )}
         </div>
@@ -196,11 +210,19 @@ export default function Today() {
         {/* ACTION BUTTONS */}
         <div style={{ display: "flex", gap: "12px" }}>
           <button
-            onClick={() => setShowNewHabit(true)}
+            onClick={() => {
+              if (isLimitReached) {
+                showToast(getRandomLimitMsg());
+                return;
+              }
+              setShowNewHabit(true);
+            }}
             className="group relative overflow-hidden transition-all duration-300 active:scale-95"
             style={{
               padding: "8px 18px", background: "none", border: `2px solid ${accent}`,
-              borderRadius: "12px", color: accent, fontSize: "12px", fontWeight: 800, cursor: "pointer"
+              borderRadius: "12px", color: accent, fontSize: "12px", fontWeight: 800,
+              cursor: isLimitReached ? "not-allowed" : "pointer",
+              opacity: isLimitReached ? 0.5 : 1,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = accent;
@@ -253,7 +275,7 @@ export default function Today() {
 
           {/* LEFT: HABITS */}
           <section>
-            {totalHabits > 0 && (
+            {totalHabitsToday > 0 && (
               <div style={{ marginBottom: "12px" }}>
 
                 <p style={{
@@ -266,9 +288,9 @@ export default function Today() {
                   {t("habitsSection")}
                 </p>
 
-                {totalHabits > 0 && remainingHabits > 0 && (
+                {totalHabitsToday > 0 && remainingHabits > 0 && (
                   <p style={{ color: subText, fontSize: "13px", marginTop: "4px" }}>
-                    {remainingHabits === totalHabits ? (
+                    {remainingHabits === totalHabitsToday ? (
                       <>
                         <span style={{ color: accent, fontWeight: 700 }}>{remainingHabits}</span> {t("habitsWaitingToday")}
                       </>
@@ -310,7 +332,27 @@ export default function Today() {
                 ))}
               </AnimatePresence>
               {pendingHabits.length === 0 && !allDone && (
-                <p style={{ color: subText, opacity: 0.5, fontStyle: "italic" }}>{t("allHabits")}</p>
+                <div className="col-span-full flex flex-col items-center justify-center py-10 text-center opacity-70">
+
+                  <motion.div
+                    className="mb-4"
+                    animate={{ y: [0, -5, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="1.8">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 7v5l3 3" />
+                    </svg>
+                  </motion.div>
+
+                  <p className="text-sm font-semibold" style={{ color: text }}>
+                    {t("noHabitsToday") || "No habits for today."}
+                  </p>
+
+                  <span className="text-xs mt-1 opacity-60" style={{ color: subText }}>
+                    {t("habitsOptionalLine") || "You may add one if needed."}
+                  </span>
+                </div>
               )}
             </div>
           </section>
@@ -349,6 +391,31 @@ export default function Today() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[...overdueTasks, ...todayTasks].length === 0 && !allDone && (
+                <div className="flex flex-col items-center justify-center py-10 text-center opacity-70">
+
+                  <motion.div
+                    className="mb-4"
+                    animate={{ y: [0, -5, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="1.8">
+                      <path d="M9 11l3 3L22 4" />
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                  </motion.div>
+
+                  <p className="text-sm font-semibold" style={{ color: text }}>
+                    {t("noTasksToday") || "No tasks for today."}
+                  </p>
+
+                  <span className="text-xs mt-1 opacity-60" style={{ color: subText }}>
+                    {t("tasksOptionalLine") || "Nothing scheduled — you're clear."}
+                  </span>
+
+                </div>
+              )}
+
               <AnimatePresence mode="popLayout">
                 {[...overdueTasks, ...todayTasks].map((task) => {
                   const isOverdue = task.dueDate && task.dueDate < today;

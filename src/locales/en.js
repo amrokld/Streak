@@ -39,12 +39,12 @@ export const en = {
   other: "other",
 
   // Limit messages
-  limitMsg1: "That's enough for now. 12 habits max.",
-  limitMsg2: "Slow down, 12 habits is the limit.",
-  limitMsg3: "Limit reached. Finish before adding more",
-  limitMsg4: "No more habits. Finish the work.",
-  limitMsg5: "Are you crazy? wanna have more than 12 habits.",
-  limitMsg6: "Bro, Chill! Don't lie to yourself, You ain't gonna do more than 12 habits at a time.",
+  limitMsg1: "The maximum number of habits has been reached.",
+  limitMsg2: "No additional habits can be created at this time.",
+  limitMsg3: "The limit of 12 habits is currently in effect.",
+  limitMsg4: "You have reached the allowed number of habits.",
+  limitMsg5: "Further additions are not permitted.",
+  limitMsg6: "The habit limit has been reached.",
 
   // HabitCard
   clickForDetails: "click for more details",
@@ -304,6 +304,10 @@ export const en = {
   taskLeftFinishStrong: "task left — finish strong",
   earnedBreak: "Take a break. You earned it.",
   clearAll: "Clear All",
+  noHabitsToday: "No habits for today.",
+  habitsOptionalLine: "Nothing requires tracking at this time.",
+  noTasksToday: "No tasks for today.",
+  tasksOptionalLine: "Nothing scheduled — you're clear.",
 
   // Onboarding Intro Flow
   introWelcomeMsg: "Welcome to the start of your journey.",

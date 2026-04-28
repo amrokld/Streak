@@ -1,3 +1,4 @@
+// Header Page
 import { motion } from "framer-motion";
 import { useTheme } from "../Context/ThemeContext";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -18,6 +19,8 @@ export default function Header({ habits, onNewHabit }) {
   const [limitHit, setLimitHit] = useState();
   const { t } = useLanguage();
 
+  const [limitMessage, setLimitMessage] = useState("");
+
   const canCreate = Array.isArray(habits) && habits.length < MAX_HABITS;
 
   const limitMessages = [
@@ -29,13 +32,19 @@ export default function Header({ habits, onNewHabit }) {
     t("limitMsg6"),
   ];
 
-  const message = limitMessages[(habits?.length || 0) % limitMessages.length];
-
   const goToNewHabit = () => {
     if (habits && habits.length >= MAX_HABITS) {
+      let randomMsg;
+      do {
+        randomMsg =
+          limitMessages[Math.floor(Math.random() * limitMessages.length)];
+      } while (randomMsg === limitMessage);
+
+      setLimitMessage(randomMsg);
       setLimitHit(true);
       return;
     }
+
     setLimitHit(false);
 
     if (location.pathname !== "/") {
@@ -152,20 +161,18 @@ export default function Header({ habits, onNewHabit }) {
 
           {limitHit && (
             <motion.div
-              initial={{ opacity: 0, y: 6, scale: 0.95 }}
+              initial={{ opacity: 0, y: 8, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6 }}
-              className="absolute -bottom-10 right-0 px-3 py-1 rounded-full text-xs whitespace-nowrap"
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.25 }}
+              className="absolute -bottom-12 right-0 px-4 py-2 rounded-full text-xs whitespace-nowrap font-semibold"
               style={{
-                backgroundColor: cardBg,
-                color: muted,
-                boxShadow:
-                  isDark
-                    ? "0 6px 20px rgba(0,0,0,0.4)"
-                    : "0 6px 20px rgba(0,0,0,0.12)"
+                background: accent,
+                color: "#000",
+                boxShadow: `0 6px 20px ${accent}40`
               }}
             >
-              {message}
+              {limitMessage}
             </motion.div>
           )}
         </div>
