@@ -1,3 +1,4 @@
+// Home Page
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
@@ -29,6 +30,10 @@ export default function Home() {
   const [editCategory, setEditCategory] = useState("important");
   const [editFrequency, setEditFrequency] = useState("daily");
   const [editDays, setEditDays] = useState([]);
+  const [editName, setEditName] = useState("");
+  const [nameExists, setNameExists] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [shake, setShake] = useState(false);
 
   const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const DAY_LABELS = { mon: "M", tue: "T", wed: "W", thu: "T", fri: "F", sat: "S", sun: "S" };
@@ -44,6 +49,8 @@ export default function Home() {
       setEditCategory(habitToEdit.category || "important");
       setEditFrequency(habitToEdit.frequency || "daily");
       setEditDays(habitToEdit.days || []);
+      setEditName(habitToEdit.name || "");
+      setNameExists(false);
     }
   }, [habitToEdit]);
 
@@ -217,10 +224,80 @@ export default function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl font-bold mb-8" style={{ color: accent }}>
-              {t("changeCategory")}
+              {t("EditHabit") || "Edit Habit"}
             </h3>
 
-            <div className="flex justify-center gap-2">
+            <div className="w-full mb-6 flex flex-col gap-2">
+              <p
+                className="text-xs font-bold tracking-wider uppercase mb-3 self-start"
+                style={{ color: subText }}
+              >
+                {t("habitName") || "Habit Name"}
+              </p>
+
+              <input
+                value={editName}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setEditName(value);
+
+                  const exists = habits.some(
+                    h =>
+                      h.id !== habitToEdit.id &&
+                      h.name.trim().toLowerCase() === value.trim().toLowerCase()
+                  );
+
+                  setNameExists(exists);
+                }}
+                maxLength={40}
+                placeholder="Edit habit name..."
+                className={`w-full px-3 py-2 rounded-xl text-sm outline-none transition-all duration-200 ${shake ? "animate-shake" : ""}`}
+                style={{
+                  backgroundColor: isDark ? "#1f1f1f" : "#f3f4f6",
+                  color: isDark ? "#fff" : "#000",
+                  border: (nameExists || showError)
+                    ? "1px solid #ef4444"
+                    : isDark
+                      ? "1px solid rgba(255,255,255,0.06)"
+                      : "1px solid rgba(0,0,0,0.08)",
+
+                  boxShadow: (nameExists || showError)
+                    ? "0 0 8px rgba(239,68,68,0.4)"
+                    : "none",
+                }}
+              />
+
+              <p
+                className="transition-all duration-200"
+                style={{
+                  fontSize: "11px",
+                  marginTop: nameExists ? "4px" : "0px",
+                  color: "#ef4444",
+                  fontWeight: 600,
+                  opacity: nameExists || showError ? 1 : 0,
+                  transform: (nameExists || showError) ? "translateY(0)" : "translateY(-6px)",
+                  height: (nameExists || showError) ? "auto" : "0px",
+                  overflow: "hidden",
+                }}
+              >
+                {nameExists || showError
+                  ? (t("duplicateName") || "This name already exists")
+                  : ""}
+              </p>
+            </div>
+
+            {/* Divider */}
+            <div className="w-full h-px mt-4 mb-3" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }} />
+
+            {/* Category label */}
+            <p
+              className="text-xs font-bold tracking-wider uppercase mb-3 self-start"
+              style={{ color: subText }}
+            >
+              {t("category") || "Category"}
+            </p>
+
+            <div className="flex gap-2 mb-2">
               {["important", "urgent", "optional"].map((cat) => {
                 const colors = { urgent: "#ef4444", important: "#f59e0b", optional: "#22c55e" };
                 const active = editCategory === cat;
@@ -230,7 +307,7 @@ export default function Home() {
                     key={cat}
                     type="button"
                     onClick={() => setEditCategory(cat)}
-                    className="px-3 py-1 rounded-full text-xs transition font-bold capitalize"
+                    className="px-4 py-1 rounded-full text-xs transition font-bold capitalize"
                     style={{
                       border: `1px solid ${active ? color : (isDark ? "#444" : "#cbd5e1")}`,
                       backgroundColor: active ? `${color}15` : "transparent",
@@ -244,7 +321,7 @@ export default function Home() {
             </div>
 
             {/* Divider */}
-            <div className="w-full h-px mt-6 mb-4" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }} />
+            <div className="w-full h-px mt-4 mb-3" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }} />
 
             {/* Schedule section */}
             <p className="text-xs font-bold tracking-wider uppercase mb-3 self-start" style={{ color: subText }}>
@@ -291,14 +368,37 @@ export default function Home() {
 
             <button
               className="relative group w-full py-2.5 mt-6 rounded-xl font-bold overflow-hidden transition-all duration-200 active:scale-95"
-              style={{ backgroundColor: "transparent", color: accent, border: `1px solid ${accent}` }}
+              style={{
+                backgroundColor: "transparent",
+                color: accent,
+                border: `1px solid ${accent}`,
+              }}
               onClick={() => {
                 const safeDays = (editFrequency === "custom" && editDays.length === 0) ? [] : editDays;
-                updateHabit(habitToEdit.id, { category: editCategory, frequency: editFrequency, days: safeDays });
-                setHabitToEdit(null);
+                if (!editName.trim()) {
+                  setEditName(habitToEdit.name);
+                }
+                if (nameExists) {
+                  setShowError(true);
+                  setShake(true);
+
+                  setTimeout(() => setShake(false), 400);
+                  setTimeout(() => setShowError(false), 2000);
+
+                  return;
+                }
+                updateHabit(habitToEdit.id, {
+                  name: editName.trim() || habitToEdit.name,
+                  category: editCategory,
+                  frequency: editFrequency,
+                  days: safeDays,
+                }); setHabitToEdit(null);
               }}
             >
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none" style={{ backgroundColor: accent }} />
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none"
+                style={{ backgroundColor: accent }}
+              />
               <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none" style={{ color: isDark ? "#000" : "#fff" }}>
                 {t("save")}
               </span>

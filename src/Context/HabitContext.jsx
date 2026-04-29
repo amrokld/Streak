@@ -1,10 +1,15 @@
+// HabitContext File
 import { createContext, useContext, useState, useEffect } from "react";
 import { syncHabits } from "../services/habitSync";
-import { getToday } from "../utils/dateHelpers";
+import { getToday, daysBetween } from "../utils/dateHelpers";
 import { STORAGE_KEYS } from "../constants/storageKeys";
 import { applyCheckIn } from "../utils/streakEngine";
 
+
 const HabitContext = createContext();
+
+export const useHabit = () => useContext(HabitContext);
+export const useHabits = () => useContext(HabitContext);
 
 export function HabitProvider({ children }) {
   const [habits, setHabits] = useState(() => {
@@ -28,7 +33,13 @@ export function HabitProvider({ children }) {
   const addHabit = (habit) => {
     setHabits((prev) => {
       if (prev.length >= MAX_HABITS) return prev;
-      return [...prev, habit];
+      return [
+        ...prev,
+        {
+          ...habit,
+          history: habit.history || [],
+        },
+      ];
     });
   };
 
@@ -50,21 +61,56 @@ export function HabitProvider({ children }) {
   };
 
   // ---- CHECK IN HABIT ----
-  // ---- CHECK IN HABIT ----
   const checkInHabit = (id, onResult) => {
     const habit = habits.find(h => String(h.id) === String(id));
     if (!habit) return;
 
     const { habit: updated, freezeUsed, freezeEarned } = applyCheckIn(habit);
 
+    const today = getToday();
+    const prevDate = habit.lastCompletedDate;
+    let missedEntries = [];
+
+    if (prevDate) {
+      const gap = daysBetween(prevDate, today);
+
+      if (gap > 1) {
+        for (let i = 1; i < gap; i++) {
+          const missedDate = new Date(prevDate);
+          missedDate.setDate(missedDate.getDate() + i);
+
+          const formatted = missedDate.toISOString().split("T")[0];
+
+          missedEntries.push({
+            date: formatted,
+            status: "miss",
+          });
+        }
+      }
+    }
+
     // Fire callback synchronously, outside the updater — Strict Mode safe
     onResult?.({ freezeUsed, freezeEarned });
 
     updateHabit(id, () => {
       const prevDays = habit.completedDays || [];
+      const prevHistory = habit.history || [];
       const today = getToday();
+
       if (prevDays.includes(today)) return updated;
-      return { ...updated, completedDays: [...prevDays, today] };
+
+      return {
+        ...updated,
+        completedDays: [...prevDays, today],
+        history: [
+          ...prevHistory,
+          ...missedEntries,
+          {
+            date: today,
+            status: freezeUsed ? "freeze" : "done",
+          },
+        ],
+      };
     });
   };
 
@@ -76,6 +122,14 @@ export function HabitProvider({ children }) {
     freezeCount: 0,
     completedDays: []
   });
+
+  const updateHabitName = (id, newName) => {
+    setHabits((prev) =>
+      prev.map((habit) =>
+        habit.id === id ? { ...habit, name: newName } : habit
+      )
+    );
+  };
 
 
   // ---- PERSIST TO LOCAL STORAGE (ONE PLACE ONLY) ----
@@ -99,14 +153,11 @@ export function HabitProvider({ children }) {
         deleteHabit,
         checkInHabit,
         resetHabit,
+        updateHabitName,
       }}
 
     >
       {children}
     </HabitContext.Provider>
   );
-}
-
-export function useHabits() {
-  return useContext(HabitContext);
 }

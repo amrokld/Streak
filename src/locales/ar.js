@@ -48,6 +48,7 @@ export const ar = {
   create: "إنشاء",
 
   // Categories
+  category: "الفئة",
   urgent: "عاجل",
   important: "مهم",
   optional: "اختياري",
@@ -76,11 +77,12 @@ export const ar = {
   clickForDetails: "اضغط لمزيد من التفاصيل",
   rightClickOptions: "كليك يمين للخيارات",
   options: "الخيارات",
-  changeCategory: "تغيير التصنيف و الأيام",
+  EditHabit: "تعديل العادة",
   deleteHabit: "حذف العادة",
   rightClickClose: "كليك يمين للإغلاق",
 
   // Home
+  habitName: "إسم العادة",
   deleteHabitQ: "حذف العادة؟",
   willBeRemoved: "ستتم إزالتها نهائيًا.",
   delete: "حذف",

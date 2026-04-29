@@ -75,7 +75,7 @@ export const en = {
   clickForDetails: "click for more details",
   rightClickOptions: "Right-click for options",
   options: "OPTIONS",
-  changeCategory: "Change category and days",
+  EditHabit: "Edit Habit",
   deleteHabit: "Delete habit",
   rightClickClose: "Right-click to close",
   frequency: "Frequency",
@@ -83,6 +83,7 @@ export const en = {
   custom: "Custom",
 
   // Home
+  habitName: "Habit Name",
   deleteHabitQ: "Delete habit?",
   willBeRemoved: "will be permanently removed.",
   delete: "Delete",

@@ -1,3 +1,4 @@
+// StreakPage Page
 import { motion } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
@@ -25,7 +26,17 @@ export default function StreakPage() {
   const [showReset, setShowReset] = useState(false);
   const clickedTodayRef = useRef(false);
 
-  const today = getToday();
+  const today = new Date();
+  const todayStr = getToday();
+
+  const WEEK_DAYS = 7;
+
+  const STATUS_COLORS = {
+    done: accent,   // yellow (your current style)
+    freeze: "#60a5fa",                      // blue
+    miss: "#ef4444",                        // red
+    empty: isDark ? "#2a2a2a" : "#e5e7eb",  // gray
+  };
 
   // Sync local state from habits context
   useEffect(() => {
@@ -43,24 +54,43 @@ export default function StreakPage() {
 
   // Reset clickedTodayRef if habit already has today's check (page reload / return visit)
   useEffect(() => {
-    if (habit?.lastCompletedDate === today) {
+    if (habit?.lastCompletedDate === todayStr) {
       clickedTodayRef.current = true;
     }
   }, [habit?.lastCompletedDate]);
 
   if (!habit) return null;
 
+  const historyMap = Object.fromEntries(
+    (habit?.history || []).map((d) => [d.date, d.status])
+  );
+
+  const week = Array.from({ length: WEEK_DAYS }).map((_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (WEEK_DAYS - 1 - i));
+
+    const formatted = d.toISOString().split("T")[0];
+
+    return {
+      date: formatted,
+      status: historyMap[formatted] || "empty",
+      isToday: formatted === todayStr,
+    };
+  });
+
   const handleClick = () => {
-    if (habit.lastCompletedDate === today || clickedTodayRef.current) {
+    if (habit.lastCompletedDate === todayStr || clickedTodayRef.current) {
       setMessage(t("comeBackTomorrow"));
       return;
     }
+
     clickedTodayRef.current = true;
 
     checkInHabit(resolvedId, ({ freezeEarned }) => {
       if (freezeEarned) setMessage(t("freezeEarned"));
     });
 
+    // ✅ only fires when actually allowed
     confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
   };
 
@@ -234,17 +264,41 @@ export default function StreakPage() {
         </div>
 
         {/* Mini 7-Day Dots */}
-        <div className="flex justify-center gap-3 mt-2">
-          {recentActivity.map((isDone, i) => (
-            <div
-              key={i}
-              className="w-8 h-8 rounded-full transition-all duration-300"
-              style={{
-                backgroundColor: isDone ? accent : (isDark ? "#3f3f3f" : "#e5e7eb"),
-                opacity: isDone ? 1 : 0.4,
-                transform: isDone ? 'scale(1.1)' : 'scale(1)'
+        <div className="flex items-center justify-center gap-3 mt-6">
+          {week.map((day, i) => (
+            <motion.div
+              key={day.date}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{
+                delay: i * 0.05,
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
               }}
-            />
+              className="relative"
+            >
+              <motion.div
+                className="w-5 h-5 rounded-full"
+                style={{
+                  backgroundColor: STATUS_COLORS[day.status],
+                  boxShadow:
+                    day.isToday && day.status !== "empty"
+                      ? isDark
+                        ? `0 0 16px ${STATUS_COLORS[day.status]}`
+                        : `0 0 6px ${STATUS_COLORS[day.status]}`
+                      : "none",
+                  border:
+                    day.status === "empty"
+                      ? isDark
+                        ? "1px solid rgba(255,255,255,0.05)"
+                        : "1px solid rgba(0,0,0,0.08)"
+                      : "none",
+                }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0 }}
+              />
+            </motion.div>
           ))}
         </div>
       </motion.div>

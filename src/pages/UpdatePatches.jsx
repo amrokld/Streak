@@ -7,6 +7,16 @@ import { useLanguage } from "../Context/LanguageContext";
 
 const patches = [
     {
+        version: "v5.2",
+        date: "April 2026",
+        notes: [
+            " Added freeze days to the process bar in the Streak Page.",
+            " Updated the Habit titles to be editable though the Edit habit section.",
+            " Updated the Habit titles to NOT be duplicated by any other Habits titles.",
+
+        ]
+    },
+    {
         version: "v5.1",
         date: "April 2026",
         notes: [

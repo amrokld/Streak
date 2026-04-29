@@ -1,5 +1,12 @@
 [
   {
+    "id": 1777435846154,
+    "title": "Pop Up notications",
+    "desc": "i should add a Pop up notifications for every edited thing in the app that says \"the name updated\" or \"edited ... \".",
+    "status": "imporvements",
+    "date": "Wed, Apr 29, 2026, 07:10 AM"
+  },
+  {
     "id": 1777348170144,
     "title": "Update the Motivation Phrases",
     "desc": "Update the motivation phrases as the title says.",
@@ -38,7 +45,7 @@
     "id": 1777263285527,
     "title": "Edit habits",
     "desc": "adding editing habits, themselves, like titles.",
-    "status": "imporvements",
+    "status": "done",
     "date": "Mon, Apr 27, 2026, 07:14 AM"
   },
   {

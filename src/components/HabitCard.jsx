@@ -1,3 +1,4 @@
+// HabitCard File
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../Context/ThemeContext";
 import { useEffect, useState, useRef } from "react";
@@ -6,7 +7,8 @@ import { cardFlip } from "../motion/motionVariants";
 import { getTokens } from "../theme/tokens";
 import { useLanguage } from "../Context/LanguageContext";
 import { getToday } from "../utils/dateHelpers";
-import { getTodayDayKey } from "../utils/dateHelpers";
+import { useHabit } from "../Context/HabitContext";
+
 
 export default function HabitCard({
   habit,
@@ -19,6 +21,11 @@ export default function HabitCard({
   const [flipped, setFlipped] = useState(false);
   const [message, setMessage] = useState("");
   const clickedTodayRef = useRef(false);
+
+  const { updateHabitName } = useHabit();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempName, setTempName] = useState(habit.name);
 
   // Auto-clear message after 2s
   useEffect(() => {
@@ -61,6 +68,10 @@ export default function HabitCard({
     clickedTodayRef.current = habit?.lastCompletedDate === getToday();
   }, [habit?.lastCompletedDate]);
 
+  useEffect(() => {
+    setTempName(habit.name);
+  }, [habit.name]);
+
   return (
     <motion.div
       className="relative rounded-3xl min-h-[220px]"
@@ -96,12 +107,49 @@ export default function HabitCard({
               setFlipped(true);
             }}
           >
-            <h3
+            <div
               className="text-xl font-medium"
               style={{ color: isDark ? "#fff" : "#1a1a1a" }}
             >
-              {habit.name}
-            </h3>
+              {isEditing ? (
+                <input
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onBlur={() => {
+                    if (!tempName.trim()) {
+                      setTempName(habit.name);
+                    } else {
+                      updateHabitName(habit.id, tempName.trim());
+                    }
+                    setIsEditing(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.target.blur();
+                    }
+                  }}
+                  maxLength={40}
+                  autoFocus
+                  className="w-full px-2 py-1 rounded-lg text-sm outline-none"
+                  style={{
+                    backgroundColor: isDark ? "#2a2a2a" : "#f3f4f6",
+                    color: isDark ? "#fff" : "#000",
+                    border: isDark
+                      ? "1px solid rgba(255,255,255,0.08)"
+                      : "1px solid rgba(0,0,0,0.1)",
+                  }}
+                />
+              ) : (
+                <h3
+                  onDoubleClick={() => setIsEditing(true)}
+                  className="truncate max-w-[160px] cursor-text"
+                  title={habit.name}
+                >
+                  {habit.name}
+                </h3>
+              )}
+            </div>
 
             <p className="text-sm mt-1" style={{ color: subText }}>
               {t("clickForDetails")}
@@ -248,10 +296,10 @@ export default function HabitCard({
                   className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none"
                   style={{ color: isDark ? "#000" : "#fff" }}
                 >
-                  {t("changeCategory")}
+                  {t("EditHabit")}
                 </span>
                 <span className="relative z-10 block group-hover:opacity-0 transition-opacity duration-200">
-                  {t("changeCategory")}
+                  {t("EditHabit")}
                 </span>
               </button>
 
